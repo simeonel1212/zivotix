@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { Organizer } from "@/lib/types";
 import VerifiedBadge from "@/components/verified-badge";
 import VerifyOrganizerButton from "./verify-organizer-button";
+import CommissionRateForm from "./commission-rate-form";
 
 export default async function AdminOrganizersPage() {
   const supabase = await createClient();
@@ -17,7 +18,8 @@ export default async function AdminOrganizersPage() {
         <h1 className="text-3xl font-bold tracking-tight text-neutral-900">Organizers</h1>
         <p className="text-sm text-neutral-500 mt-1">
           Every business selling tickets on Zivotix. Verifying one adds a badge next to their name
-          across the site. Use it for organizers you&apos;ve actually confirmed are legit.
+          across the site. Use it for organizers you&apos;ve actually confirmed are legit. Commission
+          is per organizer, so a negotiated rate only affects that one.
         </p>
       </div>
 
@@ -35,13 +37,18 @@ export default async function AdminOrganizersPage() {
                   {o.is_verified && <VerifiedBadge />}
                 </p>
                 <p className="text-neutral-400">
-                  {o.country} · payouts in {o.payout_currency} · {(o.commission_rate * 100).toFixed(0)}% fee
+                  {o.country} · payouts in {o.payout_currency}
                 </p>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-3">
                 {o.is_platform_own && (
                   <span className="zv-badge bg-yellow-100 text-yellow-800">Platform-owned</span>
                 )}
+                <CommissionRateForm
+                  organizerId={o.id}
+                  rate={o.commission_rate}
+                  isPlatformOwn={o.is_platform_own}
+                />
                 <VerifyOrganizerButton organizerId={o.id} isVerified={o.is_verified} />
               </div>
             </div>
