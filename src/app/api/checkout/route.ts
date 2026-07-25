@@ -30,6 +30,22 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "No tickets selected" }, { status: 400 });
   }
 
+  // The buyer's email is the only way their ticket reaches them, and it's
+  // also what Flutterwave requires to create a customer. Without this check a
+  // value like "simeon" creates a real paid order whose ticket can never be
+  // delivered — which has already happened in production.
+  const buyerEmail = (body.buyerEmail ?? "").trim();
+  const buyerName = (body.buyerName ?? "").trim();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(buyerEmail)) {
+    return NextResponse.json(
+      { error: "Enter a valid email address, that's where your ticket is sent." },
+      { status: 400 }
+    );
+  }
+  if (!buyerName) {
+    return NextResponse.json({ error: "Enter your name." }, { status: 400 });
+  }
+
   const { data: event } = await supabase
     .from("events")
     .select("*")
@@ -93,8 +109,8 @@ export async function POST(req: Request) {
       .from("orders")
       .insert({
         event_id: event.id,
-        buyer_name: body.buyerName,
-        buyer_email: body.buyerEmail,
+        buyer_name: buyerName,
+        buyer_email: buyerEmail,
         base_currency: event.currency,
         base_amount: 0,
         charge_currency: event.currency,
@@ -156,8 +172,8 @@ export async function POST(req: Request) {
     .from("orders")
     .insert({
       event_id: event.id,
-      buyer_name: body.buyerName,
-      buyer_email: body.buyerEmail,
+      buyer_name: buyerName,
+      buyer_email: buyerEmail,
       base_currency: event.currency,
       base_amount: baseAmount,
       charge_currency: chargeCurrency,
@@ -189,8 +205,8 @@ export async function POST(req: Request) {
 
   if (wallet) {
     try {
-      const customer = await createFlutterwaveCustomer({ email: body.buyerEmail, name: body.buyerName });
-      const paymentMethod = await createApplePayPaymentMethod(body.buyerName);
+      const customer = await createFlutterwaveCustomer({ email: buyerEmail, name: buyerName });
+      const paymentMethod = await createApplePayPaymentMethod(buyerName);
       const charge = await createCharge({
         customerId: customer.id,
         paymentMethodId: paymentMethod.id,
@@ -208,8 +224,24 @@ export async function POST(req: Request) {
     } catch (e) {
       await supabase.rpc("release_ticket_types", { p_items: reservationItems });
       await supabase.from("orders").update({ status: "failed" }).eq("id", order.id);
+      // Every Apple Pay attempt so far has failed here with the reason only
+      // ever reaching the browser, so log the full context server-side. The
+      // usual causes are Apple Pay not being enabled on the Flutterwave
+      // merchant account, or the charge currency not being supported for it.
+      console.error("[checkout] Apple Pay failed", {
+        orderId: order.id,
+        chargeCurrency,
+        chargeAmount,
+        reference,
+        error: e instanceof Error ? e.message : String(e),
+      });
       return NextResponse.json(
-        { error: e instanceof Error ? e.message : "Apple Pay init failed" },
+        {
+          error:
+            e instanceof Error
+              ? `Apple Pay couldn't start: ${e.message}`
+              : "Apple Pay init failed",
+        },
         { status: 502 }
       );
     }
@@ -217,7 +249,7 @@ export async function POST(req: Request) {
 
   try {
     const tx = await initTransaction({
-      email: body.buyerEmail,
+      email: buyerEmail,
       amount: toSubunit(chargeAmount),
       currency: chargeCurrency,
       reference,
