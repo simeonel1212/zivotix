@@ -77,11 +77,17 @@ create table events (
   starts_at timestamptz not null,
   ends_at timestamptz,
   status event_status not null default 'draft',
+  -- Unlisted = still published and purchasable via a direct link, but kept
+  -- out of /events, the homepage grid and the sitemap, and marked noindex.
+  -- For weddings, private parties and corporate events. NOT a security
+  -- boundary: anyone with the link can still buy, the link is the only gate.
+  is_unlisted boolean not null default false,
   created_at timestamptz not null default now()
 );
 
 create index on events(organizer_id);
 create index on events(status, starts_at);
+create index on events(is_unlisted);
 
 alter table event_staff
   add constraint event_staff_event_fk foreign key (event_id) references events(id) on delete cascade;

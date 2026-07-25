@@ -63,6 +63,7 @@ export interface EventRow {
   starts_at: string;
   ends_at: string | null;
   status: EventStatus;
+  is_unlisted: boolean;
   created_at: string;
 }
 

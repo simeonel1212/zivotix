@@ -63,6 +63,7 @@ export default async function HomePage() {
     .from("events")
     .select("*, ticket_types(price)")
     .eq("status", "published")
+    .eq("is_unlisted", false) // weddings/private events are link-only
     .gte("starts_at", new Date().toISOString())
     .order("starts_at", { ascending: true })
     .limit(12)

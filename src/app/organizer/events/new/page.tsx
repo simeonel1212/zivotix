@@ -31,6 +31,7 @@ export default function NewEventPage() {
     category: EVENT_CATEGORIES[0].value as string,
     coverImageUrl: "",
     logoImageUrl: "",
+    isUnlisted: false,
   });
   const [galleryImageUrls, setGalleryImageUrls] = useState<string[]>([]);
   const [links, setLinks] = useState<EventLink[]>([]);
@@ -102,6 +103,7 @@ export default function NewEventPage() {
           galleryImageUrls,
           links: links.filter((l) => l.label.trim() && l.url.trim()),
           status,
+          isUnlisted: form.isUnlisted,
           ticketTypes: ticketTypes.map((tt) => ({
             name: tt.name,
             price: pricingMode === "free" ? 0 : Number(tt.price),
@@ -170,6 +172,22 @@ export default function NewEventPage() {
             ))}
           </select>
         </Field>
+
+        <label className="flex items-start gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={form.isUnlisted}
+            onChange={(e) => setForm((f) => ({ ...f, isUnlisted: e.target.checked }))}
+            className="mt-0.5 h-4 w-4 shrink-0 accent-yellow-500"
+          />
+          <span>
+            <span className="text-sm font-medium text-neutral-700">Private event (invite only)</span>
+            <span className="block text-xs text-neutral-400 mt-0.5">
+              For weddings, private parties and corporate events. Anyone with the link can still get
+              a ticket, but it won&apos;t appear on Zivotix&apos;s homepage, the events page, or in Google.
+            </span>
+          </span>
+        </label>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Field label="Date & time">
             <input

@@ -22,6 +22,7 @@ interface CreateEventBody {
   galleryImageUrls?: string[];
   links?: { label: string; url: string }[];
   status: "draft" | "published";
+  isUnlisted?: boolean;
   ticketTypes: TicketTypeInput[];
 }
 
@@ -83,6 +84,7 @@ export async function POST(req: Request) {
       links: sanitizeLinks(body.links),
       starts_at: body.startsAt,
       status: body.status,
+      is_unlisted: body.isUnlisted === true,
     })
     .select()
     .single();

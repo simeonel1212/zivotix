@@ -15,12 +15,18 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const service = createServiceClient();
   const { data: event } = await service
     .from("events")
-    .select("title, description, venue, city, country, starts_at, cover_image_url")
+    .select("title, description, venue, city, country, starts_at, cover_image_url, is_unlisted")
     .eq("slug", slug)
     .eq("status", "published")
     .single();
 
   if (!event) return { title: "Event not found" };
+
+  // Unlisted events (weddings, private parties) are link-only: keep them out
+  // of search results entirely, and don't let a crawler generate a preview.
+  const privacy: Metadata = event.is_unlisted
+    ? { robots: { index: false, follow: false, nocache: true, googleBot: { index: false, follow: false } } }
+    : {};
 
   const dateLabel = new Date(event.starts_at).toLocaleDateString("en-US", {
     weekday: "long",
@@ -50,6 +56,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       description,
       images: event.cover_image_url ? [event.cover_image_url] : undefined,
     },
+    ...privacy,
   };
 }
 
@@ -119,12 +126,16 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
 
   return (
     <main className="flex-1 mx-auto w-full max-w-3xl px-6 py-12 space-y-10">
-      <script
-        type="application/ld+json"
-        // Next.js requires this form for JSON-LD; the payload is our own
-        // server-built object, not user-controlled HTML.
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+      {/* Structured data exists to earn Google event rich results, so it's
+          pointless (and counterproductive) on an unlisted private event. */}
+      {!event.is_unlisted && (
+        <script
+          type="application/ld+json"
+          // Next.js requires this form for JSON-LD; the payload is our own
+          // server-built object, not user-controlled HTML.
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      )}
       <div className="relative aspect-[21/9] rounded-3xl bg-gradient-to-br from-yellow-100 via-yellow-50 to-white overflow-hidden shadow-[0_20px_60px_-20px_rgba(0,0,0,0.15)]">
         {event.cover_image_url && (
           <Image

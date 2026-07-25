@@ -52,6 +52,7 @@ export default async function OrganizerProfilePage({ params }: { params: Promise
     .select("*, ticket_types(price)")
     .eq("organizer_id", organizerId)
     .eq("status", "published")
+    .eq("is_unlisted", false) // weddings/private events are link-only
     .gte("starts_at", new Date().toISOString())
     .order("starts_at", { ascending: true })
     .returns<EventWithPrices[]>();

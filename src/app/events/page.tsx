@@ -30,6 +30,7 @@ export default async function EventsPage({
     .from("events")
     .select("*, ticket_types(price)")
     .eq("status", "published")
+    .eq("is_unlisted", false) // weddings/private events are link-only
     .order("starts_at", { ascending: true });
   if (activeCategory) query = query.eq("category", activeCategory);
   const { data: events } = await query.returns<EventWithPrices[]>();

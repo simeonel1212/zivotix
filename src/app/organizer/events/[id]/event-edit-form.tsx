@@ -27,6 +27,7 @@ export default function EventEditForm({ event, headerActions }: { event: EventRo
     startsAt: toDatetimeLocal(event.starts_at),
     currency: event.currency,
     category: event.category ?? "other",
+    isUnlisted: event.is_unlisted ?? false,
   });
   const [links, setLinks] = useState<EventLink[]>(event.links ?? []);
   const [generating, setGenerating] = useState(false);
@@ -76,6 +77,7 @@ export default function EventEditForm({ event, headerActions }: { event: EventRo
         starts_at: new Date(form.startsAt).toISOString(),
         currency: form.currency,
         category: form.category,
+        is_unlisted: form.isUnlisted,
         links: links.filter((l) => l.label.trim() && /^https?:\/\//i.test(l.url.trim())),
       })
       .eq("id", event.id);
@@ -156,6 +158,22 @@ export default function EventEditForm({ event, headerActions }: { event: EventRo
           ))}
         </select>
       </Field>
+
+      <label className="flex items-start gap-3 cursor-pointer">
+        <input
+          type="checkbox"
+          checked={form.isUnlisted}
+          onChange={(e) => setForm((f) => ({ ...f, isUnlisted: e.target.checked }))}
+          className="mt-0.5 h-4 w-4 shrink-0 accent-yellow-500"
+        />
+        <span>
+          <span className="text-sm font-medium text-neutral-700">Private event (invite only)</span>
+          <span className="block text-xs text-neutral-400 mt-0.5">
+            Hidden from the homepage, the events page and Google. Anyone with the link can still get
+            a ticket.
+          </span>
+        </span>
+      </label>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Field label="Date & time">

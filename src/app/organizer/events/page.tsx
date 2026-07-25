@@ -63,6 +63,11 @@ export default async function OrganizerEventsPage() {
               >
                 {event.status}
               </span>
+              {event.is_unlisted && (
+                <span className="absolute top-3 left-3 zv-badge bg-neutral-900/85 text-white backdrop-blur-sm">
+                  Private
+                </span>
+              )}
             </div>
             <div className="p-5 flex items-start gap-3">
               {event.logo_image_url && (

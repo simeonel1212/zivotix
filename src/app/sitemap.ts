@@ -17,7 +17,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const { data: events } = await service
     .from("events")
     .select("slug, created_at, starts_at")
-    .eq("status", "published");
+    .eq("status", "published")
+    .eq("is_unlisted", false); // never expose private events to search engines
 
   const { data: organizers } = await service.from("organizers").select("id");
 
