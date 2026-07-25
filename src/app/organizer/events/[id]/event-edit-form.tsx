@@ -1,0 +1,208 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
+import type { EventRow, EventLink } from "@/lib/types";
+import LinksInput from "@/components/links-input";
+import { EVENT_CATEGORIES } from "@/lib/categories";
+import { WORLD_CURRENCIES, currencyLabel } from "@/lib/currencies";
+
+// Converts an ISO timestamp to the "YYYY-MM-DDTHH:mm" shape a
+// datetime-local input expects, in the browser's local time.
+function toDatetimeLocal(iso: string) {
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+export default function EventEditForm({ event, headerActions }: { event: EventRow; headerActions?: React.ReactNode }) {
+  const router = useRouter();
+  const [editing, setEditing] = useState(false);
+  const [form, setForm] = useState({
+    title: event.title,
+    description: event.description ?? "",
+    venue: event.venue ?? "",
+    city: event.city ?? "",
+    startsAt: toDatetimeLocal(event.starts_at),
+    currency: event.currency,
+    category: event.category ?? "other",
+  });
+  const [links, setLinks] = useState<EventLink[]>(event.links ?? []);
+  const [generating, setGenerating] = useState(false);
+  const [genError, setGenError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function generateDescription() {
+    setGenError(null);
+    if (!form.title.trim()) {
+      setGenError("Add a title first.");
+      return;
+    }
+    setGenerating(true);
+    try {
+      const res = await fetch("/api/organizer/generate-description", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: form.title,
+          venue: form.venue,
+          city: form.city,
+          startsAt: form.startsAt,
+          currency: form.currency,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Couldn't generate a description");
+      setForm((f) => ({ ...f, description: data.description }));
+    } catch (e) {
+      setGenError(e instanceof Error ? e.message : "Something went wrong");
+    } finally {
+      setGenerating(false);
+    }
+  }
+
+  async function save() {
+    setSaving(true);
+    setError(null);
+    const { error: updateError } = await createClient()
+      .from("events")
+      .update({
+        title: form.title,
+        description: form.description || null,
+        venue: form.venue || null,
+        city: form.city || null,
+        starts_at: new Date(form.startsAt).toISOString(),
+        currency: form.currency,
+        category: form.category,
+        links: links.filter((l) => l.label.trim() && /^https?:\/\//i.test(l.url.trim())),
+      })
+      .eq("id", event.id);
+    setSaving(false);
+    if (updateError) {
+      setError(updateError.message);
+      return;
+    }
+    setEditing(false);
+    router.refresh();
+  }
+
+  if (!editing) {
+    return (
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-neutral-900">{event.title}</h1>
+          <p className="text-sm text-neutral-500 mt-1">
+            {new Date(event.starts_at).toLocaleString()} · {event.venue}, {event.city}
+          </p>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <button onClick={() => setEditing(true)} className="zv-btn-secondary">
+            Edit details
+          </button>
+          {headerActions}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="zv-card p-6 sm:p-8 space-y-6">
+      <h2 className="font-semibold text-neutral-900">Edit event details</h2>
+
+      <Field label="Title">
+        <input className="zv-input" value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} />
+      </Field>
+
+      <Field label="Description">
+        <div className="space-y-2">
+          <textarea
+            className="zv-input min-h-24"
+            value={form.description}
+            onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+          />
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={generateDescription}
+              disabled={generating}
+              className="zv-badge bg-neutral-100 text-neutral-700 hover:bg-neutral-200 transition-colors disabled:opacity-40"
+            >
+              {generating ? "Writing…" : "✨ Generate with AI"}
+            </button>
+            {genError && <p className="text-xs text-red-600">{genError}</p>}
+          </div>
+        </div>
+      </Field>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <Field label="Venue">
+          <input className="zv-input" value={form.venue} onChange={(e) => setForm((f) => ({ ...f, venue: e.target.value }))} />
+        </Field>
+        <Field label="City">
+          <input className="zv-input" value={form.city} onChange={(e) => setForm((f) => ({ ...f, city: e.target.value }))} />
+        </Field>
+      </div>
+
+      <LinksInput value={links} onChange={setLinks} />
+
+      <Field label="Category">
+        <select className="zv-input" value={form.category} onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}>
+          {EVENT_CATEGORIES.map((c) => (
+            <option key={c.value} value={c.value}>
+              {c.label}
+            </option>
+          ))}
+        </select>
+      </Field>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <Field label="Date & time">
+          <input
+            type="datetime-local"
+            className="zv-input"
+            value={form.startsAt}
+            onChange={(e) => setForm((f) => ({ ...f, startsAt: e.target.value }))}
+          />
+        </Field>
+        <Field label="Currency">
+          <select className="zv-input" value={form.currency} onChange={(e) => setForm((f) => ({ ...f, currency: e.target.value }))}>
+            {WORLD_CURRENCIES.map((code) => (
+              <option key={code} value={code}>
+                {currencyLabel(code)}
+              </option>
+            ))}
+          </select>
+        </Field>
+      </div>
+
+      {error && <p className="text-sm text-red-600">{error}</p>}
+
+      <div className="flex gap-3">
+        <button
+          type="button"
+          onClick={() => {
+            setEditing(false);
+            setError(null);
+          }}
+          className="zv-btn-secondary"
+        >
+          Cancel
+        </button>
+        <button type="button" disabled={saving} onClick={save} className="zv-btn-primary disabled:opacity-40">
+          {saving ? "Saving…" : "Save changes"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="space-y-1.5">
+      <label className="zv-label">{label}</label>
+      {children}
+    </div>
+  );
+}

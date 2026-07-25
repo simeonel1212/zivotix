@@ -1,0 +1,147 @@
+import Link from "next/link";
+import Image from "next/image";
+import type { Metadata } from "next";
+import { createClient } from "@/lib/supabase/server";
+import type { EventRow } from "@/lib/types";
+import TicketBackdrop from "@/components/ticket-backdrop";
+import { EVENT_CATEGORIES, categoryLabel, isValidCategory } from "@/lib/categories";
+
+export const revalidate = 60;
+
+export const metadata: Metadata = {
+  title: "Upcoming events",
+  description:
+    "Browse every event on sale right now: parties, concerts, festivals and more across Nigeria and Thailand. Instant QR tickets, secure checkout.",
+  alternates: { canonical: "/events" },
+};
+
+type EventWithPrices = EventRow & { ticket_types: { price: number }[] };
+
+export default async function EventsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ category?: string }>;
+}) {
+  const { category } = await searchParams;
+  const activeCategory = isValidCategory(category) ? category : null;
+
+  const supabase = await createClient();
+  let query = supabase
+    .from("events")
+    .select("*, ticket_types(price)")
+    .eq("status", "published")
+    .order("starts_at", { ascending: true });
+  if (activeCategory) query = query.eq("category", activeCategory);
+  const { data: events } = await query.returns<EventWithPrices[]>();
+
+  return (
+    <main className="flex-1 mx-auto w-full max-w-6xl px-6 py-16 relative">
+      <div className="absolute inset-x-0 top-0 h-[420px] overflow-hidden pointer-events-none">
+        <TicketBackdrop className="opacity-40" />
+      </div>
+      <div className="mb-8 relative z-10">
+        <h1 className="text-4xl font-bold tracking-tight text-neutral-900">Upcoming events</h1>
+        <p className="mt-2 text-neutral-500">Find something happening near you.</p>
+      </div>
+
+      <div className="mb-10 flex flex-wrap gap-2 relative z-10">
+        <Link
+          href="/events"
+          className={`zv-badge transition-colors ${
+            !activeCategory ? "bg-neutral-900 text-white" : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+          }`}
+        >
+          All
+        </Link>
+        {EVENT_CATEGORIES.map((c) => (
+          <Link
+            key={c.value}
+            href={`/events?category=${c.value}`}
+            className={`zv-badge transition-colors ${
+              activeCategory === c.value ? "bg-neutral-900 text-white" : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+            }`}
+          >
+            {c.label}
+          </Link>
+        ))}
+      </div>
+
+      {(!events || events.length === 0) && (
+        <div className="zv-card p-16 text-center">
+          <p className="text-neutral-400">
+            {activeCategory ? "No events in this category yet." : "No events published yet. Check back soon."}
+          </p>
+        </div>
+      )}
+
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
+        {events?.map((event) => {
+          const allPrices = event.ticket_types ?? [];
+          const paidPrices = allPrices.map((tt) => tt.price).filter((p) => p > 0);
+          const fromPrice = paidPrices.length ? Math.min(...paidPrices) : null;
+          const isFree = allPrices.length > 0 && paidPrices.length === 0;
+          return (
+          <Link
+            key={event.id}
+            href={`/events/${event.slug}`}
+            className="zv-card zv-card-hover block overflow-hidden group"
+          >
+            <div className="aspect-video bg-gradient-to-br from-yellow-100 via-yellow-50 to-white relative overflow-hidden">
+              {event.cover_image_url ? (
+                <Image
+                  src={event.cover_image_url}
+                  alt={event.title}
+                  fill
+                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 50vw, 33vw"
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+              ) : (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-3xl font-bold zv-gradient-text opacity-40">{event.title.slice(0, 1)}</span>
+                </div>
+              )}
+              <span className="absolute top-2 left-2 zv-badge bg-white/90 backdrop-blur-sm text-neutral-700 text-[10px] sm:text-xs shadow-sm">
+                {categoryLabel(event.category)}
+              </span>
+            </div>
+            <div className="p-3 sm:p-5 flex items-start gap-2 sm:gap-3">
+              {event.logo_image_url && (
+                <Image
+                  src={event.logo_image_url}
+                  alt={`${event.title} logo`}
+                  width={40}
+                  height={40}
+                  className="hidden sm:block h-10 w-10 rounded-xl object-cover ring-1 ring-neutral-200/70 shadow-sm shrink-0"
+                />
+              )}
+              <div className="space-y-1 sm:space-y-1.5 min-w-0 flex-1">
+                <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-wide zv-gradient-text">
+                  {new Date(event.starts_at).toLocaleDateString(undefined, {
+                    weekday: "short",
+                    month: "short",
+                    day: "numeric",
+                  })}{" "}
+                  · {event.city}
+                </p>
+                <h2 className="font-semibold text-sm sm:text-lg leading-snug text-neutral-900 line-clamp-2">{event.title}</h2>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-0.5 sm:gap-3">
+                  <p className="text-xs sm:text-sm text-neutral-500 truncate">{event.venue}</p>
+                  {isFree ? (
+                    <p className="text-xs sm:text-sm font-semibold text-emerald-600 whitespace-nowrap">Free</p>
+                  ) : (
+                    fromPrice !== null && (
+                      <p className="text-xs sm:text-sm font-semibold text-neutral-900 whitespace-nowrap">
+                        From {fromPrice.toLocaleString()} {event.currency}
+                      </p>
+                    )
+                  )}
+                </div>
+              </div>
+            </div>
+          </Link>
+          );
+        })}
+      </div>
+    </main>
+  );
+}
