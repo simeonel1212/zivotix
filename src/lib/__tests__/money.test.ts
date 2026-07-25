@@ -28,6 +28,8 @@ describe("toSubunit / fromSubunit", () => {
 
 describe("resolveChargeCurrency", () => {
   test("charges NGN events in NGN", () => {
+    // A Nigerian buyer should pay in their own currency: it's Paystack's
+    // 1.5% local rate rather than 3.9% international, with no bank FX spread.
     assert.equal(resolveChargeCurrency("NGN"), "NGN");
   });
 
@@ -36,6 +38,15 @@ describe("resolveChargeCurrency", () => {
     // must settle in USD. Returning THB here would break checkout outright.
     assert.equal(resolveChargeCurrency("THB"), "USD");
     assert.equal(resolveChargeCurrency("GBP"), "USD");
+  });
+
+  test("never returns a currency Paystack can't charge", () => {
+    for (const currency of ["NGN", "THB", "GBP", "EUR", "KES", "JPY"]) {
+      assert.ok(
+        ["NGN", "USD"].includes(resolveChargeCurrency(currency)),
+        `unsupported charge currency for ${currency}`
+      );
+    }
   });
 });
 
@@ -69,6 +80,46 @@ describe("estimateProcessorFee", () => {
         assert.ok(fee < amount, `${provider} fee exceeded the sale at ${amount}`);
       }
     }
+  });
+});
+
+describe("webhook payment matching", () => {
+  // Mirrors the check in /api/webhooks/flutterwave. A webhook saying
+  // "succeeded" is not enough on its own: the amount and currency have to
+  // match the order before a ticket is issued, or an underpaid or
+  // wrong-currency charge mints a real ticket.
+  function paymentMatches(
+    received: { amount: number; currency?: string },
+    expected: { amount: number; currency: string }
+  ) {
+    const amountMatches =
+      Number.isFinite(received.amount) && Math.abs(received.amount - expected.amount) < 0.01;
+    const currencyMatches = !received.currency || received.currency === expected.currency;
+    return amountMatches && currencyMatches;
+  }
+
+  const expected = { amount: 296.69, currency: "USD" };
+
+  test("accepts an exact match", () => {
+    assert.equal(paymentMatches({ amount: 296.69, currency: "USD" }, expected), true);
+  });
+
+  test("rejects an underpayment", () => {
+    assert.equal(paymentMatches({ amount: 5, currency: "USD" }, expected), false);
+    assert.equal(paymentMatches({ amount: 296.5, currency: "USD" }, expected), false);
+  });
+
+  test("rejects a different currency", () => {
+    // 296 NGN is worth a tiny fraction of 296 USD.
+    assert.equal(paymentMatches({ amount: 296.69, currency: "NGN" }, expected), false);
+  });
+
+  test("tolerates sub-cent float noise from FX conversion", () => {
+    assert.equal(paymentMatches({ amount: 296.689999, currency: "USD" }, expected), true);
+  });
+
+  test("rejects a non-numeric amount rather than treating it as zero", () => {
+    assert.equal(paymentMatches({ amount: Number("abc"), currency: "USD" }, expected), false);
   });
 });
 

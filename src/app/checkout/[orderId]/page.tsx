@@ -44,6 +44,7 @@ export default async function CheckoutStatusPage({
         order.payment_provider === "flutterwave" && order.provider_charge_id
           ? (await getCharge(order.provider_charge_id)).status === "succeeded"
           : (await verifyTransaction(order.paystack_reference)).status === "success";
+
       if (succeeded) {
         await supabase.from("orders").update({ status: "paid" }).eq("id", order.id);
         await fulfillOrder(order.id);

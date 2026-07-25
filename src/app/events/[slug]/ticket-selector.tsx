@@ -1,16 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import type { EventRow, TicketType } from "@/lib/types";
 
-// Minimal shape of the ApplePaySession global — Safari/iOS only, everywhere
-// else this is undefined and the Apple Pay button below just doesn't render.
-declare global {
-  interface Window {
-    ApplePaySession?: { canMakePayments: () => boolean };
-  }
-}
-
+// Checkout is a single button. Paystack's hosted page presents card and
+// Apple Pay itself (both approved on this account), so there's no separate
+// wallet button here and no browser capability sniffing — Paystack shows
+// Apple Pay only to devices that can actually use it.
 export default function TicketSelector({
   event,
   ticketTypes,
@@ -22,20 +18,6 @@ export default function TicketSelector({
   const [buyer, setBuyer] = useState({ name: "", email: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [applePayAvailable, setApplePayAvailable] = useState(false);
-
-  useEffect(() => {
-    // window.ApplePaySession only exists in Safari, so this genuinely can't
-    // be known until after mount (SSR has no window at all) — a one-time
-    // capability check on mount, not state synced from an external source.
-    /* eslint-disable react-hooks/set-state-in-effect */
-    try {
-      setApplePayAvailable(Boolean(window.ApplePaySession?.canMakePayments()));
-    } catch {
-      setApplePayAvailable(false);
-    }
-    /* eslint-enable react-hooks/set-state-in-effect */
-  }, []);
 
   const total = useMemo(
     () => ticketTypes.reduce((sum, tt) => sum + (quantities[tt.id] ?? 0) * tt.price, 0),
@@ -51,7 +33,7 @@ export default function TicketSelector({
     setQuantities((q) => ({ ...q, [id]: Math.max(0, qty) }));
   }
 
-  async function handleCheckout(provider?: "flutterwave_applepay") {
+  async function handleCheckout() {
     setError(null);
     if (!buyer.name || !buyer.email) {
       setError("Enter your name and email.");
@@ -73,7 +55,6 @@ export default function TicketSelector({
           items: Object.entries(quantities)
             .filter(([, qty]) => qty > 0)
             .map(([ticketTypeId, quantity]) => ({ ticketTypeId, quantity })),
-          ...(provider ? { provider } : {}),
         }),
       });
       const data = await res.json();
@@ -157,9 +138,9 @@ export default function TicketSelector({
             <>
               <br />
               <span className="text-xs text-neutral-400">
-                {event.currency !== "NGN"
-                  ? "Charged in NGN or USD at checkout, using the live rate"
-                  : "Charged in NGN"}
+                {event.currency === "NGN"
+                  ? "Card or Apple Pay, charged in NGN"
+                  : "Card or Apple Pay, charged in USD at the live rate"}
               </span>
             </>
           )}
@@ -185,15 +166,6 @@ export default function TicketSelector({
               "Get free tickets"
             )}
           </button>
-          {applePayAvailable && total > 0 && (
-            <button
-              onClick={() => handleCheckout("flutterwave_applepay")}
-              disabled={loading || ticketCount === 0}
-              className="rounded-full bg-black text-white text-sm font-semibold py-3 px-6 w-full sm:w-auto transition-opacity hover:opacity-85 disabled:opacity-40"
-            >
-              Pay with Apple Pay
-            </button>
-          )}
         </div>
       </div>
 

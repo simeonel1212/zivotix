@@ -38,8 +38,13 @@ export async function getRate(from: string, to: string): Promise<number> {
 }
 
 // Decide what currency to actually charge the buyer in, given the event's
-// native currency. Paystack settles in NGN (and USD for some international
-// flows) — THB is never charged directly.
+// native currency.
+//
+// Everything now goes through Paystack, which handles cards (local and
+// international) and Apple Pay on this account. NGN events are charged in
+// NGN: it's the buyer's own currency, and Paystack's local card rate is 1.5%
+// versus 3.9% international, so converting would cost both sides more.
+// Paystack can't charge a card in THB, so everything else routes via USD.
 export function resolveChargeCurrency(eventCurrency: string): "NGN" | "USD" {
   if (eventCurrency === "NGN") return "NGN";
   return "USD"; // THB (and anything else) routes through USD

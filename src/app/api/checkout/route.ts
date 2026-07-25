@@ -3,7 +3,6 @@ import { randomUUID } from "node:crypto";
 import { createServiceClient } from "@/lib/supabase/server";
 import { resolveChargeCurrency, convert, toSubunit } from "@/lib/fx";
 import { initTransaction } from "@/lib/paystack";
-import { createFlutterwaveCustomer, createApplePayPaymentMethod, createCharge } from "@/lib/flutterwave";
 import { fulfillOrder } from "@/lib/fulfillment";
 import { appUrl } from "@/lib/app-url";
 import type { EventRow, TicketType } from "@/lib/types";
@@ -13,13 +12,6 @@ interface CheckoutBody {
   buyerName: string;
   buyerEmail: string;
   items: { ticketTypeId: string; quantity: number }[];
-  // Everything defaults to Paystack. The exception is Apple Pay, which
-  // Paystack doesn't support on this account — the client only sends this
-  // when it has already confirmed the browser can show the Apple Pay sheet
-  // (see ticket-selector.tsx), so this never affects other buyers.
-  // Google Pay was built (see flutterwave.ts) but is pulled from checkout
-  // for now — Flutterwave hasn't enabled it on this merchant account yet.
-  provider?: "paystack" | "flutterwave_applepay";
 }
 
 export async function POST(req: Request) {
@@ -144,10 +136,15 @@ export async function POST(req: Request) {
     return NextResponse.json({ redirectUrl: `${appUrl()}/checkout/${order.id}` });
   }
 
-  // Work out what currency Paystack will actually charge in, converting if
-  // needed. Events can be priced in any world currency (see WORLD_CURRENCIES),
-  // but Paystack itself only ever charges the card in NGN or USD — so this
-  // conversion is what makes "any currency in, smooth card charge out" work.
+  // Purely alphanumeric reference. Paystack doesn't care either way, but this
+  // form was adopted when Flutterwave (which required it) was still a second
+  // rail, and there's no reason to churn the format now.
+  const reference = `zvx${randomUUID().replace(/-/g, "")}`;
+  const provider = "paystack";
+
+  // NGN events are charged in NGN: the buyer's own currency, and Paystack's
+  // cheaper local card rate. Everything else converts to USD, since Paystack
+  // can't charge a card in THB.
   const chargeCurrency = resolveChargeCurrency(event.currency);
   let chargeAmount: number;
   let rate: number;
@@ -160,13 +157,6 @@ export async function POST(req: Request) {
       { status: 502 }
     );
   }
-
-  // Flutterwave requires the charge reference to be purely alphanumeric
-  // (no hyphens/underscores) — Paystack doesn't care either way, so this
-  // stripped form is used for both providers to keep a single source of truth.
-  const reference = `zvx${randomUUID().replace(/-/g, "")}`;
-  const wallet = body.provider === "flutterwave_applepay" ? body.provider : null;
-  const provider = wallet ? "flutterwave" : "paystack";
 
   const { data: order, error: orderError } = await supabase
     .from("orders")
@@ -203,50 +193,6 @@ export async function POST(req: Request) {
     })
   );
 
-  if (wallet) {
-    try {
-      const customer = await createFlutterwaveCustomer({ email: buyerEmail, name: buyerName });
-      const paymentMethod = await createApplePayPaymentMethod(buyerName);
-      const charge = await createCharge({
-        customerId: customer.id,
-        paymentMethodId: paymentMethod.id,
-        amount: chargeAmount,
-        currency: chargeCurrency,
-        reference,
-        redirectUrl: `${appUrl()}/checkout/${order.id}`,
-        meta: { order_id: order.id, event_id: event.id },
-      });
-      await supabase.from("orders").update({ provider_charge_id: charge.id }).eq("id", order.id);
-
-      const redirectUrl = charge.next_action?.redirect_url.url;
-      if (!redirectUrl) throw new Error("Flutterwave didn't return an Apple Pay redirect");
-      return NextResponse.json({ redirectUrl });
-    } catch (e) {
-      await supabase.rpc("release_ticket_types", { p_items: reservationItems });
-      await supabase.from("orders").update({ status: "failed" }).eq("id", order.id);
-      // Every Apple Pay attempt so far has failed here with the reason only
-      // ever reaching the browser, so log the full context server-side. The
-      // usual causes are Apple Pay not being enabled on the Flutterwave
-      // merchant account, or the charge currency not being supported for it.
-      console.error("[checkout] Apple Pay failed", {
-        orderId: order.id,
-        chargeCurrency,
-        chargeAmount,
-        reference,
-        error: e instanceof Error ? e.message : String(e),
-      });
-      return NextResponse.json(
-        {
-          error:
-            e instanceof Error
-              ? `Apple Pay couldn't start: ${e.message}`
-              : "Apple Pay init failed",
-        },
-        { status: 502 }
-      );
-    }
-  }
-
   try {
     const tx = await initTransaction({
       email: buyerEmail,
@@ -255,7 +201,11 @@ export async function POST(req: Request) {
       reference,
       callback_url: `${appUrl()}/checkout/${order.id}`,
       metadata: { order_id: order.id, event_id: event.id },
-      channels: ["card"],
+      // Apple Pay is now approved on this Paystack account, so it shows on
+      // Paystack's own hosted checkout alongside cards. That replaces the
+      // separate Flutterwave Apple Pay rail: one processor, one webhook, and
+      // Paystack's local card rate (1.5%) instead of Flutterwave's 4.8%.
+      channels: ["card", "apple_pay"],
     });
     return NextResponse.json({ redirectUrl: tx.authorization_url });
   } catch (e) {
