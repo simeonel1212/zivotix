@@ -1,22 +1,15 @@
-import { createClient } from "@/lib/supabase/server";
 import type { EventRow, Order } from "@/lib/types";
+import { getCurrentOrganizer } from "@/lib/organizer";
+import NoOrganizerNotice from "@/components/no-organizer-notice";
 
 export default async function OrganizerDashboardPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  const { data: organizer } = await supabase
-    .from("organizers")
-    .select("*")
-    .eq("profile_id", user!.id)
-    .single();
+  const { supabase, organizer } = await getCurrentOrganizer("/organizer/dashboard");
+  if (!organizer) return <NoOrganizerNotice title="Dashboard" />;
 
   const { data: events } = await supabase
     .from("events")
     .select("*")
-    .eq("organizer_id", organizer?.id)
+    .eq("organizer_id", organizer.id)
     .returns<EventRow[]>();
 
   const eventIds = (events ?? []).map((e) => e.id);

@@ -19,13 +19,24 @@ export async function POST(req: Request) {
   } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Not signed in" }, { status: 401 });
 
-  const { data: organizer } = await supabase.from("organizers").select("id").eq("profile_id", user.id).single();
-  if (!organizer) return NextResponse.json({ error: "No organizer account found" }, { status: 403 });
+  // maybeSingle, not single: single() errors on zero rows, which used to
+  // surface as a confusing failure rather than a clear "not an organizer".
+  const { data: organizer } = await supabase
+    .from("organizers")
+    .select("id")
+    .eq("profile_id", user.id)
+    .maybeSingle();
+  if (!organizer) {
+    return NextResponse.json(
+      { error: "This account isn't set up as an organizer, so there's nothing to post to." },
+      { status: 403 }
+    );
+  }
 
   if (!process.env.GEMINI_API_KEY) {
     return NextResponse.json(
-      { error: "AI generation isn't configured yet. Add GEMINI_API_KEY in Vercel." },
-      { status: 500 }
+      { error: "AI writing isn't switched on for this site yet. Add GEMINI_API_KEY in Vercel, then redeploy." },
+      { status: 503 }
     );
   }
 

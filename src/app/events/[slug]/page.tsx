@@ -1,10 +1,12 @@
 import { notFound } from "next/navigation";
 import Image from "next/image";
+import Link from "next/link";
 import type { Metadata } from "next";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 import type { EventRow, TicketType } from "@/lib/types";
 import { googleMapsUrl, googleMapsEmbedUrl } from "@/lib/maps";
 import { appUrl } from "@/lib/app-url";
+import VerifiedBadge from "@/components/verified-badge";
 import TicketSelector from "./ticket-selector";
 
 // Per-event metadata is the single biggest SEO lever here: it's what makes
@@ -80,6 +82,15 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
     .order("price", { ascending: true })
     .returns<TicketType[]>();
 
+  // Who is actually running this event, shown above the title so a buyer
+  // knows who they're paying before they read anything else. Read with the
+  // service role because organizers has no public-select policy.
+  const { data: organizer } = await createServiceClient()
+    .from("organizers")
+    .select("id, business_name, is_verified")
+    .eq("id", event.organizer_id)
+    .maybeSingle();
+
   const mapsUrl = googleMapsUrl(event.venue, event.city, event.country);
   const mapsEmbedUrl = googleMapsEmbedUrl(event.venue, event.city, event.country);
 
@@ -120,7 +131,15 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
       },
     },
     ...(offers.length ? { offers } : {}),
-    organizer: { "@type": "Organization", name: "Zivotix", url: appUrl() },
+    // The organizer in schema.org terms is whoever actually runs the event,
+    // not the ticketing platform.
+    organizer: organizer?.business_name
+      ? {
+          "@type": "Organization",
+          name: organizer.business_name,
+          url: `${appUrl()}/community/${organizer.id}`,
+        }
+      : { "@type": "Organization", name: "Zivotix", url: appUrl() },
     url: `${appUrl()}/events/${event.slug}`,
   };
 
@@ -150,6 +169,15 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
       </div>
 
       <div className="space-y-4">
+        {organizer && (
+          <Link
+            href={`/community/${organizer.id}`}
+            className="inline-flex items-center gap-1.5 text-sm font-semibold zv-gradient-text hover:underline w-fit"
+          >
+            {organizer.business_name}
+            {organizer.is_verified && <VerifiedBadge />}
+          </Link>
+        )}
         <h1 className="text-4xl font-bold tracking-tight text-neutral-900">{event.title}</h1>
         <div className="space-y-2.5">
           <div className="flex items-center gap-3 text-neutral-600">

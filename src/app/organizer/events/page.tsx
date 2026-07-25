@@ -1,23 +1,17 @@
 import Link from "next/link";
 import Image from "next/image";
-import { createClient } from "@/lib/supabase/server";
 import type { EventRow } from "@/lib/types";
+import { getCurrentOrganizer } from "@/lib/organizer";
+import NoOrganizerNotice from "@/components/no-organizer-notice";
 
 export default async function OrganizerEventsPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const { data: organizer } = await supabase
-    .from("organizers")
-    .select("id")
-    .eq("profile_id", user!.id)
-    .single();
+  const { supabase, organizer } = await getCurrentOrganizer("/organizer/events");
+  if (!organizer) return <NoOrganizerNotice title="My events" />;
 
   const { data: events } = await supabase
     .from("events")
     .select("*")
-    .eq("organizer_id", organizer?.id)
+    .eq("organizer_id", organizer.id)
     .order("starts_at", { ascending: false })
     .returns<EventRow[]>();
 

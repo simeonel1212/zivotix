@@ -1,24 +1,21 @@
-import { createClient } from "@/lib/supabase/server";
 import type { OrganizerPost, PostComment, ReactionType } from "@/lib/types";
+import { getCurrentOrganizer } from "@/lib/organizer";
+import NoOrganizerNotice from "@/components/no-organizer-notice";
 import PostForm from "./post-form";
 import DeletePostButton from "./delete-post-button";
 import DeleteCommentButton from "./delete-comment-button";
 
 export default async function OrganizerCommunityPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const { data: organizer } = await supabase
-    .from("organizers")
-    .select("id")
-    .eq("profile_id", user!.id)
-    .single();
+  const { supabase, organizer } = await getCurrentOrganizer("/organizer/community");
+
+  // Bail out before touching the database. Falling through with an empty
+  // string here is what produced "invalid input syntax for type uuid".
+  if (!organizer) return <NoOrganizerNotice title="Community" />;
 
   const { data: posts } = await supabase
     .from("organizer_posts")
     .select("*, post_reactions(reaction), post_comments(*)")
-    .eq("organizer_id", organizer?.id ?? "")
+    .eq("organizer_id", organizer.id)
     .order("created_at", { ascending: false })
     .returns<
       (OrganizerPost & { post_reactions: { reaction: ReactionType }[]; post_comments: PostComment[] })[]
@@ -34,7 +31,7 @@ export default async function OrganizerCommunityPage() {
         </p>
       </div>
 
-      <PostForm organizerId={organizer?.id ?? ""} />
+      <PostForm organizerId={organizer.id} />
 
       <div>
         <h2 className="font-semibold text-neutral-900 mb-3">Your updates</h2>
