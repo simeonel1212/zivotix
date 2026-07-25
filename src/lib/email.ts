@@ -1,24 +1,15 @@
 import { Resend } from "resend";
 import { generateQrBuffer } from "./qrcode";
 import { appUrl } from "./app-url";
+import { escapeHtml } from "./html";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Every one of these emails is assembled as a raw HTML string, and several of
-// the values interpolated into them are user-controlled: buyer names come
-// straight off the public checkout form, while event titles, ticket type
-// names and business names are set by organizers. Without escaping, an
-// organizer could inject arbitrary markup (a fake "reset your password" link,
-// say) into an email that a buyer receives from the Zivotix domain. Anything
-// interpolated into an html`` string below goes through this first.
-function esc(value: string | null | undefined): string {
-  return String(value ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
+// the values interpolated into them are user-controlled. Anything
+// interpolated into an html string below goes through this first — see
+// src/lib/html.ts for why, and src/lib/__tests__ for the coverage.
+const esc = escapeHtml;
 
 interface TicketEmailArgs {
   to: string;

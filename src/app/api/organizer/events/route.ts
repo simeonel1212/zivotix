@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { isValidCategory } from "@/lib/categories";
+import { sanitizeLinks } from "@/lib/sanitize-links";
 
 interface TicketTypeInput {
   name: string;
@@ -24,15 +25,6 @@ interface CreateEventBody {
   status: "draft" | "published";
   isUnlisted?: boolean;
   ticketTypes: TicketTypeInput[];
-}
-
-// Only keep links with a label and a proper http(s) URL — anything else
-// (javascript:, data:, empty rows) is silently dropped.
-function sanitizeLinks(links: { label: string; url: string }[] | undefined) {
-  return (links ?? [])
-    .map((l) => ({ label: String(l.label ?? "").trim().slice(0, 60), url: String(l.url ?? "").trim() }))
-    .filter((l) => l.label && /^https?:\/\//i.test(l.url))
-    .slice(0, 4);
 }
 
 function slugify(title: string) {

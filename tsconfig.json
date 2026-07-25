@@ -11,6 +11,10 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
+    // Test files import with explicit .ts extensions because they run under
+    // Node's built-in test runner (node --test), which uses real ESM
+    // resolution rather than a bundler. Safe here because noEmit is on.
+    "allowImportingTsExtensions": true,
     "jsx": "react-jsx",
     "incremental": true,
     "plugins": [
