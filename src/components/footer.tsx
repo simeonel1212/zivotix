@@ -19,9 +19,9 @@ export default function Footer() {
           <Link href="/refund-policy" className="hover:text-neutral-700 transition-colors">
             Refund policy
           </Link>
-          <a href="mailto:support@zivotix.site" className="hover:text-neutral-700 transition-colors">
+          <Link href="/contact" className="hover:text-neutral-700 transition-colors">
             Contact
-          </a>
+          </Link>
         </nav>
       </div>
     </footer>

@@ -28,7 +28,7 @@ const MENU = [
   { href: "/community", label: "Community" },
   { href: "/orders", label: "My Orders" },
   { href: "/organise", label: "Organise an Event" },
-  { href: "mailto:support@zivotix.site", label: "Help" },
+  { href: "/contact", label: "Help" },
 ];
 
 export default function SiteHeader() {

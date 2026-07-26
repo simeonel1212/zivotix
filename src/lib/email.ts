@@ -124,6 +124,108 @@ export async function sendTicketEmail(args: TicketEmailArgs) {
   return data;
 }
 
+interface ContactMessageArgs {
+  fromName: string;
+  fromEmail: string;
+  topic: string;
+  orderRef?: string | null;
+  message: string;
+}
+
+// Sent to the support inbox when someone submits /contact.
+//
+// `replyTo` is set to the sender so support can just hit reply — the `from`
+// stays on our own verified domain, because Resend will reject (or worse,
+// silently degrade the deliverability of) mail claiming to come from an
+// address we don't control.
+export async function sendContactMessageEmail(args: ContactMessageArgs) {
+  const row = (label: string, value: string) => `
+    <tr>
+      <td style="padding:6px 0;font-size:13px;color:#6e6e73;width:110px;vertical-align:top;">${esc(label)}</td>
+      <td style="padding:6px 0;font-size:13px;color:#1d1d1f;">${esc(value)}</td>
+    </tr>`;
+
+  const { data, error } = await resend.emails.send({
+    from: process.env.EMAIL_FROM!,
+    to: process.env.SUPPORT_EMAIL || "support@zivotix.site",
+    replyTo: args.fromEmail,
+    subject: `[${args.topic}] ${args.fromName}`,
+    html: `
+      <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:560px;margin:0 auto;padding:8px;background:#f5f5f7;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:separate;border-radius:20px;overflow:hidden;margin:16px 0;">
+          <tr>
+            <td style="background:linear-gradient(135deg,#facc15,#ca8a04);background-color:#eab308;padding:22px 24px;">
+              <p style="margin:0;color:#ffffff;font-weight:700;font-size:13px;letter-spacing:0.04em;">ZIVOTIX</p>
+              <h1 style="margin:8px 0 0;color:#ffffff;font-size:20px;line-height:1.3;">New contact form message</h1>
+            </td>
+          </tr>
+        </table>
+
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#ffffff;border:1px solid #e5e5ea;border-radius:16px;padding:16px 20px;margin:0 0 16px;">
+          ${row("From", args.fromName)}
+          ${row("Email", args.fromEmail)}
+          ${row("Topic", args.topic)}
+          ${args.orderRef ? row("Order ref", args.orderRef) : ""}
+        </table>
+
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#ffffff;border:1px solid #e5e5ea;border-radius:16px;padding:16px 20px;">
+          <tr>
+            <td style="font-size:14px;color:#1d1d1f;white-space:pre-wrap;">${esc(args.message)}</td>
+          </tr>
+        </table>
+
+        <p style="margin:16px 0 24px;font-size:12px;color:#6e6e73;">Reply to this email to answer them directly.</p>
+      </div>
+    `,
+  });
+
+  if (error) {
+    throw new Error(`Resend rejected the contact message: ${error.message ?? JSON.stringify(error)}`);
+  }
+  return data;
+}
+
+interface ContactAckArgs {
+  to: string;
+  name: string;
+}
+
+// Confirmation to the person who wrote in, so they know it landed.
+export async function sendContactAckEmail(args: ContactAckArgs) {
+  const { error } = await resend.emails.send({
+    from: process.env.EMAIL_FROM!,
+    to: args.to,
+    subject: "We got your message",
+    html: `
+      <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:520px;margin:0 auto;padding:8px;background:#f5f5f7;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:separate;border-radius:20px;overflow:hidden;margin:16px 0;">
+          <tr>
+            <td style="background:linear-gradient(135deg,#facc15,#ca8a04);background-color:#eab308;padding:26px 24px;">
+              <p style="margin:0;color:#ffffff;font-weight:700;font-size:13px;letter-spacing:0.04em;">ZIVOTIX</p>
+              <h1 style="margin:8px 0 0;color:#ffffff;font-size:22px;line-height:1.3;">Message received</h1>
+            </td>
+          </tr>
+        </table>
+
+        <p style="margin:0 0 12px;font-size:14px;color:#1d1d1f;">
+          Hi ${esc(args.name)}, thanks for writing in. A real person reads every message and we usually
+          reply within one business day.
+        </p>
+        <p style="margin:0 0 24px;font-size:12px;color:#6e6e73;">
+          If your event is happening in the next 24 hours, reply to this email with URGENT in the subject
+          line and we'll push it to the front of the queue.
+        </p>
+      </div>
+    `,
+  });
+
+  // A failed acknowledgement should never fail the request — the message that
+  // matters already reached support. Log and move on.
+  if (error) {
+    console.error("Contact acknowledgement email failed:", error);
+  }
+}
+
 interface DoorStaffInviteArgs {
   to: string;
   organizerName: string;
