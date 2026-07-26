@@ -124,6 +124,23 @@ export async function sendTicketEmail(args: TicketEmailArgs) {
   return data;
 }
 
+// SUPPORT_EMAIL accepts a comma-separated list, not just one address.
+//
+// support@zivotix.site is an ImprovMX forwarder rather than a real mailbox,
+// so if that forwarding ever breaks — DNS change, expired free tier, provider
+// outage — messages would disappear silently, and a contact form that
+// silently eats messages is worse than no contact form. Listing a fallback
+// personal address alongside it means a customer enquiry always reaches
+// somebody. Drop the fallback once the forwarder has proven itself.
+function supportRecipients(): string[] {
+  const raw = process.env.SUPPORT_EMAIL || "support@zivotix.site";
+  const list = raw
+    .split(",")
+    .map((a) => a.trim())
+    .filter(Boolean);
+  return list.length ? list : ["support@zivotix.site"];
+}
+
 interface ContactMessageArgs {
   fromName: string;
   fromEmail: string;
@@ -147,7 +164,7 @@ export async function sendContactMessageEmail(args: ContactMessageArgs) {
 
   const { data, error } = await resend.emails.send({
     from: process.env.EMAIL_FROM!,
-    to: process.env.SUPPORT_EMAIL || "support@zivotix.site",
+    to: supportRecipients(),
     replyTo: args.fromEmail,
     subject: `[${args.topic}] ${args.fromName}`,
     html: `
