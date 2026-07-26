@@ -26,7 +26,7 @@ const FEATURES = [
       <path d="M12 2l8 3v6c0 5-3.4 8.4-8 11-4.6-2.6-8-6-8-11V5l8-3z" strokeLinecap="round" strokeLinejoin="round" />
     ),
     title: "Payments you can trust",
-    body: "Checkout runs through Paystack and Flutterwave. Your card details never touch our servers.",
+    body: "Checkout runs through Paystack. Your card details never touch our servers.",
   },
   {
     icon: (
@@ -136,7 +136,7 @@ export default async function HomePage() {
               <rect x="4" y="10" width="16" height="10" rx="2" />
               <path d="M8 10V7a4 4 0 018 0v3" strokeLinecap="round" />
             </svg>
-            Secured by Paystack &amp; Flutterwave
+            Secured by Paystack
           </span>
           <span className="flex items-center gap-1.5">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
