@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { EventRow } from "@/lib/types";
 import { getCurrentOrganizer } from "@/lib/organizer";
 import NoOrganizerNotice from "@/components/no-organizer-notice";
@@ -24,7 +25,10 @@ export default async function OrganizerStaffPage() {
       <div>
         <h1 className="text-3xl font-bold tracking-tight text-neutral-900">Door staff</h1>
         <p className="text-sm text-neutral-500 mt-1">
-          Staff open a link on their phone browser, no app needed, and scan tickets at the door.
+          Staff scan tickets at the door with the Zivotix Scanner on their own phone.{" "}
+          <Link href="/scanner-app" className="font-semibold zv-gradient-text">
+            How to install it
+          </Link>
         </p>
       </div>
 

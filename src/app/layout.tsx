@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Poppins, Geist_Mono } from "next/font/google";
 import Footer from "@/components/footer";
 import SiteHeader from "@/components/site-header";
@@ -68,6 +68,25 @@ export const metadata: Metadata = {
   // Google Search Console ownership proof. Must stay in place permanently —
   // removing it un-verifies the property.
   verification: { google: "XlmzUW1KsrMGhM7pvWYjckQRFi1Rv8azdwlI3yPjEqE" },
+  // Installable-app metadata. Android reads /manifest.webmanifest (emitted by
+  // src/app/manifest.ts); iOS ignores most of it and needs these instead.
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    title: "Zivotix",
+    statusBarStyle: "black-translucent",
+  },
+  icons: {
+    icon: "/icon.svg",
+    apple: "/icons/apple-touch-icon.png",
+  },
+};
+
+// Keeps the scanner's camera view edge-to-edge on notched phones instead of
+// letterboxed between two black bars.
+export const viewport: Viewport = {
+  themeColor: "#000000",
+  viewportFit: "cover",
 };
 
 export default function RootLayout({

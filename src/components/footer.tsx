@@ -1,7 +1,18 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { ZivotixMark } from "@/components/zivotix-logo";
 
+// The scanner runs full-screen as an installed app on a phone at a venue
+// door. A marketing footer with Terms and Privacy links underneath the camera
+// view breaks that illusion and wastes the only screen space that matters.
+const HIDDEN_PREFIXES = ["/scan"];
+
 export default function Footer() {
+  const pathname = usePathname();
+  if (HIDDEN_PREFIXES.some((p) => pathname?.startsWith(p))) return null;
+
   return (
     <footer className="border-t border-neutral-200/70 mt-auto">
       <div className="mx-auto max-w-5xl px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-neutral-400">
