@@ -1,139 +1,189 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ZivotixMark } from "@/components/zivotix-logo";
+import InstallButton from "./install-button";
 
 export const metadata: Metadata = {
-  title: "Get the Zivotix Scanner app",
+  title: "Download the Zivotix Scanner app",
   description:
-    "Install the Zivotix ticket scanner on any Android or iPhone. Scan tickets at the door, see live check-in counts, no app store needed.",
+    "Get the Zivotix ticket scanner on Android and iPhone. Scan tickets at the door, see live check-in counts. Free, installs in seconds.",
   alternates: { canonical: "/scanner-app" },
 };
 
-// Public install page. Organizers land here from the dashboard and from
-// marketing, and door staff land here from the invite email.
+// Download page for the scanner.
 //
-// There is no App Store or Play Store listing to point at: the scanner is an
-// installable web app. That's a genuine advantage worth stating plainly on
-// the page rather than apologising for — no download, no updates to chase,
-// and it works on both platforms from one link.
+// Android gets a real one-tap install via Chrome's beforeinstallprompt (see
+// install-button.tsx). iPhone cannot: Apple permits no app installation from
+// a website at all, so the honest thing is clear Safari steps rather than a
+// button that pretends to download something.
+const softwareJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "Zivotix Scanner",
+  operatingSystem: "Android, iOS",
+  applicationCategory: "BusinessApplication",
+  offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+  description: "Scan event tickets at the door and track live check-in counts.",
+};
+
 export default function ScannerAppPage() {
   return (
-    <main className="flex-1 mx-auto w-full max-w-4xl px-6 py-12 sm:py-16">
-      <header className="relative overflow-hidden rounded-3xl bg-neutral-900 px-7 py-10 sm:px-10 sm:py-12">
+    <main className="flex-1">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareJsonLd) }}
+      />
+
+      {/* Hero */}
+      <section className="relative overflow-hidden bg-neutral-950">
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-yellow-400/25 blur-3xl"
+          className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full bg-yellow-400/20 blur-3xl"
         />
-        <div className="relative flex flex-col sm:flex-row sm:items-center gap-7">
-          <div className="shrink-0">
-            {/* The actual installed icon, so what they see here is what lands
-                on their home screen. */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -left-32 bottom-[-8rem] h-80 w-80 rounded-full bg-amber-500/15 blur-3xl"
+        />
+
+        <div className="relative mx-auto max-w-4xl px-6 py-16 sm:py-20">
+          <span className="inline-flex items-center gap-2">
+            <ZivotixMark size={22} />
+            <span className="text-sm font-bold tracking-tight text-white">
+              Zivo<span className="zv-gradient-text">tix</span>
+            </span>
+          </span>
+
+          <div className="mt-8 flex flex-col sm:flex-row sm:items-center gap-8">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/icons/icon-192.png"
-              alt="Zivotix Scanner app icon"
-              width={88}
-              height={88}
-              className="rounded-[22px] shadow-lg shadow-yellow-500/20"
+              alt="Zivotix Scanner"
+              width={104}
+              height={104}
+              className="h-26 w-26 shrink-0 rounded-[26px] shadow-2xl shadow-yellow-500/25"
+              style={{ width: 104, height: 104 }}
             />
+            <div>
+              <h1 className="text-3xl sm:text-5xl font-bold tracking-tight text-white">
+                Zivotix Scanner
+              </h1>
+              <p className="mt-3 max-w-xl text-[15px] sm:text-base leading-relaxed text-neutral-300">
+                Check guests in with your phone&apos;s camera. Watch your headcount climb live as
+                they walk through the door.
+              </p>
+              <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-neutral-400">
+                <span>Android &amp; iPhone</span>
+                <span aria-hidden="true">·</span>
+                <span>Free</span>
+                <span aria-hidden="true">·</span>
+                <span>No app store needed</span>
+              </div>
+            </div>
           </div>
-          <div>
-            <span className="inline-flex items-center gap-2">
-              <ZivotixMark size={22} />
-              <span className="font-bold tracking-tight text-white text-sm">
-                Zivo<span className="zv-gradient-text">tix</span>
-              </span>
-            </span>
-            <h1 className="mt-3 text-3xl sm:text-4xl font-bold tracking-tight text-white">
-              The Scanner app
-            </h1>
-            <p className="mt-3 max-w-lg text-[15px] leading-relaxed text-neutral-300">
-              Check guests in at the door with your phone&apos;s camera. See how many tickets are sold
-              and how many have walked in, live, as it happens.
-            </p>
+
+          <div className="mt-10 flex flex-col sm:flex-row gap-3">
+            <InstallButton />
+            <Link
+              href="/scan"
+              className="inline-flex items-center justify-center gap-2 rounded-full border border-white/20 px-8 py-3.5 text-base font-semibold text-white transition hover:bg-white/5"
+            >
+              Open in browser
+            </Link>
           </div>
         </div>
-      </header>
+      </section>
 
-      <div className="mt-8 grid gap-4 sm:grid-cols-3">
-        <Feature title="Scan in a second">
-          Point the camera at a ticket. Green means let them in, amber means it&apos;s already been
-          used.
-        </Feature>
-        <Feature title="Live headcount">
-          Every event shows scanned against sold, so you always know how many are still to arrive.
-        </Feature>
-        <Feature title="No app store">
-          Installs straight from the browser on Android and iPhone. Nothing to download, nothing to
-          update.
-        </Feature>
-      </div>
+      {/* What it does */}
+      <section className="mx-auto max-w-4xl px-6 py-14">
+        <div className="grid gap-4 sm:grid-cols-3">
+          <Feature title="Scan in a second">
+            Point at the QR code. Green means let them in, amber means the ticket&apos;s already been
+            used.
+          </Feature>
+          <Feature title="Live headcount">
+            Every event shows scanned against sold, so you always know who&apos;s still to arrive.
+          </Feature>
+          <Feature title="Two phones at once">
+            Run more than one door. The same ticket can&apos;t get through twice, even scanned at the
+            same moment.
+          </Feature>
+        </div>
+      </section>
 
-      <section className="mt-12">
-        <h2 className="text-xl font-bold tracking-tight text-neutral-900">Install it</h2>
+      {/* Install steps */}
+      <section id="how-to-install" className="mx-auto max-w-4xl px-6 pb-14 scroll-mt-8">
+        <h2 className="text-2xl font-bold tracking-tight text-neutral-900">Installing it</h2>
         <p className="mt-1.5 text-sm text-neutral-500">
-          Takes about fifteen seconds. Do this on the phone you&apos;ll use at the door.
+          Do this on the phone you&apos;ll actually use at the door. Takes about fifteen seconds.
         </p>
 
-        <div className="mt-6 grid gap-5 sm:grid-cols-2">
-          <InstallCard platform="iPhone & iPad" note="Must be Safari — Chrome on iOS can't install apps.">
+        <div className="mt-7 grid gap-5 sm:grid-cols-2">
+          <PlatformCard
+            platform="Android"
+            icon={<AndroidIcon />}
+            note="Chrome, Edge, Samsung Internet or Brave"
+          >
             <Step n={1}>
-              Open <strong className="text-neutral-900">zivotix.site/scan</strong> in Safari
+              Tap <strong className="text-neutral-900">Install app</strong> at the top of this page
             </Step>
-            <Step n={2}>Tap the Share button (the square with the arrow)</Step>
-            <Step n={3}>
-              Scroll down and tap <strong className="text-neutral-900">Add to Home Screen</strong>
-            </Step>
-            <Step n={4}>Tap Add. The Zivotix icon appears on your home screen</Step>
-          </InstallCard>
+            <Step n={2}>Confirm in the dialog Chrome shows you</Step>
+            <Step n={3}>Zivotix appears in your app drawer</Step>
+            <p className="pt-1 text-xs text-neutral-400">
+              No install button showing? Open the ⋮ menu and choose Install app.
+            </p>
+          </PlatformCard>
 
-          <InstallCard platform="Android" note="Works in Chrome, Edge, Samsung Internet and Brave.">
+          <PlatformCard platform="iPhone & iPad" icon={<AppleIcon />} note="Safari only">
             <Step n={1}>
-              Open <strong className="text-neutral-900">zivotix.site/scan</strong> in Chrome
+              Open <strong className="text-neutral-900">zivotix.site/scanner-app</strong> in Safari
             </Step>
-            <Step n={2}>
-              Tap the ⋮ menu, top right
-            </Step>
+            <Step n={2}>Tap the Share button, the square with the arrow</Step>
             <Step n={3}>
-              Tap <strong className="text-neutral-900">Install app</strong> or{" "}
-              <strong className="text-neutral-900">Add to Home screen</strong>
+              Scroll down, tap <strong className="text-neutral-900">Add to Home Screen</strong>
             </Step>
-            <Step n={4}>Confirm. The Zivotix icon appears in your app drawer</Step>
-          </InstallCard>
+            <Step n={4}>Tap Add. The Zivotix icon lands on your home screen</Step>
+            <p className="pt-1 text-xs text-neutral-400">
+              Apple doesn&apos;t allow apps to install from a website, so this is the route on iPhone.
+              It behaves identically once it&apos;s on your home screen.
+            </p>
+          </PlatformCard>
         </div>
       </section>
 
-      <section className="mt-12 zv-card p-6 sm:p-8">
-        <h2 className="text-lg font-semibold text-neutral-900">Before the doors open</h2>
-        <ul className="mt-3 space-y-2.5 text-sm text-neutral-600 leading-relaxed">
-          <li>
-            <strong className="text-neutral-900">Sign in on the phone.</strong> Door staff need to be
-            added to the event first — an organizer does that under Staff in the dashboard.
-          </li>
-          <li>
-            <strong className="text-neutral-900">Allow camera access</strong> the first time you open
-            the scanner. Without it there&apos;s nothing to scan with.
-          </li>
-          <li>
-            <strong className="text-neutral-900">Check your signal at the venue.</strong> Check-ins
-            are recorded on our servers as they happen, so the scanner needs a connection. If it
-            drops, the app tells you rather than pretending a guest was checked in.
-          </li>
-          <li>
-            <strong className="text-neutral-900">Two phones scanning is fine.</strong> The same ticket
-            can&apos;t be used twice, even if both scan it at the same moment.
-          </li>
-        </ul>
-      </section>
+      {/* Practical notes */}
+      <section className="mx-auto max-w-4xl px-6 pb-20">
+        <div className="zv-card p-6 sm:p-8">
+          <h2 className="text-lg font-semibold text-neutral-900">Before the doors open</h2>
+          <ul className="mt-3 space-y-2.5 text-sm text-neutral-600 leading-relaxed">
+            <li>
+              <strong className="text-neutral-900">Sign in on the phone first.</strong> Door staff
+              need adding to the event by an organizer, under Staff in the dashboard.
+            </li>
+            <li>
+              <strong className="text-neutral-900">Allow camera access</strong> the first time you
+              open it. Without that there&apos;s nothing to scan with.
+            </li>
+            <li>
+              <strong className="text-neutral-900">Check the signal at the venue.</strong> Check-ins
+              are recorded on our servers as they happen. If the connection drops the app says so,
+              rather than pretending someone was checked in.
+            </li>
+            <li>
+              <strong className="text-neutral-900">It updates itself.</strong> Nothing to download
+              again — open it and you have the current version.
+            </li>
+          </ul>
 
-      <div className="mt-10 flex flex-col sm:flex-row gap-3">
-        <Link href="/scan" className="zv-btn-primary">
-          Open the scanner
-        </Link>
-        <Link href="/organizer/staff" className="zv-btn-secondary">
-          Add door staff
-        </Link>
-      </div>
+          <div className="mt-6 flex flex-col sm:flex-row gap-3">
+            <Link href="/organizer/staff" className="zv-btn-secondary text-sm">
+              Add door staff
+            </Link>
+            <Link href="/contact" className="zv-btn-secondary text-sm">
+              Get help
+            </Link>
+          </div>
+        </div>
+      </section>
     </main>
   );
 }
@@ -141,26 +191,35 @@ export default function ScannerAppPage() {
 function Feature({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="zv-card p-5">
-      <h3 className="font-semibold text-sm text-neutral-900">{title}</h3>
-      <p className="mt-1.5 text-sm text-neutral-500 leading-relaxed">{children}</p>
+      <h3 className="text-sm font-semibold text-neutral-900">{title}</h3>
+      <p className="mt-1.5 text-sm leading-relaxed text-neutral-500">{children}</p>
     </div>
   );
 }
 
-function InstallCard({
+function PlatformCard({
   platform,
+  icon,
   note,
   children,
 }: {
   platform: string;
+  icon: React.ReactNode;
   note: string;
   children: React.ReactNode;
 }) {
   return (
     <div className="zv-card p-6">
-      <h3 className="font-semibold text-neutral-900">{platform}</h3>
-      <p className="mt-1 text-xs text-neutral-400">{note}</p>
-      <ol className="mt-4 space-y-3">{children}</ol>
+      <div className="flex items-center gap-3">
+        <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-neutral-900 text-white">
+          {icon}
+        </span>
+        <div>
+          <h3 className="font-semibold text-neutral-900">{platform}</h3>
+          <p className="text-xs text-neutral-400">{note}</p>
+        </div>
+      </div>
+      <ol className="mt-5 space-y-3">{children}</ol>
     </div>
   );
 }
@@ -173,5 +232,21 @@ function Step({ n, children }: { n: number; children: React.ReactNode }) {
       </span>
       <span className="pt-0.5">{children}</span>
     </li>
+  );
+}
+
+function AppleIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M16.37 12.78c.03 2.9 2.55 3.86 2.58 3.87-.02.07-.4 1.38-1.33 2.73-.8 1.17-1.63 2.33-2.94 2.35-1.29.03-1.7-.76-3.17-.76s-1.93.74-3.15.79c-1.27.05-2.23-1.26-3.03-2.42-1.64-2.38-2.9-6.72-1.21-9.65.84-1.46 2.33-2.38 3.95-2.4 1.24-.03 2.42.84 3.18.84.76 0 2.19-1.04 3.69-.88.63.03 2.4.25 3.53 1.92-.09.06-2.11 1.24-2.1 3.61M14.1 4.5c.67-.81 1.12-1.94 1-3.07-.97.04-2.14.64-2.83 1.45-.62.72-1.16 1.87-1.02 2.97 1.08.09 2.18-.55 2.85-1.35" />
+    </svg>
+  );
+}
+
+function AndroidIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M17.6 9.48l1.84-3.18a.4.4 0 00-.7-.4l-1.86 3.22a11.4 11.4 0 00-9.76 0L5.26 5.9a.4.4 0 10-.7.4L6.4 9.48A10.7 10.7 0 001 18h22a10.7 10.7 0 00-5.4-8.52M7 15.25a1.25 1.25 0 110-2.5 1.25 1.25 0 010 2.5m10 0a1.25 1.25 0 110-2.5 1.25 1.25 0 010 2.5" />
+    </svg>
   );
 }

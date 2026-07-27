@@ -30,6 +30,9 @@ export default function Footer() {
           <Link href="/refund-policy" className="hover:text-neutral-700 transition-colors">
             Refund policy
           </Link>
+          <Link href="/scanner-app" className="hover:text-neutral-700 transition-colors">
+            Scanner app
+          </Link>
           <Link href="/contact" className="hover:text-neutral-700 transition-colors">
             Contact
           </Link>
