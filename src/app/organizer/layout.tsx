@@ -24,6 +24,7 @@ export default async function OrganizerLayout({ children }: { children: React.Re
     { href: "/organizer/events", label: "My events", icon: "ticket" },
     { href: "/organizer/events/new", label: "New event", icon: "plus" },
     { href: "/scan", label: "Scan tickets", icon: "scan" },
+    { href: "/scanner-app", label: "Get the app", icon: "download" },
     { href: "/organizer/staff", label: "Door staff", icon: "users" },
     { href: "/organizer/community", label: "Community", icon: "megaphone" },
     { href: "/organizer/settings", label: "Payout details", icon: "card" },

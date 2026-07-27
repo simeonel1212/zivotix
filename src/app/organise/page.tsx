@@ -75,7 +75,7 @@ export default function OrganisePage() {
           },
           {
             title: "A door that runs itself",
-            body: "Every ticket is a unique QR code, verified server-side in real time. Staff scan from any phone browser. No hardware, no app, no duplicate entries, no arguments at the gate.",
+            body: "Every ticket is a unique QR code, verified server-side in real time. Your staff install the free Zivotix Scanner on their own phones. No hardware to rent, no duplicate entries, no arguments at the gate.",
             icon: (
               <>
                 <rect x="4" y="4" width="7" height="7" rx="1.5" />
@@ -105,6 +105,51 @@ export default function OrganisePage() {
             <p className="mt-2 text-sm text-neutral-500 leading-relaxed">{f.body}</p>
           </div>
         ))}
+      </section>
+
+      {/* ---------- Scanner app ---------- */}
+      {/* Sits between the feature grid and the sign-up CTA on purpose: by this
+          point an organizer is weighing up whether running the door is going
+          to be a hassle, and "your staff already own the hardware" is the
+          answer to that. */}
+      <section className="relative overflow-hidden rounded-3xl bg-neutral-950 p-8 sm:p-12">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -right-20 -top-24 h-72 w-72 rounded-full bg-yellow-400/20 blur-3xl"
+        />
+        <div className="relative flex flex-col sm:flex-row sm:items-center gap-8">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/icons/icon-192.png"
+            alt="Zivotix Scanner app icon"
+            width={92}
+            height={92}
+            style={{ width: 92, height: 92 }}
+            className="shrink-0 rounded-[23px] shadow-2xl shadow-yellow-500/25"
+          />
+          <div className="flex-1">
+            <p className="text-xs font-semibold uppercase tracking-wider text-yellow-400">
+              Free with every event
+            </p>
+            <h2 className="mt-2 text-2xl sm:text-3xl font-bold tracking-tight text-white">
+              The Zivotix Scanner app
+            </h2>
+            <p className="mt-2.5 max-w-lg text-sm sm:text-[15px] leading-relaxed text-neutral-300">
+              Installs on any Android or iPhone in seconds. Your door staff scan tickets with the
+              camera and watch the headcount climb live. Run two doors at once and the same ticket
+              still can&apos;t get through twice.
+            </p>
+            <Link
+              href="/scanner-app"
+              className="zv-btn-primary mt-6 inline-flex text-sm"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" aria-hidden="true">
+                <path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              Get the app
+            </Link>
+          </div>
+        </div>
       </section>
 
       {/* ---------- Closing CTA ---------- */}

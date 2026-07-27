@@ -76,6 +76,12 @@ const ICONS: Record<string, React.ReactNode> = {
       <path d="M19 9.5a3 3 0 0 1 0 5" strokeLinecap="round" />
     </>
   ),
+  download: (
+    <>
+      <path d="M12 3v12m0 0l-4-4m4 4l4-4" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" strokeLinecap="round" strokeLinejoin="round" />
+    </>
+  ),
 };
 
 // Shared sidebar link for the organizer/admin dashboards — highlights
