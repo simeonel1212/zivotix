@@ -38,10 +38,12 @@ export async function POST() {
     const unpaid = (orders ?? []).filter((o) => !excluded.has(o.id));
     if (!unpaid.length) continue;
 
+    // Organizers keep 100% of face value — Zivotix is paid by the buyer's
+    // service fee, which lives on the order and never enters gross_sales.
+    // See supabase/migrations/2026-07-27-buyer-paid-service-fee.sql.
     const grossSales = unpaid.reduce((s, o) => s + o.base_amount, 0);
-    const feeRate = organizer.is_platform_own ? 0 : organizer.commission_rate;
-    const platformFee = Math.round(grossSales * feeRate * 100) / 100;
-    const netPayable = Math.round((grossSales - platformFee) * 100) / 100;
+    const platformFee = 0;
+    const netPayable = Math.round(grossSales * 100) / 100;
     if (netPayable <= 0) continue;
 
     const { data: payout, error } = await service

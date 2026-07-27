@@ -45,19 +45,33 @@ export async function GET(req: Request) {
 
     const { data: orders } = await service
       .from("orders")
-      .select("id, base_amount, base_currency, payment_provider")
+      .select("id, base_amount, service_fee, base_currency, payment_provider")
       .eq("event_id", event.id)
       .eq("status", "paid");
 
     const unpaid = (orders ?? []).filter((o) => !excludedOrders.has(o.id));
     if (!unpaid.length) continue; // nothing sold, or already covered by a manual weekly run
 
+    // Organizers keep 100% of face value. Zivotix's revenue is the service
+    // fee the buyer paid on top, recorded on the order and never part of
+    // gross_sales — so there is nothing to deduct here.
+    //
+    // platform_fee is written as 0 rather than removed: the column still
+    // explains historic payouts made under the old organizer-side commission,
+    // and zeroing it is what marks a payout as post-switch.
     const grossSales = unpaid.reduce((s, o) => s + o.base_amount, 0);
-    const feeRate = organizer.is_platform_own ? 0 : organizer.commission_rate;
-    const platformFee = Math.round(grossSales * feeRate * 100) / 100;
-    const netPayable = Math.round((grossSales - platformFee) * 100) / 100;
+    const platformFee = 0;
+    const netPayable = Math.round(grossSales * 100) / 100;
+    // Processor fees are charged on what the buyer was actually billed
+    // (face value + service fee), not on face value alone.
     const processorFeeEstimate = unpaid.reduce(
-      (s, o) => s + estimateProcessorFee(o.payment_provider, o.base_amount, o.base_currency),
+      (s, o) =>
+        s +
+        estimateProcessorFee(
+          o.payment_provider,
+          o.base_amount + (o.service_fee ?? 0),
+          o.base_currency
+        ),
       0
     );
     if (netPayable <= 0) continue;

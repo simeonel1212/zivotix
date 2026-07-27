@@ -7,6 +7,7 @@ import type { EventRow, EventLink } from "@/lib/types";
 import LinksInput from "@/components/links-input";
 import { EVENT_CATEGORIES } from "@/lib/categories";
 import { WORLD_CURRENCIES, currencyLabel } from "@/lib/currencies";
+import { serviceFeeLabel } from "@/lib/fees";
 
 // Converts an ISO timestamp to the "YYYY-MM-DDTHH:mm" shape a
 // datetime-local input expects, in the browser's local time.
@@ -28,6 +29,7 @@ export default function EventEditForm({ event, headerActions }: { event: EventRo
     currency: event.currency,
     category: event.category ?? "other",
     isUnlisted: event.is_unlisted ?? false,
+    absorbServiceFee: event.absorb_service_fee ?? false,
   });
   const [links, setLinks] = useState<EventLink[]>(event.links ?? []);
   const [generating, setGenerating] = useState(false);
@@ -78,6 +80,7 @@ export default function EventEditForm({ event, headerActions }: { event: EventRo
         currency: form.currency,
         category: form.category,
         is_unlisted: form.isUnlisted,
+        absorb_service_fee: form.absorbServiceFee,
         links: links.filter((l) => l.label.trim() && /^https?:\/\//i.test(l.url.trim())),
       })
       .eq("id", event.id);
@@ -171,6 +174,25 @@ export default function EventEditForm({ event, headerActions }: { event: EventRo
           <span className="block text-xs text-neutral-400 mt-0.5">
             Hidden from the homepage, the events page and Google. Anyone with the link can still get
             a ticket.
+          </span>
+        </span>
+      </label>
+
+      <label className="flex items-start gap-3 cursor-pointer">
+        <input
+          type="checkbox"
+          checked={form.absorbServiceFee}
+          onChange={(e) => setForm((f) => ({ ...f, absorbServiceFee: e.target.checked }))}
+          className="mt-0.5 h-4 w-4 shrink-0 accent-yellow-500"
+        />
+        <span>
+          <span className="text-sm font-medium text-neutral-700">
+            I&apos;ll cover the {serviceFeeLabel()}
+          </span>
+          <span className="block text-xs text-neutral-400 mt-0.5">
+            By default buyers pay the fee on top and you receive your full ticket price. Tick this
+            and the buyer pays exactly what you listed, with the fee coming out of your share
+            instead. Useful when the price is already on a flyer.
           </span>
         </span>
       </label>

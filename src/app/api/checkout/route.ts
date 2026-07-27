@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { randomUUID } from "node:crypto";
 import { createServiceClient } from "@/lib/supabase/server";
 import { resolveChargeCurrency, convert, toSubunit } from "@/lib/fx";
+import { computeFees } from "@/lib/fees";
 import { initTransaction } from "@/lib/paystack";
 import { fulfillOrder } from "@/lib/fulfillment";
 import { appUrl } from "@/lib/app-url";
@@ -142,6 +143,11 @@ export async function POST(req: Request) {
   const reference = `zvx${randomUUID().replace(/-/g, "")}`;
   const provider = "paystack";
 
+  // Zivotix's revenue is the 5% service fee. Whether the buyer pays it on top
+  // or the organizer absorbs it into their listed price is the organizer's
+  // choice, per event — see events.absorb_service_fee.
+  const fees = computeFees(baseAmount, event.absorb_service_fee ? "absorb" : "pass");
+
   // NGN events are charged in NGN: the buyer's own currency, and Paystack's
   // cheaper local card rate. Everything else converts to USD, since Paystack
   // can't charge a card in THB.
@@ -149,7 +155,9 @@ export async function POST(req: Request) {
   let chargeAmount: number;
   let rate: number;
   try {
-    ({ amount: chargeAmount, rate } = await convert(baseAmount, event.currency, chargeCurrency));
+    // Converts the buyer's full total, fee included — the fee is charged in
+    // the same currency as the tickets, not tacked on afterwards in NGN.
+    ({ amount: chargeAmount, rate } = await convert(fees.total, event.currency, chargeCurrency));
   } catch {
     await supabase.rpc("release_ticket_types", { p_items: reservationItems });
     return NextResponse.json(
@@ -165,7 +173,11 @@ export async function POST(req: Request) {
       buyer_name: buyerName,
       buyer_email: buyerEmail,
       base_currency: event.currency,
-      base_amount: baseAmount,
+      // What the organizer is owed — face value under "pass", face value
+      // minus the fee under "absorb". Payouts sum this column, so it must
+      // never include our service fee.
+      base_amount: fees.organizerReceives,
+      service_fee: fees.serviceFee,
       charge_currency: chargeCurrency,
       charge_amount: chargeAmount,
       fx_rate_used: rate,

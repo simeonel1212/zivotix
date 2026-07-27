@@ -87,7 +87,7 @@ export default function OrganisePage() {
           },
           {
             title: "Money where you can see it",
-            body: "Watch sales land in real time with revenue analytics per event and ticket tier, then get paid out weekly straight to your bank account. Your numbers, always in view.",
+            body: "You keep 100% of your ticket price — buyers pay a 5% service fee, not you. Watch sales land in real time, then get paid out weekly straight to your bank account.",
             icon: (
               <>
                 <path d="M4 20V10M10 20V4M16 20v-7M21 20H3" strokeLinecap="round" />

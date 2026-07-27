@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import type { EventRow, TicketType } from "@/lib/types";
+import { computeFees, type FeeMode } from "@/lib/fees";
 
 // Checkout is a single button. Paystack's hosted page presents card and
 // Apple Pay itself (both approved on this account), so there's no separate
@@ -10,19 +11,27 @@ import type { EventRow, TicketType } from "@/lib/types";
 export default function TicketSelector({
   event,
   ticketTypes,
+  feeMode = "pass",
 }: {
   event: EventRow;
   ticketTypes: TicketType[];
+  /** "absorb" means the organizer covers the fee and the buyer pays the listed price flat. */
+  feeMode?: FeeMode;
 }) {
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [buyer, setBuyer] = useState({ name: "", email: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const total = useMemo(
+  const subtotal = useMemo(
     () => ticketTypes.reduce((sum, tt) => sum + (quantities[tt.id] ?? 0) * tt.price, 0),
     [quantities, ticketTypes]
   );
+  // Shown itemised before checkout rather than sprung on the buyer at the
+  // payment page — a fee that appears only after they've committed is the
+  // single most common complaint about ticketing sites.
+  const fees = useMemo(() => computeFees(subtotal, feeMode), [subtotal, feeMode]);
+  const total = fees.total;
   const ticketCount = Object.values(quantities).reduce((a, b) => a + b, 0);
   // "total === 0" alone can't tell a genuinely free event apart from a paid
   // event with nothing selected yet — without this the page reads "Total:
@@ -122,6 +131,26 @@ export default function TicketSelector({
           className="zv-input"
         />
       </div>
+
+      {/* Only itemised when the buyer is actually paying it. Under "absorb"
+          the fee is the organizer's cost, and showing a buyer a line item
+          they aren't being charged would just be confusing. */}
+      {subtotal > 0 && fees.mode === "pass" && (
+        <div className="rounded-2xl bg-neutral-50/80 border border-neutral-100 px-4 py-3 space-y-1.5 text-sm">
+          <div className="flex justify-between text-neutral-500">
+            <span>Tickets</span>
+            <span className="tabular-nums">
+              {subtotal.toLocaleString()} {event.currency}
+            </span>
+          </div>
+          <div className="flex justify-between text-neutral-500">
+            <span>Service fee</span>
+            <span className="tabular-nums">
+              {fees.serviceFee.toLocaleString()} {event.currency}
+            </span>
+          </div>
+        </div>
+      )}
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between pt-2 gap-4">
         <p className="text-sm text-neutral-500">

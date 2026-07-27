@@ -88,16 +88,22 @@ export default function TermsPage() {
           related marketing while your event is live.
         </p>
         <p>
-          Zivotix deducts a commission from each sale. Your rate is shown in your organizer dashboard and
-          will not change for an event that is already on sale without notice to you.
+          Zivotix does not take a commission from your ticket price. We charge buyers a 5% service fee
+          on top of it, and you receive the full amount you listed. You may instead choose, per event,
+          to cover that fee yourself so buyers pay exactly your listed price; in that case the fee is
+          deducted from your payout.
+        </p>
+        <p>
+          We will give you notice before changing the service fee, and a change will never apply to an
+          event already on sale.
         </p>
       </Section>
 
       <Section title="6. Payouts">
         <p>
           Payouts are released after an event has taken place, once the window for refunds and chargebacks
-          on that event has passed. The net amount is the gross value of confirmed sales less our
-          commission.
+          on that event has passed. You receive the full value of confirmed sales at your listed prices,
+          less any refunds.
         </p>
         <p>
           Payouts to Nigerian bank accounts are sent as a Paystack transfer. Payouts to Thai accounts are

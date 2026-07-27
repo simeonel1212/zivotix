@@ -64,6 +64,8 @@ export interface EventRow {
   ends_at: string | null;
   status: EventStatus;
   is_unlisted: boolean;
+  /** When true, the 5% service fee comes out of the ticket price rather than being added on top. */
+  absorb_service_fee: boolean;
   created_at: string;
 }
 
@@ -87,7 +89,10 @@ export interface Order {
   buyer_email: string;
   buyer_country: string | null;
   base_currency: string;
+  /** What the organizer is owed, in base_currency. Payouts sum this. */
   base_amount: number;
+  /** Zivotix's 5% service fee, in base_currency. Platform revenue. */
+  service_fee: number;
   charge_currency: string;
   charge_amount: number;
   fx_rate_used: number | null;

@@ -112,8 +112,9 @@ export default function RefundPolicyPage() {
 
       <Section title="8. Fees on a refund">
         <p>
-          When a refund is issued, you get back the full amount you paid, including the Zivotix commission
-          on that sale. You are never left short because a sale had to be reversed.
+          When a refund is issued you get back the full amount you paid, including the Zivotix service
+          fee. We don&apos;t keep our fee on a sale that got reversed, and you are never left short
+          because an event didn&apos;t happen.
         </p>
         <p>
           Organizers: a refunded sale is removed from your payout for that event. If the payout has already

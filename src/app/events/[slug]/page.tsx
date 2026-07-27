@@ -275,7 +275,11 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
         </div>
       )}
 
-      <TicketSelector event={event} ticketTypes={ticketTypes ?? []} />
+      <TicketSelector
+        event={event}
+        ticketTypes={ticketTypes ?? []}
+        feeMode={event.absorb_service_fee ? "absorb" : "pass"}
+      />
 
       {event.logo_image_url && (
         <div className="flex justify-center pt-4">

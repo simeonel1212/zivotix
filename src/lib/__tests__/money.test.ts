@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 
 import { estimateProcessorFee } from "../processor-fees.ts";
 import { resolveChargeCurrency, toSubunit, fromSubunit } from "../fx.ts";
+import { computeFees } from "../fees.ts";
 
 // Everything here guards money. A regression in any of it either overcharges
 // a buyer, underpays an organizer, or quietly eats the platform's margin.
@@ -123,48 +124,95 @@ describe("webhook payment matching", () => {
   });
 });
 
-describe("payout maths", () => {
-  // Mirrors the calculation in /api/cron/event-payouts and
-  // /api/admin/payouts/run. The organizer's contract is a fixed percentage
-  // of gross; the processor fee comes out of the platform's share, never
-  // theirs.
-  function payout(gross: number, commissionRate: number) {
-    const platformFee = Math.round(gross * commissionRate * 100) / 100;
-    const netPayable = Math.round((gross - platformFee) * 100) / 100;
-    return { platformFee, netPayable };
-  }
+describe("service fees", () => {
+  // Zivotix charges a 5% service fee rather than deducting a commission from
+  // the organizer. These guard the two things that must never drift: what
+  // the buyer is charged, and what the organizer is owed.
 
-  test("splits gross by the commission rate", () => {
-    assert.deepEqual(payout(100_000, 0.1), { platformFee: 10_000, netPayable: 90_000 });
+  test("pass mode adds the fee on top and pays the organizer in full", () => {
+    const f = computeFees(10_000, "pass");
+    assert.equal(f.serviceFee, 500);
+    assert.equal(f.total, 10_500);
+    assert.equal(f.organizerReceives, 10_000);
   });
 
-  test("a platform-owned event takes no commission", () => {
-    assert.deepEqual(payout(50_000, 0), { platformFee: 0, netPayable: 50_000 });
+  test("absorb mode keeps the buyer's price flat and takes it from the organizer", () => {
+    const f = computeFees(10_000, "absorb");
+    assert.equal(f.serviceFee, 500);
+    assert.equal(f.total, 10_000, "buyer must pay exactly the listed price");
+    assert.equal(f.organizerReceives, 9_500);
   });
 
-  test("fee and payout always reconcile back to gross", () => {
-    for (const gross of [1, 999.99, 8000, 123_456.78]) {
-      for (const rate of [0, 0.05, 0.1, 0.25]) {
-        const { platformFee, netPayable } = payout(gross, rate);
+  test("the books balance in both modes", () => {
+    for (const mode of ["pass", "absorb"] as const) {
+      for (const subtotal of [1, 999.99, 5_000, 123_456.78]) {
+        const f = computeFees(subtotal, mode);
         assert.ok(
-          Math.abs(platformFee + netPayable - gross) < 0.01,
-          `payout didn't reconcile for gross=${gross} rate=${rate}`
+          Math.abs(f.total - f.organizerReceives - f.serviceFee) < 0.01,
+          `total != organizer + fee for ${mode} at ${subtotal}`
         );
-        assert.ok(netPayable >= 0, `organizer payout went negative at rate=${rate}`);
+        assert.ok(f.organizerReceives >= 0);
+        assert.ok(f.serviceFee >= 0);
       }
     }
   });
 
-  test("commission below the processor floor loses the platform money", () => {
-    // This is the known open issue: net_payable is computed off gross, so a
-    // commission under Flutterwave's 4.8% means paying out more than the
-    // sale actually delivered. Asserted so the behaviour is documented and
-    // a future fix has a failing case to flip.
-    const gross = 10_000;
-    const { platformFee, netPayable } = payout(gross, 0.03); // 3% commission
-    const processorFee = estimateProcessorFee("flutterwave", gross, "NGN");
-    const actuallyReceived = gross - processorFee;
-    assert.ok(netPayable > actuallyReceived, "expected the shortfall this test documents");
-    assert.ok(platformFee < processorFee);
+  test("a free ticket carries no fee in either mode", () => {
+    for (const mode of ["pass", "absorb"] as const) {
+      const f = computeFees(0, mode);
+      assert.equal(f.serviceFee, 0);
+      assert.equal(f.total, 0);
+      assert.equal(f.organizerReceives, 0);
+    }
+  });
+
+  test("the fee covers Paystack's cut on a typical local sale", () => {
+    // The whole reason the 3% commission was abandoned. At 5% on a ₦10,000
+    // ticket the fee has to beat what Paystack takes on the charged total.
+    const f = computeFees(10_000, "pass");
+    const processorFee = estimateProcessorFee("paystack", f.total, "NGN");
+    assert.ok(
+      f.serviceFee > processorFee,
+      `service fee ${f.serviceFee} did not cover processor fee ${processorFee}`
+    );
+  });
+
+  test("documents the known loss band around Paystack's flat-fee threshold", () => {
+    // Paystack's flat ₦100 starts at a ₦2,500 charge, so a narrow band of
+    // face values costs slightly more to process than 5% brings in. Asserted
+    // so the gap stays small and visible rather than being discovered later.
+    const f = computeFees(2_600, "pass");
+    const processorFee = estimateProcessorFee("paystack", f.total, "NGN");
+    const shortfall = processorFee - f.serviceFee;
+    assert.ok(shortfall > 0, "expected the shortfall this test documents");
+    assert.ok(shortfall < 40, `shortfall grew to ${shortfall}, re-examine the fee structure`);
+  });
+});
+
+describe("payout maths", () => {
+  // Mirrors /api/cron/event-payouts and /api/admin/payouts/run. Organizers
+  // are paid 100% of orders.base_amount — the service fee never enters
+  // gross_sales, so there is nothing left to deduct at payout time.
+  function payout(gross: number) {
+    return { platformFee: 0, netPayable: Math.round(gross * 100) / 100 };
+  }
+
+  test("the organizer receives the whole of gross", () => {
+    assert.deepEqual(payout(100_000), { platformFee: 0, netPayable: 100_000 });
+  });
+
+  test("nothing is deducted at payout time, at any size", () => {
+    for (const gross of [1, 999.99, 8000, 123_456.78]) {
+      const { platformFee, netPayable } = payout(gross);
+      assert.equal(platformFee, 0, "payouts must not deduct a commission any more");
+      assert.ok(Math.abs(netPayable - gross) < 0.01);
+    }
+  });
+
+  test("a passed-on fee never reduces what the organizer is paid", () => {
+    // The failure this guards against: summing the buyer's total into
+    // gross_sales, or subtracting the fee twice.
+    const f = computeFees(50_000, "pass");
+    assert.equal(payout(f.organizerReceives).netPayable, 50_000);
   });
 });
