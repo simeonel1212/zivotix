@@ -35,6 +35,7 @@ export default async function ScanPage() {
   return (
     <EventList
       staffName={profile?.full_name || user.email || "staff"}
+      staffEmail={user.email ?? ""}
       isOrganizer={Boolean(organizer)}
     />
   );

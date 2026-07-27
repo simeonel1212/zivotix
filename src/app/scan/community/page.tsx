@@ -4,6 +4,7 @@ import type { OrganizerPost, PostComment, ReactionType } from "@/lib/types";
 import { getCurrentOrganizer } from "@/lib/organizer";
 import { ZivotixMark } from "@/components/zivotix-logo";
 import ScannerTabs from "@/components/scanner-tabs";
+import ScannerAccount from "@/components/scanner-account";
 import PostForm from "@/app/organizer/community/post-form";
 import DeletePostButton from "@/app/organizer/community/delete-post-button";
 
@@ -19,7 +20,8 @@ import DeletePostButton from "@/app/organizer/community/delete-post-button";
 // writing, not scanning in a dark venue, and it should feel like the rest of
 // Zivotix.
 export default async function ScanCommunityPage() {
-  const { supabase, organizer } = await getCurrentOrganizer("/scan/community");
+  const { supabase, user, organizer } = await getCurrentOrganizer("/scan/community");
+  const email = user?.email ?? "";
 
   // Door staff can reach this URL but have nothing to post. Send them back to
   // the scanner rather than showing an empty dashboard they can't use.
@@ -37,12 +39,20 @@ export default async function ScanCommunityPage() {
   return (
     <div className="flex-1 flex flex-col bg-neutral-50">
       <header className="px-5 pt-[max(1.25rem,env(safe-area-inset-top))] pb-4 bg-white border-b border-neutral-200/70">
-        <span className="inline-flex items-center gap-2">
-          <ZivotixMark size={24} />
-          <span className="font-bold tracking-tight text-neutral-900 text-sm">
-            Zivo<span className="zv-gradient-text">tix</span>
+        <div className="flex items-center justify-between gap-3">
+          <span className="inline-flex items-center gap-2">
+            <ZivotixMark size={24} />
+            <span className="font-bold tracking-tight text-neutral-900 text-sm">
+              Zivo<span className="zv-gradient-text">tix</span>
+            </span>
           </span>
-        </span>
+          <ScannerAccount
+            name={organizer.business_name ?? "Organizer"}
+            email={email}
+            role="Organizer"
+            tone="light"
+          />
+        </div>
         <h1 className="mt-4 text-2xl font-bold tracking-tight text-neutral-900">Community</h1>
         <p className="mt-1 text-sm text-neutral-500 leading-relaxed">
           Post an update for everyone holding a ticket from you. It shows on your community page and

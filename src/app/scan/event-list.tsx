@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { ZivotixMark } from "@/components/zivotix-logo";
 import ScannerTabs from "@/components/scanner-tabs";
+import ScannerAccount from "@/components/scanner-account";
 
 interface ScannerEvent {
   id: string;
@@ -17,9 +18,11 @@ interface ScannerEvent {
 
 export default function EventList({
   staffName,
+  staffEmail,
   isOrganizer,
 }: {
   staffName: string;
+  staffEmail: string;
   isOrganizer: boolean;
 }) {
   const [events, setEvents] = useState<ScannerEvent[] | null>(null);
@@ -55,30 +58,35 @@ export default function EventList({
               Zivo<span className="zv-gradient-text">tix</span>
             </span>
           </span>
-          <button
-            onClick={load}
-            disabled={refreshing}
-            aria-label="Refresh"
-            className="rounded-full border border-white/15 p-2.5 text-neutral-300 active:scale-95 transition disabled:opacity-40"
-          >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              className={refreshing ? "animate-spin" : ""}
-              aria-hidden="true"
+          <div className="flex items-center gap-2">
+            <button
+              onClick={load}
+              disabled={refreshing}
+              aria-label="Refresh"
+              className="rounded-full border border-white/15 p-2.5 text-neutral-300 active:scale-95 transition disabled:opacity-40"
             >
-              <path d="M21 12a9 9 0 11-2.64-6.36M21 3v6h-6" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </button>
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                className={refreshing ? "animate-spin" : ""}
+                aria-hidden="true"
+              >
+                <path d="M21 12a9 9 0 11-2.64-6.36M21 3v6h-6" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+            <ScannerAccount
+              name={staffName}
+              email={staffEmail}
+              role={isOrganizer ? "Organizer" : "Door staff"}
+            />
+          </div>
         </div>
         <h1 className="mt-6 text-2xl font-bold tracking-tight">Your events</h1>
-        <p className="mt-1 text-sm text-neutral-400">
-          Signed in as {staffName}. Tap an event to start scanning.
-        </p>
+        <p className="mt-1 text-sm text-neutral-400">Tap an event to start scanning.</p>
       </header>
 
       <div className="flex-1 px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] space-y-3">
