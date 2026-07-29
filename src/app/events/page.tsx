@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
@@ -5,13 +6,15 @@ import { createClient } from "@/lib/supabase/server";
 import type { EventRow } from "@/lib/types";
 import TicketBackdrop from "@/components/ticket-backdrop";
 import { EVENT_CATEGORIES, categoryLabel, isValidCategory } from "@/lib/categories";
+import { countryLabel } from "@/lib/countries";
+import CountryFilter from "./country-filter";
 
 export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "Upcoming events",
   description:
-    "Browse every event on sale right now: parties, concerts, festivals and more across Nigeria and Thailand. Instant QR tickets, secure checkout.",
+    "Browse every event on sale right now: parties, concerts, festivals and more. Buy from anywhere in the world with card or Apple Pay. Instant QR tickets.",
   alternates: { canonical: "/events" },
 };
 
@@ -20,19 +23,35 @@ type EventWithPrices = EventRow & { ticket_types: { price: number }[] };
 export default async function EventsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ category?: string }>;
+  searchParams: Promise<{ category?: string; country?: string }>;
 }) {
-  const { category } = await searchParams;
+  const { category, country } = await searchParams;
   const activeCategory = isValidCategory(category) ? category : null;
 
   const supabase = await createClient();
-  let query = supabase
-    .from("events")
-    .select("*, ticket_types(price)")
-    .eq("status", "published")
-    .eq("is_unlisted", false) // weddings/private events are link-only
-    .order("starts_at", { ascending: true });
+  const base = () =>
+    supabase
+      .from("events")
+      .select("*, ticket_types(price)")
+      .eq("status", "published")
+      .eq("is_unlisted", false) // weddings/private events are link-only
+      .order("starts_at", { ascending: true });
+
+  // Countries are read from what's actually on sale, before the country filter
+  // is applied — otherwise selecting one country would collapse the dropdown
+  // to that single option and strand the visitor there.
+  const { data: allEvents } = await base().returns<EventWithPrices[]>();
+  const countries = [...new Set((allEvents ?? []).map((e) => e.country).filter(Boolean))].sort();
+  // Narrowed back to OrgCountry after the membership check, so the Supabase
+  // filter below stays type-safe rather than taking an arbitrary string.
+  const activeCountry =
+    country && countries.includes(country as (typeof countries)[number])
+      ? (country as (typeof countries)[number])
+      : null;
+
+  let query = base();
   if (activeCategory) query = query.eq("category", activeCategory);
+  if (activeCountry) query = query.eq("country", activeCountry);
   const { data: events } = await query.returns<EventWithPrices[]>();
 
   return (
@@ -40,14 +59,25 @@ export default async function EventsPage({
       <div className="absolute inset-x-0 top-0 h-[420px] overflow-hidden pointer-events-none">
         <TicketBackdrop className="opacity-40" />
       </div>
-      <div className="mb-8 relative z-10">
-        <h1 className="text-4xl font-bold tracking-tight text-neutral-900">Upcoming events</h1>
-        <p className="mt-2 text-neutral-500">Find something happening near you.</p>
+      <div className="mb-8 relative z-10 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+        <div>
+          <h1 className="text-4xl font-bold tracking-tight text-neutral-900">Upcoming events</h1>
+          <p className="mt-2 text-neutral-500">
+            {activeCountry
+              ? `What's on in ${countryLabel(activeCountry)}.`
+              : "Find something happening near you, or anywhere else."}
+          </p>
+        </div>
+        <Suspense fallback={null}>
+          <CountryFilter countries={countries} />
+        </Suspense>
       </div>
 
       <div className="mb-10 flex flex-wrap gap-2 relative z-10">
+        {/* Category links carry the country through, so switching category
+            doesn't silently drop the country the visitor chose. */}
         <Link
-          href="/events"
+          href={activeCountry ? `/events?country=${activeCountry}` : "/events"}
           className={`zv-badge transition-colors ${
             !activeCategory ? "bg-neutral-900 text-white" : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
           }`}
@@ -57,7 +87,7 @@ export default async function EventsPage({
         {EVENT_CATEGORIES.map((c) => (
           <Link
             key={c.value}
-            href={`/events?category=${c.value}`}
+            href={`/events?category=${c.value}${activeCountry ? `&country=${activeCountry}` : ""}`}
             className={`zv-badge transition-colors ${
               activeCategory === c.value ? "bg-neutral-900 text-white" : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
             }`}
@@ -70,8 +100,17 @@ export default async function EventsPage({
       {(!events || events.length === 0) && (
         <div className="zv-card p-16 text-center">
           <p className="text-neutral-400">
-            {activeCategory ? "No events in this category yet." : "No events published yet. Check back soon."}
+            {activeCountry
+              ? `Nothing on sale in ${countryLabel(activeCountry)} right now.`
+              : activeCategory
+                ? "No events in this category yet."
+                : "No events published yet. Check back soon."}
           </p>
+          {(activeCountry || activeCategory) && (
+            <Link href="/events" className="zv-btn-secondary mt-5 inline-flex text-sm">
+              See everything
+            </Link>
+          )}
         </div>
       )}
 
