@@ -9,6 +9,7 @@ import GalleryEditor from "./gallery-editor";
 import RefundButton from "./refund-button";
 import EventEditForm from "./event-edit-form";
 import TicketTypesEditor from "./ticket-types-editor";
+import DuplicateButton from "./duplicate-button";
 
 interface TicketRow {
   id: string;
@@ -20,6 +21,14 @@ interface TicketRow {
   } | {
     orders: { buyer_name: string; buyer_email: string } | { buyer_name: string; buyer_email: string }[] | null;
   }[] | null;
+}
+
+export interface TemplateEvent {
+  id: string;
+  title: string;
+  starts_at: string;
+  currency: string;
+  ticket_types: { name: string; price: number; quantity_total: number; max_per_order: number }[];
 }
 
 function one<T>(rel: T | T[] | null): T | null {
@@ -43,6 +52,21 @@ export default async function OrganizerEventDetailPage({
     .select("*")
     .eq("event_id", id)
     .returns<TicketType[]>();
+
+  // The organizer's other events, with their ticket tiers, so this event can
+  // reuse a pricing structure instead of retyping "Early bird / Regular / VIP"
+  // every month. RLS scopes this to events they own.
+  const { data: otherEvents } = await supabase
+    .from("events")
+    .select("id, title, starts_at, currency, ticket_types(name, price, quantity_total, max_per_order)")
+    .eq("organizer_id", event.organizer_id)
+    .neq("id", id)
+    .order("starts_at", { ascending: false })
+    .limit(20)
+    .returns<TemplateEvent[]>();
+
+  // An event with no tiers is useless as a template.
+  const templates = (otherEvents ?? []).filter((e) => (e.ticket_types ?? []).length > 0);
 
   const { data: allOrders } = await supabase
     .from("orders")
@@ -89,6 +113,10 @@ export default async function OrganizerEventDetailPage({
         }
       />
 
+      {/* Below the header rather than inside it: the panel expands, and a
+          growing card inside a header row shoves the title around. */}
+      <DuplicateButton eventId={event.id} title={event.title} startsAt={event.starts_at} />
+
       <CoverEditor eventId={event.id} initialUrl={event.cover_image_url ?? ""} />
 
       <LogoEditor eventId={event.id} initialUrl={event.logo_image_url ?? ""} />
@@ -104,7 +132,12 @@ export default async function OrganizerEventDetailPage({
 
       <div>
         <h2 className="font-semibold text-neutral-900 mb-3">Ticket types</h2>
-        <TicketTypesEditor eventId={event.id} ticketTypes={ticketTypes ?? []} currency={event.currency} />
+        <TicketTypesEditor
+          eventId={event.id}
+          ticketTypes={ticketTypes ?? []}
+          currency={event.currency}
+          templates={templates}
+        />
       </div>
 
       <div>

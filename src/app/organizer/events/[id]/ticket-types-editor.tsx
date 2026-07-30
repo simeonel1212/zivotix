@@ -25,14 +25,25 @@ function toRowForm(tt: TicketType): RowForm {
   };
 }
 
+interface TemplateEvent {
+  id: string;
+  title: string;
+  starts_at: string;
+  currency: string;
+  ticket_types: { name: string; price: number; quantity_total: number; max_per_order: number }[];
+}
+
 export default function TicketTypesEditor({
   eventId,
   ticketTypes,
   currency,
+  templates = [],
 }: {
   eventId: string;
   ticketTypes: TicketType[];
   currency: string;
+  /** The organizer's other events, offered as ticket-tier templates. */
+  templates?: TemplateEvent[];
 }) {
   const router = useRouter();
   const [rows, setRows] = useState<RowForm[]>(ticketTypes.map(toRowForm));
@@ -44,6 +55,44 @@ export default function TicketTypesEditor({
   const [newRow, setNewRow] = useState({ name: "", price: "", quantity_total: "", free: false });
   const [addError, setAddError] = useState<string | null>(null);
   const [addLoading, setAddLoading] = useState(false);
+
+  const [copyFrom, setCopyFrom] = useState("");
+  const [copying, setCopying] = useState(false);
+  const [copyError, setCopyError] = useState<string | null>(null);
+
+  const selected = templates.find((t) => t.id === copyFrom);
+
+  // Copies the tiers from a previous event: names, prices, quantities and
+  // per-order limits, with sold counts reset to zero. Deliberately additive —
+  // it never deletes what's already here, because silently wiping tiers an
+  // organizer has already sold against would be unrecoverable.
+  async function copyTiers() {
+    if (!selected) return;
+    setCopyError(null);
+    setCopying(true);
+    const { error: insertError } = await createClient()
+      .from("ticket_types")
+      .insert(
+        selected.ticket_types.map((tt) => ({
+          event_id: eventId,
+          name: tt.name,
+          // Prices are carried across as-is even if the currencies differ —
+          // converting silently would be worse than showing the organizer a
+          // number they can see is wrong and fix.
+          price: tt.price,
+          quantity_total: tt.quantity_total,
+          quantity_sold: 0,
+          max_per_order: tt.max_per_order,
+        }))
+      );
+    setCopying(false);
+    if (insertError) {
+      setCopyError(insertError.message);
+      return;
+    }
+    setCopyFrom("");
+    router.refresh();
+  }
 
   function updateRow(id: string, field: keyof RowForm, value: string) {
     setRows((rs) => rs.map((r) => (r.id === id ? { ...r, [field]: value } : r)));
@@ -210,6 +259,66 @@ export default function TicketTypesEditor({
         <button onClick={() => setAdding(true)} className="text-sm font-semibold zv-gradient-text">
           + Add ticket type
         </button>
+      )}
+
+      {templates.length > 0 && (
+        <div className="zv-card p-4 sm:p-5 space-y-3">
+          <div>
+            <p className="text-sm font-semibold text-neutral-900">Reuse tiers from a previous event</p>
+            <p className="text-xs text-neutral-400 mt-0.5">
+              Copies the names, prices, quantities and limits. Nothing already here is removed.
+            </p>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-2">
+            <select
+              className="zv-input text-sm"
+              value={copyFrom}
+              onChange={(e) => {
+                setCopyFrom(e.target.value);
+                setCopyError(null);
+              }}
+            >
+              <option value="">Choose an event…</option>
+              {templates.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.title} · {new Date(t.starts_at).toLocaleDateString(undefined, { month: "short", year: "numeric" })}
+                  {" · "}
+                  {t.ticket_types.length} tier{t.ticket_types.length === 1 ? "" : "s"}
+                </option>
+              ))}
+            </select>
+            <button
+              onClick={copyTiers}
+              disabled={!selected || copying}
+              className="zv-btn-secondary text-sm shrink-0 disabled:opacity-40"
+            >
+              {copying ? "Copying…" : "Copy tiers"}
+            </button>
+          </div>
+
+          {selected && (
+            <div className="rounded-2xl bg-neutral-50/80 border border-neutral-100 px-4 py-3 space-y-1.5">
+              {selected.ticket_types.map((tt, i) => (
+                <div key={i} className="flex justify-between text-sm text-neutral-600">
+                  <span>{tt.name}</span>
+                  <span className="tabular-nums">
+                    {tt.price > 0 ? `${tt.price.toLocaleString()} ${selected.currency}` : "Free"} ·{" "}
+                    {tt.quantity_total}
+                  </span>
+                </div>
+              ))}
+              {selected.currency !== currency && (
+                <p className="pt-1 text-xs text-amber-600">
+                  That event was priced in {selected.currency}, this one is in {currency}. Prices copy
+                  across unchanged — check them after.
+                </p>
+              )}
+            </div>
+          )}
+
+          {copyError && <p className="text-xs text-red-600">{copyError}</p>}
+        </div>
       )}
     </div>
   );
