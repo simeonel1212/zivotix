@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import TicketBackdrop from "@/components/ticket-backdrop";
+import { countryOptions, defaultPayoutCurrency, payoutMethodLabel } from "@/lib/countries";
+import { WORLD_CURRENCIES, currencyLabel } from "@/lib/currencies";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -14,6 +16,10 @@ export default function SignupPage() {
     password: "",
     businessName: "",
     country: "NG",
+    // Defaults to the country's own currency but is freely changeable —
+    // payouts outside the Paystack countries go out through Grey, which can
+    // send in any currency, so there's no reason to pin it to geography.
+    payoutCurrency: "NGN",
   });
   const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -98,7 +104,7 @@ export default function SignupPage() {
       profile_id: user.id,
       business_name: form.businessName,
       country: form.country,
-      payout_currency: form.country === "NG" ? "NGN" : "THB",
+      payout_currency: form.payoutCurrency,
     });
 
     if (orgError) {
@@ -177,10 +183,61 @@ export default function SignupPage() {
 
             <div className="space-y-1.5">
               <label className="zv-label">Country</label>
-              <select value={form.country} onChange={(e) => update("country", e.target.value)} className="zv-input">
-                <option value="NG">Nigeria (payouts in NGN)</option>
-                <option value="TH">Thailand (payouts in THB)</option>
+              <select
+                value={form.country}
+                onChange={(e) => {
+                  const country = e.target.value;
+                  // Move the payout currency along with the country, but only
+                  // as a suggestion — the next field can override it.
+                  setForm((f) => ({
+                    ...f,
+                    country,
+                    payoutCurrency: defaultPayoutCurrency(country),
+                  }));
+                }}
+                className="zv-input"
+              >
+                {/* Paystack-transfer countries are grouped first — an organizer
+                    in Lagos or Nairobi shouldn't scroll past 200 options. */}
+                <optgroup label="Fast bank transfer">
+                  {countryOptions()
+                    .filter((c) => c.method === "paystack")
+                    .map((c) => (
+                      <option key={c.code} value={c.code}>
+                        {c.flag} {c.name}
+                      </option>
+                    ))}
+                </optgroup>
+                <optgroup label="Everywhere else (international wire)">
+                  {countryOptions()
+                    .filter((c) => c.method !== "paystack")
+                    .map((c) => (
+                      <option key={c.code} value={c.code}>
+                        {c.flag} {c.name}
+                      </option>
+                    ))}
+                </optgroup>
               </select>
+              <p className="text-xs text-neutral-400">{payoutMethodLabel(form.country)}</p>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="zv-label">Get paid in</label>
+              <select
+                value={form.payoutCurrency}
+                onChange={(e) => update("payoutCurrency", e.target.value)}
+                className="zv-input"
+              >
+                {WORLD_CURRENCIES.map((c) => (
+                  <option key={c} value={c}>
+                    {currencyLabel(c)}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-neutral-400">
+                Doesn&apos;t have to match your country — we can pay out in any currency. You can
+                change this later.
+              </p>
             </div>
 
             <div className="space-y-1.5">

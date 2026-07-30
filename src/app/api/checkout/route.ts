@@ -146,7 +146,11 @@ export async function POST(req: Request) {
   // Zivotix's revenue is the 5% service fee. Whether the buyer pays it on top
   // or the organizer absorbs it into their listed price is the organizer's
   // choice, per event — see events.absorb_service_fee.
-  const fees = computeFees(baseAmount, event.absorb_service_fee ? "absorb" : "pass");
+  const fees = computeFees(
+    baseAmount,
+    event.currency,
+    event.absorb_service_fee ? "absorb" : "pass"
+  );
 
   // NGN events are charged in NGN: the buyer's own currency, and Paystack's
   // cheaper local card rate. Everything else converts to USD, since Paystack

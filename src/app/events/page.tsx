@@ -8,6 +8,7 @@ import TicketBackdrop from "@/components/ticket-backdrop";
 import { EVENT_CATEGORIES, categoryLabel, isValidCategory } from "@/lib/categories";
 import { countryLabel } from "@/lib/countries";
 import CountryFilter from "./country-filter";
+import ApproxPrice from "@/components/approx-price";
 
 export const revalidate = 60;
 
@@ -172,6 +173,11 @@ export default async function EventsPage({
                     fromPrice !== null && (
                       <p className="text-xs sm:text-sm font-semibold text-neutral-900 whitespace-nowrap">
                         From {fromPrice.toLocaleString()} {event.currency}
+                        <ApproxPrice
+                          amount={fromPrice}
+                          currency={event.currency}
+                          className="block text-[10px] sm:text-xs font-normal"
+                        />
                       </p>
                     )
                   )}

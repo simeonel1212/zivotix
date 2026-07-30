@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import type { EventRow, TicketType } from "@/lib/types";
 import { computeFees, type FeeMode } from "@/lib/fees";
+import ApproxPrice from "@/components/approx-price";
 
 // Checkout is a single button. Paystack's hosted page presents card and
 // Apple Pay itself (both approved on this account), so there's no separate
@@ -30,7 +31,10 @@ export default function TicketSelector({
   // Shown itemised before checkout rather than sprung on the buyer at the
   // payment page — a fee that appears only after they've committed is the
   // single most common complaint about ticketing sites.
-  const fees = useMemo(() => computeFees(subtotal, feeMode), [subtotal, feeMode]);
+  const fees = useMemo(
+    () => computeFees(subtotal, event.currency, feeMode),
+    [subtotal, event.currency, feeMode]
+  );
   const total = fees.total;
   const ticketCount = Object.values(quantities).reduce((a, b) => a + b, 0);
   // "total === 0" alone can't tell a genuinely free event apart from a paid
@@ -90,7 +94,12 @@ export default function TicketSelector({
               <div>
                 <p className="font-medium text-sm text-neutral-900">{tt.name}</p>
                 <p className="text-sm text-neutral-500">
-                  {tt.price > 0 ? `${tt.price.toLocaleString()} ${event.currency}` : (
+                  {tt.price > 0 ? (
+                    <>
+                      {tt.price.toLocaleString()} {event.currency}
+                      <ApproxPrice amount={tt.price} currency={event.currency} className="ml-1.5 text-xs" />
+                    </>
+                  ) : (
                     <span className="font-medium text-emerald-600">Free</span>
                   )}
                   {remaining <= 10 && remaining > 0 && (
@@ -163,6 +172,12 @@ export default function TicketSelector({
                 ? "Free"
                 : "—"}
           </span>
+          {total > 0 && (
+            <>
+              {" "}
+              <ApproxPrice amount={total} currency={event.currency} className="text-sm font-medium" />
+            </>
+          )}
           {total > 0 && (
             <>
               <br />

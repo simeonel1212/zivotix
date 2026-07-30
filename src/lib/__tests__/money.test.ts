@@ -56,6 +56,33 @@ describe("estimateProcessorFee", () => {
     assert.equal(estimateProcessorFee("flutterwave", 10_000, "NGN"), 480);
   });
 
+  test("international charges cost more than local ones, and the gap widens", () => {
+    // The bug this replaced: every Paystack sale was costed at the local 1.5%,
+    // so non-NGN events — all of which settle in USD at 3.9% — were reported as
+    // far cheaper to process than they are.
+    //
+    // The multiple isn't constant. At ₦10,000 the local flat ₦100 narrows it to
+    // about 1.6x; by ₦1,000,000 the local cap has bitten and international is
+    // ~20x. Asserting the shape rather than one number.
+    const local10k = estimateProcessorFee("paystack", 10_000, "NGN");
+    const intl10k = estimateProcessorFee("paystack", 10_000, "USD");
+    assert.equal(intl10k, 419.25); // 3.9% + 7.5% VAT
+    assert.ok(intl10k > local10k, `international ${intl10k} should exceed local ${local10k}`);
+
+    const local1m = estimateProcessorFee("paystack", 1_000_000, "NGN");
+    const intl1m = estimateProcessorFee("paystack", 1_000_000, "USD");
+    assert.ok(
+      intl1m > local1m * 10,
+      `at scale international (${intl1m}) should dwarf capped local (${local1m})`
+    );
+  });
+
+  test("international has no flat fee and no cap", () => {
+    // Proportional all the way up, unlike NGN which caps at ₦2,000 + VAT.
+    assert.equal(estimateProcessorFee("paystack", 1_000, "USD"), 41.93);
+    assert.equal(estimateProcessorFee("paystack", 1_000_000, "USD"), 41_925);
+  });
+
   test("Paystack applies 1.5% plus VAT, with the flat fee waived under 2500 NGN", () => {
     // 2000 * 1.5% = 30, no flat fee below 2500, +7.5% VAT = 32.25
     assert.equal(estimateProcessorFee("paystack", 2000, "NGN"), 32.25);
@@ -129,63 +156,91 @@ describe("service fees", () => {
   // the organizer. These guard the two things that must never drift: what
   // the buyer is charged, and what the organizer is owed.
 
+  test("NGN is 5%, everything else is 7%", () => {
+    // Deliberately unequal: NGN settles locally at ~1.6%, everything else
+    // settles in USD at ~4.2%, so equal rates would mean very unequal margin.
+    assert.equal(computeFees(10_000, "NGN", "pass").rate, 0.05);
+    assert.equal(computeFees(10_000, "THB", "pass").rate, 0.07);
+    assert.equal(computeFees(10_000, "GBP", "pass").rate, 0.07);
+    assert.equal(computeFees(10_000, "ngn", "pass").rate, 0.05, "currency is case-insensitive");
+  });
+
   test("pass mode adds the fee on top and pays the organizer in full", () => {
-    const f = computeFees(10_000, "pass");
+    const f = computeFees(10_000, "NGN", "pass");
     assert.equal(f.serviceFee, 500);
     assert.equal(f.total, 10_500);
     assert.equal(f.organizerReceives, 10_000);
   });
 
   test("absorb mode keeps the buyer's price flat and takes it from the organizer", () => {
-    const f = computeFees(10_000, "absorb");
+    const f = computeFees(10_000, "NGN", "absorb");
     assert.equal(f.serviceFee, 500);
     assert.equal(f.total, 10_000, "buyer must pay exactly the listed price");
     assert.equal(f.organizerReceives, 9_500);
   });
 
-  test("the books balance in both modes", () => {
-    for (const mode of ["pass", "absorb"] as const) {
-      for (const subtotal of [1, 999.99, 5_000, 123_456.78]) {
-        const f = computeFees(subtotal, mode);
-        assert.ok(
-          Math.abs(f.total - f.organizerReceives - f.serviceFee) < 0.01,
-          `total != organizer + fee for ${mode} at ${subtotal}`
-        );
-        assert.ok(f.organizerReceives >= 0);
-        assert.ok(f.serviceFee >= 0);
+  test("the books balance in both modes and both rates", () => {
+    for (const currency of ["NGN", "THB"]) {
+      for (const mode of ["pass", "absorb"] as const) {
+        for (const subtotal of [1, 999.99, 5_000, 123_456.78]) {
+          const f = computeFees(subtotal, currency, mode);
+          assert.ok(
+            Math.abs(f.total - f.organizerReceives - f.serviceFee) < 0.01,
+            `total != organizer + fee for ${currency} ${mode} at ${subtotal}`
+          );
+          assert.ok(f.organizerReceives >= 0);
+          assert.ok(f.serviceFee >= 0);
+        }
       }
     }
   });
 
   test("a free ticket carries no fee in either mode", () => {
     for (const mode of ["pass", "absorb"] as const) {
-      const f = computeFees(0, mode);
+      const f = computeFees(0, "NGN", mode);
       assert.equal(f.serviceFee, 0);
       assert.equal(f.total, 0);
       assert.equal(f.organizerReceives, 0);
     }
   });
 
-  test("the fee covers Paystack's cut on a typical local sale", () => {
-    // The whole reason the 3% commission was abandoned. At 5% on a ₦10,000
-    // ticket the fee has to beat what Paystack takes on the charged total.
-    const f = computeFees(10_000, "pass");
+  test("the fee clears Paystack's cut on a local sale", () => {
+    // 5% on a ₦10,000 ticket against 1.5% + ₦100 + VAT on ₦10,500.
+    const f = computeFees(10_000, "NGN", "pass");
     const processorFee = estimateProcessorFee("paystack", f.total, "NGN");
     assert.ok(
       f.serviceFee > processorFee,
       `service fee ${f.serviceFee} did not cover processor fee ${processorFee}`
     );
+    // Should keep roughly 2% of face value, not a rounding error.
+    assert.ok((f.serviceFee - processorFee) / f.subtotal > 0.02);
   });
 
-  test("documents the known loss band around Paystack's flat-fee threshold", () => {
-    // Paystack's flat ₦100 starts at a ₦2,500 charge, so a narrow band of
-    // face values costs slightly more to process than 5% brings in. Asserted
-    // so the gap stays small and visible rather than being discovered later.
-    const f = computeFees(2_600, "pass");
-    const processorFee = estimateProcessorFee("paystack", f.total, "NGN");
-    const shortfall = processorFee - f.serviceFee;
-    assert.ok(shortfall > 0, "expected the shortfall this test documents");
-    assert.ok(shortfall < 40, `shortfall grew to ${shortfall}, re-examine the fee structure`);
+  test("the fee clears Paystack's cut on an international sale too", () => {
+    // The case that was underwater at 5%: non-NGN events settle in USD at
+    // 3.9% + VAT with no cap, so the rate has to be materially higher.
+    const f = computeFees(10_000, "THB", "pass");
+    const processorFee = estimateProcessorFee("paystack", f.total, "USD");
+    assert.ok(
+      f.serviceFee > processorFee,
+      `international fee ${f.serviceFee} did not cover ${processorFee}`
+    );
+    assert.ok((f.serviceFee - processorFee) / f.subtotal > 0.02);
+  });
+
+  test("documents the accepted NGN loss band at Paystack's flat-fee threshold", () => {
+    // Face values from roughly ₦2,380 to ₦3,400 lose a little at 5%, because
+    // Paystack's flat ₦100 lands before the percentage has grown to cover it.
+    // Knowingly accepted — the cheapest live ticket is ₦8,000 — but bounded, so
+    // a future rate change can't widen it unnoticed.
+    let worst = 0;
+    for (const subtotal of [2_400, 2_600, 3_000, 3_400]) {
+      const f = computeFees(subtotal, "NGN", "pass");
+      const processorFee = estimateProcessorFee("paystack", f.total, "NGN");
+      worst = Math.max(worst, processorFee - f.serviceFee);
+    }
+    assert.ok(worst > 0, "expected the shortfall this test documents");
+    assert.ok(worst < 40, `shortfall grew to ${worst}, re-examine the fee structure`);
   });
 });
 
@@ -212,7 +267,7 @@ describe("payout maths", () => {
   test("a passed-on fee never reduces what the organizer is paid", () => {
     // The failure this guards against: summing the buyer's total into
     // gross_sales, or subtracting the fee twice.
-    const f = computeFees(50_000, "pass");
+    const f = computeFees(50_000, "NGN", "pass");
     assert.equal(payout(f.organizerReceives).netPayable, 50_000);
   });
 });

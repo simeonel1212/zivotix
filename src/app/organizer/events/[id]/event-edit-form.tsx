@@ -187,7 +187,7 @@ export default function EventEditForm({ event, headerActions }: { event: EventRo
         />
         <span>
           <span className="text-sm font-medium text-neutral-700">
-            I&apos;ll cover the {serviceFeeLabel()}
+            I&apos;ll cover the {serviceFeeLabel(form.currency)}
           </span>
           <span className="block text-xs text-neutral-400 mt-0.5">
             By default buyers pay the fee on top and you receive your full ticket price. Tick this

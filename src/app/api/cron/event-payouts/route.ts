@@ -45,7 +45,7 @@ export async function GET(req: Request) {
 
     const { data: orders } = await service
       .from("orders")
-      .select("id, base_amount, service_fee, base_currency, payment_provider")
+      .select("id, base_amount, service_fee, base_currency, charge_amount, charge_currency, payment_provider")
       .eq("event_id", event.id)
       .eq("status", "paid");
 
@@ -69,8 +69,12 @@ export async function GET(req: Request) {
         s +
         estimateProcessorFee(
           o.payment_provider,
-          o.base_amount + (o.service_fee ?? 0),
-          o.base_currency
+          // What the buyer was actually billed, in the currency it was billed
+          // in — not the event's pricing currency. A THB event settles in USD
+          // at Paystack's international rate, and using base_currency here
+          // costed those sales as if they were local.
+          o.charge_amount,
+          o.charge_currency
         ),
       0
     );

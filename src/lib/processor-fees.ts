@@ -1,31 +1,63 @@
-// Estimates what Paystack or Flutterwave actually deduct before a sale ever
-// reaches the platform's account, purely for visibility into real margin —
-// see payouts.processor_fee_estimate in schema.sql. This never changes what
-// an organizer is actually paid (net_payable is still gross * (1 -
-// commission_rate), a fixed contract), it just shows what's really left over
-// for the platform after the processor's own cut.
+// Estimates what the payment processor actually deducts before a sale reaches
+// the platform's account — see payouts.processor_fee_estimate in schema.sql.
+// This never changes what an organizer is paid (they receive orders.base_amount
+// in full); it exists so platform margin reporting tells the truth.
 //
-// Rates are each provider's current published local-transaction pricing
-// (checked July 2026): Paystack NGN card 1.5% + ₦100 (waived under ₦2,500,
-// capped at ₦2,000) + 7.5% VAT on the fee; Flutterwave Apple Pay flat 4.8%.
-// This is an approximation — it doesn't distinguish international cards on
-// Paystack (which cost more, 3.9% + ₦100) since that isn't tracked per
-// order today, and it doesn't attempt cross-currency FX reconciliation of
-// the fee itself.
+// Rates checked July 2026:
+//   Paystack, NGN card:       1.5% + ₦100, flat fee waived under ₦2,500,
+//                             percentage capped at ₦2,000, then 7.5% VAT
+//   Paystack, international:  3.9%, then 7.5% VAT — no cap
+//   Flutterwave:              flat 4.8% (dormant; kept for historic orders)
+//
+// The international rate is the one that matters most and used to be missing.
+// Every non-NGN event is converted to USD at checkout (see resolveChargeCurrency
+// in lib/fx.ts), so a Thai or Kenyan sale is an international transaction to
+// Paystack at roughly 4.2% after VAT — nearly three times the local rate.
+// Charging all Paystack sales at 1.5% made international margin look four
+// times healthier than it is, on exactly the sales that earn least.
+
+const VAT = 0.075;
+
+/** Paystack's local NGN card rate: percentage, flat fee, and a cap. */
+const NGN_RATE = 0.015;
+const NGN_FLAT = 100;
+const NGN_FLAT_THRESHOLD = 2500;
+const NGN_CAP = 2000;
+
+/** Paystack's international card rate. Applies to every non-NGN charge. */
+const INTERNATIONAL_RATE = 0.039;
+
+const FLUTTERWAVE_RATE = 0.048;
+
+// Known blind spot: a buyer abroad paying for an NGN-priced event is charged in
+// NGN on a foreign card, which Paystack bills at the international rate — but
+// nothing in the order tells us the card's country, so this still costs it as
+// local. Those sales are therefore reported slightly more favourably than they
+// are. Margin stays positive (6% against ~4.2%), so it understates profit
+// rather than hiding a loss; fixing it properly needs card-country data from
+// the Paystack webhook.
 export function estimateProcessorFee(
   provider: "paystack" | "flutterwave",
   amount: number,
-  currency: string
+  /**
+   * The currency the buyer was actually charged in — orders.charge_currency,
+   * not the event's pricing currency. NGN means a local card; anything else
+   * (USD in practice) is an international transaction.
+   */
+  chargeCurrency: string
 ): number {
   if (provider === "paystack") {
-    let fee = amount * 0.015;
-    if (currency === "NGN") {
-      if (amount >= 2500) fee += 100;
-      fee = Math.min(fee, 2000);
+    let fee: number;
+    if (chargeCurrency === "NGN") {
+      fee = amount * NGN_RATE;
+      if (amount >= NGN_FLAT_THRESHOLD) fee += NGN_FLAT;
+      fee = Math.min(fee, NGN_CAP);
+    } else {
+      // No flat component and no cap on international: a large foreign sale
+      // costs proportionally the same as a small one.
+      fee = amount * INTERNATIONAL_RATE;
     }
-    const vat = fee * 0.075;
-    return Math.round((fee + vat) * 100) / 100;
+    return Math.round(fee * (1 + VAT) * 100) / 100;
   }
-  // Flutterwave — flat rate across the alternative payment methods we use (Apple Pay).
-  return Math.round(amount * 0.048 * 100) / 100;
+  return Math.round(amount * FLUTTERWAVE_RATE * 100) / 100;
 }

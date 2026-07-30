@@ -44,6 +44,8 @@ export const metadata: Metadata = {
     "Lagos events",
     "Thailand events",
     "Bangkok events",
+    "sell tickets worldwide",
+    "global event ticketing",
     "buy tickets from abroad",
     "diaspora event tickets",
     "international ticket payment",

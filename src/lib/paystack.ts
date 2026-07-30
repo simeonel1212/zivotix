@@ -127,10 +127,24 @@ export async function refundTransaction(reference: string) {
   return data.data as { status: string; transaction: { reference: string } };
 }
 
-// Lists Nigerian banks so the organizer settings form can offer a dropdown
-// instead of making people type a bank code they don't know.
-export async function listBanks() {
-  const res = await fetch(`${PAYSTACK_BASE}/bank?country=nigeria&currency=NGN&type=nuban`, {
+// Lists banks so the organizer settings form can offer a dropdown instead of
+// making people type a bank code they don't know.
+//
+// Paystack's bank list is per-country and each market has its own account
+// format, so the query differs by country rather than being one call. Only the
+// four countries Paystack settles into are supported — everywhere else is paid
+// by international wire and collects SWIFT details instead.
+const PAYSTACK_BANK_QUERY: Record<string, string> = {
+  NG: "country=nigeria&currency=NGN&type=nuban",
+  GH: "country=ghana&currency=GHS",
+  ZA: "country=south%20africa&currency=ZAR",
+  KE: "country=kenya&currency=KES",
+};
+
+export async function listBanks(country = "NG") {
+  const query = PAYSTACK_BANK_QUERY[country.toUpperCase()];
+  if (!query) return [];
+  const res = await fetch(`${PAYSTACK_BASE}/bank?${query}`, {
     headers: authHeaders(),
   });
   const data = await res.json();

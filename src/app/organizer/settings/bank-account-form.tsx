@@ -3,10 +3,13 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Organizer } from "@/lib/types";
+import { payoutMethod } from "@/lib/countries";
 
 export default function BankAccountForm({ organizer }: { organizer: Organizer }) {
   const router = useRouter();
-  const isNG = organizer.country === "NG";
+  // Paystack settles into NG, GH, ZA and KE — those get a bank dropdown and
+  // account-name verification. Everywhere else collects SWIFT wire details.
+  const isNG = payoutMethod(organizer.country) === "paystack";
   const saved = organizer.bank_account;
 
   const [banks, setBanks] = useState<{ name: string; code: string }[]>([]);

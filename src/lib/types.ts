@@ -1,5 +1,12 @@
 export type UserRole = "admin" | "organizer" | "door_staff" | "buyer";
-export type OrgCountry = "NG" | "TH";
+/**
+ * ISO 3166-1 alpha-2. Was a union of "NG" | "TH" while the database column was
+ * an enum of those two; organizers can now sign up from anywhere, with payouts
+ * by Paystack transfer or international wire depending on the country. Validated
+ * against lib/countries.ts rather than by the type system, since the real list
+ * is ~250 entries and changes over time.
+ */
+export type OrgCountry = string;
 export type EventStatus = "draft" | "published" | "cancelled";
 export type OrderStatus = "pending" | "paid" | "failed" | "refunded" | "expired";
 export type TicketStatus = "valid" | "used" | "void";

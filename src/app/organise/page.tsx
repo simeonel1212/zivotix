@@ -87,7 +87,7 @@ export default function OrganisePage() {
           },
           {
             title: "Money where you can see it",
-            body: "You keep 100% of your ticket price — buyers pay a 5% service fee, not you. Watch sales land in real time, then get paid out weekly straight to your bank account.",
+            body: "You keep 100% of your ticket price — buyers pay the service fee, not you. Watch sales land in real time, then get paid out weekly straight to your bank account.",
             icon: (
               <>
                 <path d="M4 20V10M10 20V4M16 20v-7M21 20H3" strokeLinecap="round" />

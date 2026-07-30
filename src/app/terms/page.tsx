@@ -17,8 +17,8 @@ export default function TermsPage() {
       <Section title="1. Who we are">
         <p>
           Zivotix is a ticketing platform operated by {LEGAL_ENTITY} (&quot;Zivotix,&quot; &quot;we,&quot;
-          &quot;us&quot;). We let event organizers list events and sell tickets, and we let buyers
-          anywhere in the world discover and pay for them.
+          &quot;us&quot;). Organizers anywhere in the world can list events and sell tickets, priced in
+          their own currency, and buyers anywhere can discover and pay for them.
         </p>
         <p>
           By creating an account, listing an event, or buying a ticket you agree to these terms. If you
@@ -88,10 +88,11 @@ export default function TermsPage() {
           related marketing while your event is live.
         </p>
         <p>
-          Zivotix does not take a commission from your ticket price. We charge buyers a 5% service fee
-          on top of it, and you receive the full amount you listed. You may instead choose, per event,
-          to cover that fee yourself so buyers pay exactly your listed price; in that case the fee is
-          deducted from your payout.
+          Zivotix does not take a commission from your ticket price. We charge buyers a service fee on
+          top of it — 5% on events priced in Naira, 7% on events priced in any other currency, which
+          cost more to process — and you receive the full amount you listed. You may instead choose,
+          per event, to cover that fee yourself so buyers pay exactly your listed price; in that case
+          the fee is deducted from your payout.
         </p>
         <p>
           We will give you notice before changing the service fee, and a change will never apply to an
@@ -106,10 +107,11 @@ export default function TermsPage() {
           less any refunds.
         </p>
         <p>
-          Payouts to Nigerian bank accounts are sent as a Paystack transfer. Payouts to Thai accounts are
-          sent by wire, which can take longer and may attract intermediary bank charges we do not control.
-          You are responsible for the accuracy of the bank details on your account, and we are not liable
-          for funds sent to details you supplied incorrectly.
+          Payouts to bank accounts in Nigeria, Ghana, South Africa and Kenya are sent as a Paystack
+          transfer, usually arriving the same day. Payouts to every other country are sent by
+          international wire, which takes longer and may attract intermediary bank charges we do not
+          control. You are responsible for the accuracy of the bank details on your account, and we are
+          not liable for funds sent to details you supplied incorrectly.
         </p>
         <p>
           We may withhold or delay a payout where we have a reasonable suspicion of fraud, a high volume of
