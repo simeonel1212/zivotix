@@ -52,15 +52,24 @@ export default function TicketSelector({
   //
   // A null category is its own bucket with no heading, so an organizer who
   // never touches this feature sees exactly the flat list they had before.
+  // Matching is case- and whitespace-insensitive: "Tables", "tables" and
+  // "Tables " are one group, not three. An organizer typing the same word twice
+  // means the same thing, and splitting their section in half over a capital
+  // letter would look like a bug on their public page.
+  //
+  // The heading shown is whichever spelling appeared first, so their own
+  // capitalisation is preserved rather than lowercased into something they
+  // didn't write.
   const groups = useMemo(() => {
-    const byCategory = new Map<string | null, TicketType[]>();
+    const byKey = new Map<string, { label: string | null; tiers: TicketType[] }>();
     for (const tt of ticketTypes) {
-      const key = tt.category?.trim() || null;
-      const existing = byCategory.get(key);
-      if (existing) existing.push(tt);
-      else byCategory.set(key, [tt]);
+      const raw = tt.category?.trim().replace(/\s+/g, " ") ?? "";
+      const key = raw.toLowerCase();
+      const existing = byKey.get(key);
+      if (existing) existing.tiers.push(tt);
+      else byKey.set(key, { label: raw || null, tiers: [tt] });
     }
-    return [...byCategory.entries()];
+    return [...byKey.entries()].map(([key, g]) => ({ key, ...g }));
   }, [ticketTypes]);
 
   // Collapsed groups, tracked by category name.
@@ -116,20 +125,20 @@ export default function TicketSelector({
       <h2 className="font-semibold text-lg text-neutral-900">Tickets</h2>
 
       <div className="space-y-6">
-        {groups.map(([category, tiers]) => {
-          const isOpen = !category || !collapsed[category];
+        {groups.map(({ key, label, tiers }) => {
+          const isOpen = !label || !collapsed[key];
           const selectedInGroup = tiers.reduce((n, tt) => n + (quantities[tt.id] ?? 0), 0);
           return (
-          <div key={category ?? "__ungrouped"} className="space-y-3">
-            {category && (
+          <div key={key || "__ungrouped"} className="space-y-3">
+            {label && (
               <button
                 type="button"
-                onClick={() => toggleGroup(category)}
+                onClick={() => toggleGroup(key)}
                 aria-expanded={isOpen}
                 className="flex items-center gap-2 w-full text-left group/cat"
               >
                 <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400 group-hover/cat:text-neutral-600 transition-colors">
-                  {category}
+                  {label}
                 </span>
                 <span className="text-xs text-neutral-300">{tiers.length}</span>
                 {/* A collapsed group holding a selected ticket would otherwise

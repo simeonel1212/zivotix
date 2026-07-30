@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type { TicketType } from "@/lib/types";
@@ -114,9 +114,59 @@ export default function TicketTypesEditor({
     router.refresh();
   }
 
+  // Rows are seeded from props once, so without this an added or copied tier
+  // wouldn't appear until a full page reload — router.refresh() sends new props
+  // down but useState's initial value never runs again. Existing rows keep
+  // their local state, which preserves edits in progress on other rows while a
+  // neighbour is being saved.
+  const signature = ticketTypes
+    .map((tt) => `${tt.id}:${tt.name}:${tt.category}:${tt.description}:${tt.price}:${tt.quantity_total}`)
+    .join("|");
+  const [syncedSignature, setSyncedSignature] = useState(signature);
+  if (signature !== syncedSignature) {
+    setSyncedSignature(signature);
+    setRows((prev) => {
+      const byId = new Map(prev.map((r) => [r.id, r]));
+      return ticketTypes.map((tt) => byId.get(tt.id) ?? toRowForm(tt));
+    });
+  }
+
   function updateRow(id: string, field: keyof RowForm, value: string) {
     setRows((rs) => rs.map((r) => (r.id === id ? { ...r, [field]: value } : r)));
   }
+
+  // What's on screen versus what's in the database, so the Save button can say
+  // which of the two it is. Compared against the props rather than a snapshot
+  // in state: after a save router.refresh() sends fresh props down, which is
+  // exactly when the row should stop reading as dirty.
+  const savedById = useMemo(() => new Map(ticketTypes.map((tt) => [tt.id, tt])), [ticketTypes]);
+  function isDirty(row: RowForm) {
+    const saved = savedById.get(row.id);
+    if (!saved) return true;
+    return (
+      row.name !== saved.name ||
+      row.category.trim() !== (saved.category ?? "") ||
+      row.description.trim() !== (saved.description ?? "") ||
+      Number(row.price) !== saved.price ||
+      Number(row.quantity_total) !== saved.quantity_total
+    );
+  }
+
+  // Every group name already in use on this event, in the casing it was first
+  // typed. Offered as autocomplete so "Tables" and "tables" don't become two
+  // headings on the public page — the grouping itself is case-insensitive, but
+  // letting an organizer pick the existing name is better than silently
+  // rewriting what they typed.
+  const existingCategories = useMemo(() => {
+    const seen = new Map<string, string>();
+    for (const r of rows) {
+      const value = r.category.trim();
+      if (!value) continue;
+      const key = value.toLowerCase().replace(/\s+/g, " ");
+      if (!seen.has(key)) seen.set(key, value);
+    }
+    return [...seen.values()];
+  }, [rows]);
 
   async function saveRow(id: string) {
     const row = rows.find((r) => r.id === id);
@@ -189,6 +239,14 @@ export default function TicketTypesEditor({
 
   return (
     <div className="space-y-3">
+      {/* Shared by every group field on the page, so typing "T" offers the
+          groups this event already has instead of inviting a near-miss. */}
+      <datalist id="zv-ticket-categories">
+        {existingCategories.map((c) => (
+          <option key={c} value={c} />
+        ))}
+      </datalist>
+
       <div className="zv-card divide-y divide-neutral-100 overflow-hidden">
         {rows.map((row) => (
           <div key={row.id} className="p-3.5 space-y-2">
@@ -200,6 +258,7 @@ export default function TicketTypesEditor({
               <input
                 className="zv-input text-sm"
                 placeholder="Group (optional)"
+                list="zv-ticket-categories"
                 value={row.category}
                 onChange={(e) => updateRow(row.id, "category", e.target.value)}
               />
@@ -248,15 +307,31 @@ export default function TicketTypesEditor({
               />
               <p className="text-[11px] text-neutral-400 mt-1">{row.quantity_sold} sold</p>
             </div>
-            <button
-              onClick={() => saveRow(row.id)}
-              disabled={savingId === row.id}
-              className="zv-badge bg-neutral-100 text-neutral-700 hover:bg-neutral-200 transition-colors disabled:opacity-40 justify-self-start sm:justify-self-auto"
-            >
-              {savingId === row.id ? "Saving…" : "Save"}
-            </button>
-            {errorId === row.id && error && <p className="text-xs text-red-600 col-span-2 sm:col-span-4">{error}</p>}
             </div>
+
+            {/* Save on its own line rather than wedged into the field grid.
+                Squeezed into the fourth column it wrapped under the inputs on a
+                phone and read as part of the quantity box — organizers were
+                editing the group name and never seeing anything to press.
+                It also states outright when there's something unsaved, because
+                a button that looks identical either way teaches nobody. */}
+            <div className="flex items-center justify-between gap-3 pt-1">
+              <p className="text-xs text-amber-600">
+                {isDirty(row) && savingId !== row.id ? "Unsaved changes" : " "}
+              </p>
+              <button
+                onClick={() => saveRow(row.id)}
+                disabled={savingId === row.id || !isDirty(row)}
+                className={`text-sm font-semibold px-4 py-2 rounded-full transition-colors disabled:opacity-40 ${
+                  isDirty(row)
+                    ? "bg-neutral-900 text-white hover:bg-neutral-800"
+                    : "bg-neutral-100 text-neutral-500"
+                }`}
+              >
+                {savingId === row.id ? "Saving…" : isDirty(row) ? "Save changes" : "Saved"}
+              </button>
+            </div>
+            {errorId === row.id && error && <p className="text-xs text-red-600">{error}</p>}
           </div>
         ))}
       </div>
@@ -267,6 +342,7 @@ export default function TicketTypesEditor({
             <input
               placeholder="Group (e.g. Tables)"
               className="zv-input text-sm"
+              list="zv-ticket-categories"
               value={newRow.category}
               onChange={(e) => setNewRow((r) => ({ ...r, category: e.target.value }))}
             />
