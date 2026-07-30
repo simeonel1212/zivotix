@@ -114,7 +114,7 @@ export default async function EventsPage({
         </div>
       )}
 
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {events?.map((event) => {
           const allPrices = event.ticket_types ?? [];
           const paidPrices = allPrices.map((tt) => tt.price).filter((p) => p > 0);
@@ -132,7 +132,7 @@ export default async function EventsPage({
                   src={event.cover_image_url}
                   alt={event.title}
                   fill
-                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 50vw, 33vw"
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                   className="object-cover transition-transform duration-500 group-hover:scale-105"
                 />
               ) : (
@@ -140,22 +140,22 @@ export default async function EventsPage({
                   <span className="text-3xl font-bold zv-gradient-text opacity-40">{event.title.slice(0, 1)}</span>
                 </div>
               )}
-              <span className="absolute top-2 left-2 zv-badge bg-white/90 backdrop-blur-sm text-neutral-700 text-[10px] sm:text-xs shadow-sm">
+              <span className="absolute top-3 left-3 zv-badge bg-white/90 backdrop-blur-sm text-neutral-700 text-xs shadow-sm">
                 {categoryLabel(event.category)}
               </span>
             </div>
-            <div className="p-3 sm:p-5 flex items-start gap-2 sm:gap-3">
+            <div className="p-4 sm:p-5 flex items-start gap-3">
               {event.logo_image_url && (
                 <Image
                   src={event.logo_image_url}
                   alt={`${event.title} logo`}
                   width={40}
                   height={40}
-                  className="hidden sm:block h-10 w-10 rounded-xl object-cover ring-1 ring-neutral-200/70 shadow-sm shrink-0"
+                  className="h-10 w-10 rounded-xl object-cover ring-1 ring-neutral-200/70 shadow-sm shrink-0"
                 />
               )}
-              <div className="space-y-1 sm:space-y-1.5 min-w-0 flex-1">
-                <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-wide zv-gradient-text">
+              <div className="space-y-1.5 min-w-0 flex-1">
+                <p className="text-xs font-semibold uppercase tracking-wide zv-gradient-text">
                   {new Date(event.starts_at).toLocaleDateString(undefined, {
                     weekday: "short",
                     month: "short",
@@ -163,11 +163,11 @@ export default async function EventsPage({
                   })}{" "}
                   · {event.city}
                 </p>
-                <h2 className="font-semibold text-sm sm:text-lg leading-snug text-neutral-900 line-clamp-2">{event.title}</h2>
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-0.5 sm:gap-3">
-                  <p className="text-xs sm:text-sm text-neutral-500 truncate">{event.venue}</p>
+                <h2 className="font-semibold text-base sm:text-lg leading-snug text-neutral-900 line-clamp-2">{event.title}</h2>
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-sm text-neutral-500 truncate">{event.venue}</p>
                   {isFree ? (
-                    <p className="text-xs sm:text-sm font-semibold text-emerald-600 whitespace-nowrap">Free</p>
+                    <p className="text-sm font-semibold text-emerald-600 whitespace-nowrap">Free</p>
                   ) : (
                     fromPrice !== null && (
                       // No approximate conversion on the browse grid: it was
@@ -175,7 +175,7 @@ export default async function EventsPage({
                       // buyer's country needs request headers, which would opt
                       // this page out of its 60-second cache. The conversion
                       // now appears once, on the order total.
-                      <p className="text-xs sm:text-sm font-semibold text-neutral-900 whitespace-nowrap">
+                      <p className="text-sm font-semibold text-neutral-900 whitespace-nowrap">
                         From {fromPrice.toLocaleString()} {event.currency}
                       </p>
                     )
