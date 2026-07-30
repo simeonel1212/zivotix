@@ -37,9 +37,18 @@ export async function generateMetadata({
   };
 }
 
-export default async function HandlePage({ params }: { params: Promise<{ handle: string }> }) {
+export default async function HandlePage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ handle: string }>;
+  searchParams: Promise<{ tab?: string }>;
+}) {
   const { handle } = await params;
+  const { tab } = await searchParams;
   const organizer = await lookup(handle);
   if (!organizer) notFound();
-  redirect(`/community/${organizer.id}`);
+  // The profile's tab links are built off the handle, so the query has to
+  // survive the hop — otherwise /eden?tab=posts lands on the tickets tab.
+  redirect(`/community/${organizer.id}${tab ? `?tab=${encodeURIComponent(tab)}` : ""}`);
 }

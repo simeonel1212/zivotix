@@ -4,10 +4,11 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { hasCommunityAccess } from "@/lib/community";
-import type { EventRow, MembershipTier } from "@/lib/types";
+import type { EventRow, MembershipTier, OrganizerPost, PostComment, ReactionType } from "@/lib/types";
 import ResendLinkForm from "./resend-link-form";
 import VerifiedBadge from "@/components/verified-badge";
 import MembershipTiers from "@/components/membership-tiers";
+import PostCard from "@/components/post-card";
 
 export async function generateMetadata({
   params,
@@ -31,19 +32,33 @@ export async function generateMetadata({
 }
 
 // Organizer profile — what you land on from tapping a name in the community
-// feed. Instagram-profile shaped: name up top, their available tickets below
-// (the whole point of clicking through), and — for anyone who already has a
-// ticket but isn't signed in yet — a way to unlock reacting/commenting back
-// in the feed.
+// feed. Instagram-profile shaped: name up top, then the pass (the thing worth
+// the most to both sides), then a tab switch between what's on sale and what
+// they've been posting.
+//
+// Tabs rather than a second page: someone who tapped a post wants more posts,
+// but the tickets are why the platform exists, and burying them behind another
+// tap costs sales. One tap from the feed reaches everything.
+//
+// The tab lives in the URL rather than in React state so that a link to
+// someone's posts is shareable and the back button behaves.
 type EventWithPrices = EventRow & { ticket_types: { price: number }[] };
 
-export default async function OrganizerProfilePage({ params }: { params: Promise<{ organizerId: string }> }) {
+export default async function OrganizerProfilePage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ organizerId: string }>;
+  searchParams: Promise<{ tab?: string }>;
+}) {
   const { organizerId } = await params;
+  const { tab } = await searchParams;
+  const showPosts = tab === "posts";
 
   const service = createServiceClient();
   const { data: organizer } = await service
     .from("organizers")
-    .select("business_name, is_verified")
+    .select("business_name, is_verified, handle")
     .eq("id", organizerId)
     .single();
   if (!organizer) notFound();
@@ -66,11 +81,36 @@ export default async function OrganizerProfilePage({ params }: { params: Promise
     .order("price", { ascending: true })
     .returns<MembershipTier[]>();
 
+  const { data: posts } = await service
+    .from("organizer_posts")
+    .select("*")
+    .eq("organizer_id", organizerId)
+    .order("created_at", { ascending: false })
+    .limit(30)
+    .returns<OrganizerPost[]>();
+
+  // Reactions and comments are only rendered on the posts tab, so there's no
+  // reason to pay for them when someone is looking at tickets.
+  const postIds = showPosts ? (posts ?? []).map((p) => p.id) : [];
+  const { data: reactions } = postIds.length
+    ? await service
+        .from("post_reactions")
+        .select("post_id, profile_id, reaction")
+        .in("post_id", postIds)
+    : { data: [] as { post_id: string; profile_id: string; reaction: ReactionType }[] };
+  const { data: comments } = postIds.length
+    ? await service.from("post_comments").select("*").in("post_id", postIds).returns<PostComment[]>()
+    : { data: [] as PostComment[] };
+
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   const allowed = user?.email ? await hasCommunityAccess(user.email, organizerId) : false;
+
+  const base = organizer.handle ? `/${organizer.handle}` : `/community/${organizerId}`;
+  const eventCount = events?.length ?? 0;
+  const postCount = posts?.length ?? 0;
 
   return (
     <main className="flex-1 mx-auto w-full max-w-2xl px-6 py-12 space-y-8">
@@ -82,27 +122,80 @@ export default async function OrganizerProfilePage({ params }: { params: Promise
           <div className="h-16 w-16 rounded-full bg-yellow-100 flex items-center justify-center text-2xl font-bold zv-gradient-text shrink-0">
             {organizer.business_name.slice(0, 1).toUpperCase()}
           </div>
-          <h1 className="text-2xl font-bold text-neutral-900 flex items-center gap-2">
-            {organizer.business_name}
-            {organizer.is_verified && <VerifiedBadge />}
-          </h1>
+          <div className="min-w-0">
+            <h1 className="text-2xl font-bold text-neutral-900 flex items-center gap-2">
+              {organizer.business_name}
+              {organizer.is_verified && <VerifiedBadge />}
+            </h1>
+            {organizer.handle && (
+              <p className="text-sm text-neutral-400 mt-0.5">zivotix.site/{organizer.handle}</p>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Above the ticket list on purpose: someone who came for one night
-          should see the season option before they decide. */}
-      <div id="passes" className="scroll-mt-24">
-        <MembershipTiers tiers={tiers ?? []} />
+      {/* Above the tabs on purpose: the pass is worth more than any single
+          ticket, and it shouldn't be something you can tab away from. */}
+      {/* Guarded rather than left to render nothing: an empty wrapper still
+          counts as a child of space-y-8 and leaves a dead gap. */}
+      {(tiers ?? []).length > 0 && (
+        <div id="passes" className="scroll-mt-24">
+          <MembershipTiers tiers={tiers ?? []} />
+        </div>
+      )}
+
+      <div className="flex items-center gap-1 border-b border-neutral-200">
+        <Tab href={base} label="Tickets" count={eventCount} active={!showPosts} />
+        <Tab href={`${base}?tab=posts`} label="Posts" count={postCount} active={showPosts} />
       </div>
 
-      <div>
-        <h2 className="font-semibold text-neutral-900 mb-3">Available tickets</h2>
-        {!events || events.length === 0 ? (
+      {showPosts ? (
+        !posts?.length ? (
           <div className="zv-card p-10 text-center">
-            <p className="text-sm text-neutral-400">Nothing on sale right now. Check back soon.</p>
+            <p className="text-sm text-neutral-400">
+              {organizer.business_name} hasn&apos;t posted yet.
+            </p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3 sm:gap-4">
+          <div className="space-y-4">
+            {posts.map((post) => {
+              const postReactions = (reactions ?? []).filter((r) => r.post_id === post.id);
+              return (
+                <PostCard
+                  key={post.id}
+                  post={post}
+                  organizerName={organizer.business_name}
+                  organizerVerified={organizer.is_verified}
+                  organizerHref={base}
+                  // The name is already the page header — repeating it above
+                  // every post is noise.
+                  showByline={false}
+                  likes={postReactions.filter((r) => r.reaction === "like").length}
+                  dislikes={postReactions.filter((r) => r.reaction === "dislike").length}
+                  myReaction={
+                    postReactions.find((r) => r.profile_id === user?.id)?.reaction ?? null
+                  }
+                  comments={(comments ?? [])
+                    .filter((c) => c.post_id === post.id)
+                    .sort((a, b) => +new Date(a.created_at) - +new Date(b.created_at))}
+                  currentUserId={user?.id ?? null}
+                />
+              );
+            })}
+          </div>
+        )
+      ) : !events || events.length === 0 ? (
+        <div className="zv-card p-10 text-center">
+          <p className="text-sm text-neutral-400">Nothing on sale right now. Check back soon.</p>
+        </div>
+      ) : (
+        // A side-scrolling row rather than a grid: it keeps the page short so
+        // the tabs and the pass stay in reach, and a row that runs off the edge
+        // reads as "there's more" in a way a grid that simply ends does not.
+        // Negative margins let the row bleed to the screen edge on mobile,
+        // which is what makes the swipe feel native rather than boxed in.
+        <div className="-mx-6 px-6 overflow-x-auto snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="flex gap-3 pb-2">
             {events.map((event) => {
               const allPrices = event.ticket_types ?? [];
               const paidPrices = allPrices.map((tt) => tt.price).filter((p) => p > 0);
@@ -112,15 +205,15 @@ export default async function OrganizerProfilePage({ params }: { params: Promise
                 <Link
                   key={event.id}
                   href={`/events/${event.slug}`}
-                  className="zv-card zv-card-hover block overflow-hidden group"
+                  className="zv-card zv-card-hover block overflow-hidden group w-44 shrink-0 snap-start"
                 >
-                  <div className="aspect-video bg-gradient-to-br from-yellow-100 via-yellow-50 to-white relative overflow-hidden">
+                  <div className="aspect-[4/5] bg-gradient-to-br from-yellow-100 via-yellow-50 to-white relative overflow-hidden">
                     {event.cover_image_url ? (
                       <Image
                         src={event.cover_image_url}
                         alt={event.title}
                         fill
-                        sizes="(max-width: 640px) 50vw, 33vw"
+                        sizes="176px"
                         className="object-cover transition-transform duration-500 group-hover:scale-105"
                       />
                     ) : (
@@ -133,9 +226,14 @@ export default async function OrganizerProfilePage({ params }: { params: Promise
                   </div>
                   <div className="p-3 space-y-1">
                     <p className="text-[10px] font-semibold uppercase tracking-wide zv-gradient-text">
-                      {new Date(event.starts_at).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                      {new Date(event.starts_at).toLocaleDateString(undefined, {
+                        month: "short",
+                        day: "numeric",
+                      })}
                     </p>
-                    <h3 className="font-semibold text-sm text-neutral-900 line-clamp-2">{event.title}</h3>
+                    <h3 className="font-semibold text-sm text-neutral-900 line-clamp-2">
+                      {event.title}
+                    </h3>
                     {isFree ? (
                       <p className="text-xs font-semibold text-emerald-600">Free</p>
                     ) : (
@@ -150,19 +248,46 @@ export default async function OrganizerProfilePage({ params }: { params: Promise
               );
             })}
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {!allowed && (
         <div className="zv-card p-6 space-y-3">
           <p className="text-sm text-neutral-600">
             {user
               ? `You're signed in as ${user.email}, but we don't see a ticket from ${organizer.business_name} on this email.`
-              : `Got a ticket from ${organizer.business_name}? Sign in to react and comment on their posts in the community feed.`}
+              : `Got a ticket from ${organizer.business_name}? Sign in to react and comment on their posts.`}
           </p>
           <ResendLinkForm organizerId={organizerId} />
         </div>
       )}
     </main>
+  );
+}
+
+function Tab({
+  href,
+  label,
+  count,
+  active,
+}: {
+  href: string;
+  label: string;
+  count: number;
+  active: boolean;
+}) {
+  return (
+    <Link
+      href={href}
+      scroll={false}
+      className={`px-4 py-2.5 text-sm font-semibold border-b-2 -mb-px transition-colors ${
+        active
+          ? "border-neutral-900 text-neutral-900"
+          : "border-transparent text-neutral-400 hover:text-neutral-700"
+      }`}
+    >
+      {label}
+      {count > 0 && <span className="ml-1.5 text-xs font-medium text-neutral-400">{count}</span>}
+    </Link>
   );
 }

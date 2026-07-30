@@ -1,10 +1,7 @@
-import Link from "next/link";
 import type { Metadata } from "next";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 import type { OrganizerPost, PostComment, ReactionType } from "@/lib/types";
-import ReactionButtons from "./reaction-buttons";
-import CommentThread from "./comment-thread";
-import VerifiedBadge from "@/components/verified-badge";
+import PostCard from "@/components/post-card";
 
 export const metadata: Metadata = {
   title: "Community",
@@ -22,14 +19,14 @@ export const metadata: Metadata = {
 // if a click comes back unauthorized, rather than hiding the controls
 // upfront.
 type PostWithOrganizer = OrganizerPost & {
-  organizers: { business_name: string; is_verified: boolean } | null;
+  organizers: { business_name: string; is_verified: boolean; handle: string | null } | null;
 };
 
 export default async function CommunityPage() {
   const service = createServiceClient();
   const { data: posts } = await service
     .from("organizer_posts")
-    .select("*, organizers(business_name, is_verified)")
+    .select("*, organizers(business_name, is_verified, handle)")
     .order("created_at", { ascending: false })
     .limit(30)
     .returns<PostWithOrganizer[]>();
@@ -74,56 +71,22 @@ export default async function CommunityPage() {
             const businessName = post.organizers?.business_name ?? "An organizer";
 
             return (
-              <div key={post.id} className="zv-card p-5">
-                <Link href={`/community/${post.organizer_id}`} className="flex items-center gap-2.5 mb-3 w-fit group">
-                  <div className="h-8 w-8 rounded-full bg-yellow-100 flex items-center justify-center text-xs font-bold zv-gradient-text shrink-0">
-                    {businessName.slice(0, 1).toUpperCase()}
-                  </div>
-                  <span className="text-sm font-semibold text-neutral-900 group-hover:underline flex items-center gap-1">
-                    {businessName}
-                    {post.organizers?.is_verified && <VerifiedBadge />}
-                  </span>
-                </Link>
-
-                <p className="text-sm text-neutral-800 whitespace-pre-wrap">{post.body}</p>
-                {post.image_urls.length > 0 && (
-                  <div className={`mt-3 grid gap-1.5 ${post.image_urls.length === 1 ? "grid-cols-1" : "grid-cols-3"}`}>
-                    {post.image_urls.map((url) => (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        key={url}
-                        src={url}
-                        alt=""
-                        className={`w-full rounded-2xl object-cover ${
-                          post.image_urls.length === 1 ? "aspect-[16/9]" : "aspect-square"
-                        }`}
-                      />
-                    ))}
-                  </div>
-                )}
-
-                <div className="flex items-center justify-between mt-4">
-                  <span className="text-xs text-neutral-400">
-                    {new Date(post.created_at).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}
-                  </span>
-                  <ReactionButtons
-                    postId={post.id}
-                    organizerId={post.organizer_id}
-                    organizerName={businessName}
-                    initialLikes={likes}
-                    initialDislikes={dislikes}
-                    initialMyReaction={mine}
-                  />
-                </div>
-
-                <CommentThread
-                  postId={post.id}
-                  organizerId={post.organizer_id}
-                  organizerName={businessName}
-                  currentUserId={user?.id ?? null}
-                  initialComments={postComments}
-                />
-              </div>
+              <PostCard
+                key={post.id}
+                post={post}
+                organizerName={businessName}
+                organizerVerified={post.organizers?.is_verified ?? false}
+                organizerHref={
+                  post.organizers?.handle
+                    ? `/${post.organizers.handle}`
+                    : `/community/${post.organizer_id}`
+                }
+                likes={likes}
+                dislikes={dislikes}
+                myReaction={mine}
+                comments={postComments}
+                currentUserId={user?.id ?? null}
+              />
             );
           })}
         </div>
