@@ -5,31 +5,50 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { WORLD_CURRENCIES, currencyLabel } from "@/lib/currencies";
 import { computeFees } from "@/lib/fees";
+import type { MembershipTier } from "@/lib/types";
 
-// Creates a membership pass.
+// Creates or edits a membership pass.
 //
 // The three numbers that define it — price, how many entries, how long they
 // last — are shown together with a plain-English summary underneath, because
 // "6 entries, ₦40,000, 365 days" is easy to mis-set and expensive to get wrong
 // once people have bought one.
+//
+// Editing is safe by construction: a membership snapshots credits_total,
+// base_amount and expires_at at the moment of purchase, so changing a tier
+// never reaches back and alters what someone already paid for. That's worth
+// saying out loud in the UI rather than leaving an organizer to guess, because
+// the intuitive fear — "will this shortchange my existing members?" — is
+// exactly what stops people editing a live product.
 export default function TierForm({
   organizerId,
   defaultCurrency,
+  tier,
+  memberCount = 0,
+  onDone,
 }: {
   organizerId: string;
   defaultCurrency: string;
+  /** Present when editing an existing pass. */
+  tier?: MembershipTier;
+  /** How many people have already bought this pass. Gates deletion. */
+  memberCount?: number;
+  /** Called when an edit form should close. */
+  onDone?: () => void;
 }) {
+  const editing = Boolean(tier);
   const router = useRouter();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(editing);
   const [saving, setSaving] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState({
-    name: "",
-    description: "",
-    price: "",
-    currency: defaultCurrency,
-    credits: "6",
-    validityDays: "365",
+    name: tier?.name ?? "",
+    description: tier?.description ?? "",
+    price: tier ? String(tier.price) : "",
+    currency: tier?.currency ?? defaultCurrency,
+    credits: tier ? String(tier.event_credits) : "6",
+    validityDays: tier ? String(tier.validity_days) : "365",
   });
 
   const price = Number(form.price);
@@ -37,27 +56,50 @@ export default function TierForm({
   const perEntry = price > 0 && credits > 0 ? Math.round((price / credits) * 100) / 100 : null;
   const fees = price > 0 ? computeFees(price, form.currency, "pass") : null;
 
+  function close() {
+    setOpen(false);
+    setError(null);
+    onDone?.();
+  }
+
   async function save() {
     setError(null);
     if (!form.name.trim()) return setError("Give the pass a name.");
     if (!(price > 0)) return setError("Set a price.");
     if (!(credits >= 1 && credits <= 12)) return setError("Entries must be between 1 and 12.");
 
-    setSaving(true);
-    const { error: insertError } = await createClient().from("membership_tiers").insert({
-      organizer_id: organizerId,
+    const values = {
       name: form.name.trim(),
       description: form.description.trim() || null,
       price,
       currency: form.currency,
       event_credits: credits,
       validity_days: Number(form.validityDays),
-    });
-    setSaving(false);
-    if (insertError) return setError(insertError.message);
+    };
 
-    setForm({ ...form, name: "", description: "", price: "" });
-    setOpen(false);
+    setSaving(true);
+    const supabase = createClient();
+    const { error: writeError } = tier
+      ? await supabase.from("membership_tiers").update(values).eq("id", tier.id)
+      : await supabase.from("membership_tiers").insert({ organizer_id: organizerId, ...values });
+    setSaving(false);
+    if (writeError) return setError(writeError.message);
+
+    if (!tier) setForm({ ...form, name: "", description: "", price: "" });
+    close();
+    router.refresh();
+  }
+
+  async function remove() {
+    setError(null);
+    setSaving(true);
+    const { error: deleteError } = await createClient()
+      .from("membership_tiers")
+      .delete()
+      .eq("id", tier!.id);
+    setSaving(false);
+    if (deleteError) return setError(deleteError.message);
+    close();
     router.refresh();
   }
 
@@ -71,7 +113,19 @@ export default function TierForm({
 
   return (
     <div className="zv-card p-6 space-y-5">
-      <h2 className="font-semibold text-neutral-900">New membership pass</h2>
+      <h2 className="font-semibold text-neutral-900">
+        {editing ? "Edit pass" : "New membership pass"}
+      </h2>
+
+      {/* The reassurance that makes editing usable. Without it an organizer
+          with paying members will simply never touch this form. */}
+      {editing && memberCount > 0 && (
+        <div className="rounded-2xl bg-amber-50 border border-amber-100 px-4 py-3 text-sm text-amber-800">
+          {memberCount} {memberCount === 1 ? "person has" : "people have"} already bought this pass.
+          Changes here apply to new buyers only — existing members keep the entries, price and expiry
+          date they paid for.
+        </div>
+      )}
 
       <div className="space-y-3">
         <div>
@@ -169,13 +223,42 @@ export default function TierForm({
 
       {error && <p className="text-sm text-red-600">{error}</p>}
 
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <button onClick={save} disabled={saving} className="zv-btn-primary text-sm">
-          {saving ? "Creating…" : "Create pass"}
+          {saving ? "Saving…" : editing ? "Save changes" : "Create pass"}
         </button>
-        <button onClick={() => setOpen(false)} className="text-sm text-neutral-400 hover:text-neutral-600">
+        <button onClick={close} className="text-sm text-neutral-400 hover:text-neutral-600">
           Cancel
         </button>
+
+        {/* Deleting is only offered while nothing points at the tier. Once a
+            membership references it, the row has to stay for the member's
+            record to make sense — taking it off sale is the right move. */}
+        {editing && memberCount === 0 && (
+          <div className="ml-auto">
+            {confirmingDelete ? (
+              <span className="flex items-center gap-2 text-sm">
+                <span className="text-neutral-500">Delete this pass?</span>
+                <button onClick={remove} disabled={saving} className="font-semibold text-red-600">
+                  Yes, delete
+                </button>
+                <button
+                  onClick={() => setConfirmingDelete(false)}
+                  className="text-neutral-400 hover:text-neutral-600"
+                >
+                  No
+                </button>
+              </span>
+            ) : (
+              <button
+                onClick={() => setConfirmingDelete(true)}
+                className="text-sm text-neutral-400 hover:text-red-600"
+              >
+                Delete
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

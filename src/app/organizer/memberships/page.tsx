@@ -4,6 +4,7 @@ import NoOrganizerNotice from "@/components/no-organizer-notice";
 import { assessMembership } from "@/lib/memberships";
 import type { Membership, MembershipTier } from "@/lib/types";
 import TierForm from "./tier-form";
+import TierRow from "./tier-row";
 import RefundMembershipButton from "./refund-membership-button";
 
 export default async function OrganizerMembershipsPage() {
@@ -26,6 +27,12 @@ export default async function OrganizerMembershipsPage() {
     .returns<Membership[]>();
 
   const paid = members ?? [];
+
+  // How many people bought each pass. Drives whether a tier can be deleted
+  // outright and whether editing needs the "new buyers only" warning.
+  const membersByTier = new Map<string, number>();
+  for (const m of paid) membersByTier.set(m.tier_id, (membersByTier.get(m.tier_id) ?? 0) + 1);
+
   const revenue = paid.reduce((sum, m) => sum + m.base_amount, 0);
   const active = paid.filter((m) => assessMembership(m).usable).length;
   const entriesUsed = paid.reduce((sum, m) => sum + m.credits_used, 0);
@@ -67,24 +74,12 @@ export default async function OrganizerMembershipsPage() {
         ) : (
           <ul className="space-y-3">
             {tiers.map((t) => (
-              <li key={t.id} className="zv-card p-5">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="min-w-0">
-                    <p className="font-semibold text-neutral-900">{t.name}</p>
-                    {t.description && (
-                      <p className="text-sm text-neutral-500 mt-1 line-clamp-2">{t.description}</p>
-                    )}
-                    <p className="text-xs text-neutral-400 mt-2">
-                      {t.event_credits} {t.event_credits === 1 ? "entry" : "entries"} · valid{" "}
-                      {Math.round(t.validity_days / 30)} months
-                      {!t.is_active && " · not on sale"}
-                    </p>
-                  </div>
-                  <p className="font-semibold text-neutral-900 whitespace-nowrap">
-                    {t.price.toLocaleString()} {t.currency}
-                  </p>
-                </div>
-              </li>
+              <TierRow
+                key={t.id}
+                tier={t}
+                organizerId={organizer.id}
+                memberCount={membersByTier.get(t.id) ?? 0}
+              />
             ))}
           </ul>
         )}
