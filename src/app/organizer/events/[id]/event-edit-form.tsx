@@ -30,6 +30,7 @@ export default function EventEditForm({ event, headerActions }: { event: EventRo
     category: event.category ?? "other",
     isUnlisted: event.is_unlisted ?? false,
     absorbServiceFee: event.absorb_service_fee ?? false,
+    membersIncluded: event.members_included ?? true,
   });
   const [links, setLinks] = useState<EventLink[]>(event.links ?? []);
   const [generating, setGenerating] = useState(false);
@@ -81,6 +82,7 @@ export default function EventEditForm({ event, headerActions }: { event: EventRo
         category: form.category,
         is_unlisted: form.isUnlisted,
         absorb_service_fee: form.absorbServiceFee,
+        members_included: form.membersIncluded,
         links: links.filter((l) => l.label.trim() && /^https?:\/\//i.test(l.url.trim())),
       })
       .eq("id", event.id);
@@ -193,6 +195,24 @@ export default function EventEditForm({ event, headerActions }: { event: EventRo
             By default buyers pay the fee on top and you receive your full ticket price. Tick this
             and the buyer pays exactly what you listed, with the fee coming out of your share
             instead. Useful when the price is already on a flyer.
+          </span>
+        </span>
+      </label>
+
+      <label className="flex items-start gap-3 cursor-pointer">
+        <input
+          type="checkbox"
+          checked={!form.membersIncluded}
+          onChange={(e) => setForm((f) => ({ ...f, membersIncluded: !e.target.checked }))}
+          className="mt-0.5 h-4 w-4 shrink-0 accent-yellow-500"
+        />
+        <span>
+          <span className="text-sm font-medium text-neutral-700">
+            Membership passes don&apos;t cover this event
+          </span>
+          <span className="block text-xs text-neutral-400 mt-0.5">
+            By default members get in on their pass. Tick this for a headliner or a special night
+            where everyone should buy a ticket — pass holders are told at the door to buy one.
           </span>
         </span>
       </label>

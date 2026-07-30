@@ -71,8 +71,10 @@ export interface EventRow {
   ends_at: string | null;
   status: EventStatus;
   is_unlisted: boolean;
-  /** When true, the 5% service fee comes out of the ticket price rather than being added on top. */
+  /** When true, the service fee comes out of the ticket price rather than being added on top. */
   absorb_service_fee: boolean;
+  /** When false, membership passes aren't valid here and holders must buy a ticket. */
+  members_included: boolean;
   created_at: string;
 }
 
@@ -175,4 +177,58 @@ export interface Payout {
   paid_at: string | null;
   paid_by: string | null;
   created_at: string;
+}
+
+// ---------------------------------------------------------------- memberships
+// A pass sells N event credits up front. The holder spends one credit per
+// event, at any event that organizer runs while the pass is valid.
+
+export interface MembershipTier {
+  id: string;
+  organizer_id: string;
+  name: string;
+  description: string | null;
+  price: number;
+  currency: string;
+  /** How many events the pass admits. 1–12. */
+  event_credits: number;
+  /** How long the credits stay usable, from purchase. */
+  validity_days: number;
+  is_active: boolean;
+  created_at: string;
+}
+
+export type MembershipStatus = "active" | "expired" | "cancelled" | "refunded";
+
+export interface Membership {
+  id: string;
+  tier_id: string;
+  organizer_id: string;
+  member_name: string;
+  member_email: string;
+  qr_token: string;
+  credits_total: number;
+  credits_used: number;
+  starts_at: string;
+  expires_at: string;
+  status: MembershipStatus;
+  reference: string | null;
+  base_currency: string;
+  base_amount: number;
+  service_fee: number;
+  charge_currency: string;
+  charge_amount: number;
+  fx_rate_used: number | null;
+  paid_at: string | null;
+  /** Set once this membership's revenue has been included in a payout. */
+  payout_id: string | null;
+  created_at: string;
+}
+
+export interface MembershipCheckIn {
+  id: string;
+  membership_id: string;
+  event_id: string;
+  checked_in_at: string;
+  checked_in_by: string | null;
 }

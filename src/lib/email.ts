@@ -243,6 +243,66 @@ export async function sendContactAckEmail(args: ContactAckArgs) {
   }
 }
 
+interface MembershipEmailArgs {
+  to: string;
+  memberName: string;
+  qrToken: string;
+  credits: number;
+  expiresAt: string;
+  passId: string;
+}
+
+// Sent once a membership pass is paid for. The QR is attached as a PNG and the
+// pass page is linked — the page is authoritative, since credits count down as
+// they're used and a static email can't show that.
+export async function sendMembershipEmail(args: MembershipEmailArgs) {
+  const base = appUrl();
+  const qr = (await generateQrBuffer(args.qrToken)).toString("base64");
+
+  const { data, error } = await resend.emails.send({
+    from: process.env.EMAIL_FROM!,
+    to: args.to,
+    subject: "Your membership pass",
+    html: `
+      <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:520px;margin:0 auto;padding:8px;background:#f5f5f7;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:separate;border-radius:20px;overflow:hidden;margin:16px 0;">
+          <tr>
+            <td style="background:linear-gradient(135deg,#facc15,#ca8a04);background-color:#eab308;padding:28px 24px;">
+              <p style="margin:0;color:#ffffff;font-weight:700;font-size:13px;letter-spacing:0.04em;">ZIVOTIX</p>
+              <h1 style="margin:10px 0 0;color:#ffffff;font-size:24px;line-height:1.25;">Your membership pass</h1>
+              <p style="margin:12px 0 0;color:rgba(255,255,255,0.92);font-size:14px;">
+                ${args.credits} ${args.credits === 1 ? "entry" : "entries"} · valid until ${esc(
+                  new Date(args.expiresAt).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })
+                )}
+              </p>
+            </td>
+          </tr>
+        </table>
+
+        <p style="margin:0 0 16px;font-size:14px;color:#1d1d1f;">
+          Hi ${esc(args.memberName)}, your pass is ready. Show the QR code at the door — one entry per event.
+        </p>
+
+        <a href="${base}/pass/${esc(args.passId)}"
+           style="display:inline-block;margin:0 0 20px;background:linear-gradient(135deg,#facc15,#ca8a04);background-color:#eab308;color:#ffffff;text-decoration:none;font-weight:600;font-size:14px;padding:12px 26px;border-radius:999px;">
+          Open your pass
+        </a>
+
+        <p style="margin:0 0 24px;font-size:12px;color:#6e6e73;">
+          Open the link above rather than this email when you arrive — it shows how many entries you have
+          left, which this email can't.
+        </p>
+      </div>
+    `,
+    attachments: [{ filename: "membership-pass.png", content: qr }],
+  });
+
+  if (error) {
+    throw new Error(`Resend rejected the membership email: ${error.message ?? JSON.stringify(error)}`);
+  }
+  return data;
+}
+
 interface DoorStaffInviteArgs {
   to: string;
   organizerName: string;

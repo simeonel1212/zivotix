@@ -27,21 +27,38 @@ export async function POST() {
   for (const organizer of organizers ?? []) {
     const { data: events } = await service.from("events").select("id").eq("organizer_id", organizer.id);
     const eventIds = (events ?? []).map((e) => e.id);
-    if (!eventIds.length) continue;
 
-    const { data: orders } = await service
-      .from("orders")
-      .select("*")
-      .in("event_id", eventIds)
-      .eq("status", "paid");
+    const { data: orders } = eventIds.length
+      ? await service.from("orders").select("*").in("event_id", eventIds).eq("status", "paid")
+      : { data: [] };
 
     const unpaid = (orders ?? []).filter((o) => !excluded.has(o.id));
-    if (!unpaid.length) continue;
+
+    // Membership revenue belongs to the organizer, not to any event, so it's
+    // collected separately and joined here. An organizer can sell passes
+    // without having run an event yet — which is the whole point of selling
+    // them in advance — so this runs even when eventIds is empty.
+    //
+    // Refunded and cancelled passes are excluded: that money went back to the
+    // member and was never the organizer's.
+    const { data: memberships } = await service
+      .from("memberships")
+      .select("id, base_amount")
+      .eq("organizer_id", organizer.id)
+      .not("paid_at", "is", null)
+      .is("payout_id", null)
+      .in("status", ["active", "expired"])
+      .returns<{ id: string; base_amount: number }[]>();
+
+    const unpaidMemberships = memberships ?? [];
+    if (!unpaid.length && !unpaidMemberships.length) continue;
 
     // Organizers keep 100% of face value — Zivotix is paid by the buyer's
-    // service fee, which lives on the order and never enters gross_sales.
-    // See supabase/migrations/2026-07-27-buyer-paid-service-fee.sql.
-    const grossSales = unpaid.reduce((s, o) => s + o.base_amount, 0);
+    // service fee, which lives on the order or membership and never enters
+    // gross_sales. See supabase/migrations/2026-07-27-buyer-paid-service-fee.sql.
+    const ticketGross = unpaid.reduce((s, o) => s + o.base_amount, 0);
+    const membershipGross = unpaidMemberships.reduce((s, m) => s + m.base_amount, 0);
+    const grossSales = ticketGross + membershipGross;
     const platformFee = 0;
     const netPayable = Math.round(grossSales * 100) / 100;
     if (netPayable <= 0) continue;
@@ -62,9 +79,24 @@ export async function POST() {
       .single();
     if (error || !payout) continue;
 
-    await service
-      .from("payout_items")
-      .insert(unpaid.map((o) => ({ payout_id: payout.id, order_id: o.id, amount: o.base_amount })));
+    if (unpaid.length) {
+      await service
+        .from("payout_items")
+        .insert(unpaid.map((o) => ({ payout_id: payout.id, order_id: o.id, amount: o.base_amount })));
+    }
+
+    // Stamping the memberships is what stops them being paid out twice — the
+    // equivalent of a payout_item, kept on the row because payout_items is
+    // keyed to orders.
+    if (unpaidMemberships.length) {
+      await service
+        .from("memberships")
+        .update({ payout_id: payout.id })
+        .in(
+          "id",
+          unpaidMemberships.map((m) => m.id)
+        );
+    }
 
     created.push(payout);
   }

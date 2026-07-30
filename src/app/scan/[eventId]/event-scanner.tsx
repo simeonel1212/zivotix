@@ -4,12 +4,26 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import jsQR from "jsqr";
 
-type ScanStatus = "valid" | "already_used" | "wrong_event" | "invalid" | "offline";
+type ScanStatus =
+  | "valid"
+  | "already_used"
+  | "wrong_event"
+  | "invalid"
+  | "offline"
+  // Membership-only outcomes.
+  | "members_excluded"
+  | "pass_not_valid";
 
 interface ScanOutcome {
   status: ScanStatus;
   ticketType?: string;
   eventTitle?: string;
+  /** True when the QR was a membership pass rather than a single-event ticket. */
+  isMembership?: boolean;
+  memberName?: string;
+  creditsLeft?: number;
+  creditsTotal?: number;
+  message?: string;
 }
 
 export default function EventScanner({
@@ -58,7 +72,16 @@ export default function EventScanner({
           body: JSON.stringify({ token, eventId }),
         });
         const data = await res.json();
-        setResult({ status: data.result, ticketType: data.ticketType, eventTitle: data.eventTitle });
+        setResult({
+          status: data.result,
+          ticketType: data.ticketType,
+          eventTitle: data.eventTitle,
+          isMembership: data.isMembership,
+          memberName: data.memberName,
+          creditsLeft: data.creditsLeft,
+          creditsTotal: data.creditsTotal,
+          message: data.message,
+        });
         if (data.result === "valid") {
           setScanned((n) => n + 1);
           navigator.vibrate?.(60);
@@ -222,14 +245,36 @@ export default function EventScanner({
 }
 
 function ResultOverlay({ result }: { result: ScanOutcome }) {
+  const pass = result.isMembership;
+
   const config: Record<ScanStatus, { bg: string; glyph: string; title: string; sub?: string }> = {
     valid: { bg: "bg-emerald-500", glyph: "✓", title: "Let them in" },
-    already_used: { bg: "bg-amber-500", glyph: "⚠", title: "Already scanned", sub: "This ticket has been used" },
+    already_used: {
+      bg: "bg-amber-500",
+      glyph: "⚠",
+      title: "Already scanned",
+      sub: pass ? "This pass is already in tonight" : "This ticket has been used",
+    },
     wrong_event: {
       bg: "bg-orange-600",
       glyph: "⤫",
       title: "Wrong event",
       sub: result.eventTitle ? `This ticket is for ${result.eventTitle}` : "Not valid at this door",
+    },
+    // A real, valid pass — the organizer just excluded this night. Distinct
+    // from "invalid" on purpose: the person at the door isn't a chancer, and
+    // door staff need to know to sell them a ticket rather than turn them away.
+    members_excluded: {
+      bg: "bg-orange-600",
+      glyph: "⤫",
+      title: "Members not included",
+      sub: "Passes don't cover this event — sell them a ticket",
+    },
+    pass_not_valid: {
+      bg: "bg-rose-600",
+      glyph: "✕",
+      title: result.message ?? "Pass not valid",
+      sub: "Sell them a ticket instead",
     },
     invalid: { bg: "bg-rose-600", glyph: "✕", title: "Not a valid ticket" },
     offline: {
@@ -243,13 +288,22 @@ function ResultOverlay({ result }: { result: ScanOutcome }) {
 
   return (
     <div className={`absolute inset-0 flex flex-col items-center justify-center gap-2 px-8 text-center ${c.bg}`}>
+      {pass && (
+        <span className="mb-1 rounded-full bg-black/20 px-3 py-1 text-xs font-semibold tracking-wide">
+          MEMBERSHIP PASS
+        </span>
+      )}
       <p className="text-7xl leading-none drop-shadow-sm">{c.glyph}</p>
       <p className="mt-2 text-2xl font-bold">{c.title}</p>
-      {(c.sub || result.ticketType) && (
-        <p className="text-sm opacity-90">{c.sub ?? result.ticketType}</p>
-      )}
-      {result.status === "valid" && result.ticketType && (
+      {result.memberName && <p className="text-base font-medium opacity-95">{result.memberName}</p>}
+      {c.sub && <p className="text-sm opacity-90">{c.sub}</p>}
+      {result.status === "valid" && !pass && result.ticketType && (
         <p className="text-sm opacity-90">{result.ticketType}</p>
+      )}
+      {result.status === "valid" && pass && result.creditsTotal !== undefined && (
+        <p className="text-sm opacity-90 tabular-nums">
+          {result.creditsLeft} of {result.creditsTotal} entries left
+        </p>
       )}
     </div>
   );

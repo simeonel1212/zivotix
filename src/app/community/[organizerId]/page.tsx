@@ -4,9 +4,10 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { hasCommunityAccess } from "@/lib/community";
-import type { EventRow } from "@/lib/types";
+import type { EventRow, MembershipTier } from "@/lib/types";
 import ResendLinkForm from "./resend-link-form";
 import VerifiedBadge from "@/components/verified-badge";
+import MembershipTiers from "@/components/membership-tiers";
 
 export async function generateMetadata({
   params,
@@ -57,6 +58,14 @@ export default async function OrganizerProfilePage({ params }: { params: Promise
     .order("starts_at", { ascending: true })
     .returns<EventWithPrices[]>();
 
+  const { data: tiers } = await service
+    .from("membership_tiers")
+    .select("*")
+    .eq("organizer_id", organizerId)
+    .eq("is_active", true)
+    .order("price", { ascending: true })
+    .returns<MembershipTier[]>();
+
   const supabase = await createClient();
   const {
     data: { user },
@@ -79,6 +88,10 @@ export default async function OrganizerProfilePage({ params }: { params: Promise
           </h1>
         </div>
       </div>
+
+      {/* Above the ticket list on purpose: someone who came for one night
+          should see the season option before they decide. */}
+      <MembershipTiers tiers={tiers ?? []} />
 
       <div>
         <h2 className="font-semibold text-neutral-900 mb-3">Available tickets</h2>
