@@ -1,4 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
+import { appUrl } from "@/lib/app-url";
+import ShareButton from "@/components/share-button";
 import type { EventRow, Order, TicketType } from "@/lib/types";
 import StatusToggle from "./status-toggle";
 import CoverEditor from "./cover-editor";
@@ -65,7 +67,27 @@ export default async function OrganizerEventDetailPage({
 
   return (
     <div className="max-w-3xl mx-auto space-y-10">
-      <EventEditForm event={event} headerActions={<StatusToggle eventId={event.id} status={event.status} />} />
+      <EventEditForm
+        event={event}
+        headerActions={
+          <>
+            {/* Shares the public event URL, not this dashboard page. This is
+                where an organizer actually comes looking for their link. */}
+            {event.status === "published" && (
+              <ShareButton
+                title={event.title}
+                text={`${event.title} — ${new Date(event.starts_at).toLocaleDateString(undefined, {
+                  day: "numeric",
+                  month: "long",
+                })} at ${event.venue}, ${event.city}. Tickets:`}
+                url={`${appUrl()}/events/${event.slug}`}
+                label="Share link"
+              />
+            )}
+            <StatusToggle eventId={event.id} status={event.status} />
+          </>
+        }
+      />
 
       <CoverEditor eventId={event.id} initialUrl={event.cover_image_url ?? ""} />
 

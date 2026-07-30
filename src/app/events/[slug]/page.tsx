@@ -7,6 +7,7 @@ import type { EventRow, TicketType } from "@/lib/types";
 import { googleMapsUrl, googleMapsEmbedUrl } from "@/lib/maps";
 import { appUrl } from "@/lib/app-url";
 import VerifiedBadge from "@/components/verified-badge";
+import ShareButton from "@/components/share-button";
 import TicketSelector from "./ticket-selector";
 
 // Per-event metadata is the single biggest SEO lever here: it's what makes
@@ -178,7 +179,20 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
             {organizer.is_verified && <VerifiedBadge />}
           </Link>
         )}
-        <h1 className="text-4xl font-bold tracking-tight text-neutral-900">{event.title}</h1>
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <h1 className="text-4xl font-bold tracking-tight text-neutral-900">{event.title}</h1>
+          {/* Sits beside the title rather than down with the ticket selector:
+              people share an event when they first recognise it, not after
+              they've decided to buy. */}
+          <ShareButton
+            title={event.title}
+            text={`${event.title} — ${new Date(event.starts_at).toLocaleDateString(undefined, {
+              day: "numeric",
+              month: "long",
+            })} at ${event.venue}, ${event.city}. Tickets:`}
+            className="shrink-0"
+          />
+        </div>
         <div className="space-y-2.5">
           <div className="flex items-center gap-3 text-neutral-600">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" strokeWidth="1.8" stroke="currentColor" className="shrink-0" style={{ color: "var(--accent-solid)" }} aria-hidden="true">
