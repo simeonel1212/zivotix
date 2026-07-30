@@ -6,6 +6,7 @@ import { createClient, createServiceClient } from "@/lib/supabase/server";
 import type { EventRow, TicketType, MembershipTier } from "@/lib/types";
 import { googleMapsUrl, googleMapsEmbedUrl } from "@/lib/maps";
 import { appUrl } from "@/lib/app-url";
+import { buyerDisplayCurrency } from "@/lib/geo";
 import VerifiedBadge from "@/components/verified-badge";
 import ShareButton from "@/components/share-button";
 import MembershipUpsell from "@/components/membership-upsell";
@@ -107,6 +108,9 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
     .eq("is_active", true)
     .order("price", { ascending: true })
     .returns<MembershipTier[]>();
+
+  // Resolved from the request's IP country, not the browser's language.
+  const detectedCurrency = await buyerDisplayCurrency();
 
   const mapsUrl = googleMapsUrl(event.venue, event.city, event.country);
   const mapsEmbedUrl = googleMapsEmbedUrl(event.venue, event.city, event.country);
@@ -309,6 +313,7 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
         event={event}
         ticketTypes={ticketTypes ?? []}
         feeMode={event.absorb_service_fee ? "absorb" : "pass"}
+        detectedCurrency={detectedCurrency}
       />
 
       {/* Most buyers arrive here from a shared event link, never seeing the

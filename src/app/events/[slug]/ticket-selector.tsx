@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import type { EventRow, TicketType } from "@/lib/types";
 import { computeFees, type FeeMode } from "@/lib/fees";
 import ApproxPrice from "@/components/approx-price";
@@ -13,11 +14,14 @@ export default function TicketSelector({
   event,
   ticketTypes,
   feeMode = "pass",
+  detectedCurrency = null,
 }: {
   event: EventRow;
   ticketTypes: TicketType[];
   /** "absorb" means the organizer covers the fee and the buyer pays the listed price flat. */
   feeMode?: FeeMode;
+  /** Buyer's currency from the edge network, for the one approximation on the total. */
+  detectedCurrency?: string | null;
 }) {
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [buyer, setBuyer] = useState({ name: "", email: "" });
@@ -41,6 +45,34 @@ export default function TicketSelector({
   // event with nothing selected yet — without this the page reads "Total:
   // Free / Get free tickets" on an event whose tickets cost thousands.
   const isFreeEvent = ticketTypes.length > 0 && ticketTypes.every((tt) => tt.price === 0);
+
+  // Tiers bucketed under their category heading, in the order the categories
+  // first appear (which is the organizer's own price ordering, not alphabetical
+  // — "Standing" before "Tables" is their call to make, not ours).
+  //
+  // A null category is its own bucket with no heading, so an organizer who
+  // never touches this feature sees exactly the flat list they had before.
+  const groups = useMemo(() => {
+    const byCategory = new Map<string | null, TicketType[]>();
+    for (const tt of ticketTypes) {
+      const key = tt.category?.trim() || null;
+      const existing = byCategory.get(key);
+      if (existing) existing.push(tt);
+      else byCategory.set(key, [tt]);
+    }
+    return [...byCategory.entries()];
+  }, [ticketTypes]);
+
+  // Collapsed groups, tracked by category name.
+  //
+  // Everything starts open. A category a buyer has to click before they can see
+  // a price is a price they might never see, and the whole point of the section
+  // is to sell what's in it. Collapsing is there for the organizer running eight
+  // tiers across three groups, as a way to get past what you're not buying.
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+  function toggleGroup(category: string) {
+    setCollapsed((c) => ({ ...c, [category]: !c[category] }));
+  }
 
   function setQty(id: string, qty: number) {
     setQuantities((q) => ({ ...q, [id]: Math.max(0, qty) }));
@@ -83,44 +115,91 @@ export default function TicketSelector({
     <div className="zv-card p-6 sm:p-8 space-y-6">
       <h2 className="font-semibold text-lg text-neutral-900">Tickets</h2>
 
-      <div className="space-y-3">
-        {ticketTypes.map((tt) => {
-          const remaining = tt.quantity_total - tt.quantity_sold;
+      <div className="space-y-6">
+        {groups.map(([category, tiers]) => {
+          const isOpen = !category || !collapsed[category];
+          const selectedInGroup = tiers.reduce((n, tt) => n + (quantities[tt.id] ?? 0), 0);
           return (
-            <div
-              key={tt.id}
-              className="flex items-center justify-between gap-4 rounded-2xl border border-neutral-100 bg-neutral-50/60 px-4 py-3.5"
-            >
-              <div>
-                <p className="font-medium text-sm text-neutral-900">{tt.name}</p>
-                <p className="text-sm text-neutral-500">
-                  {tt.price > 0 ? (
-                    <>
-                      {tt.price.toLocaleString()} {event.currency}
-                      <ApproxPrice amount={tt.price} currency={event.currency} className="ml-1.5 text-xs" />
-                    </>
-                  ) : (
-                    <span className="font-medium text-emerald-600">Free</span>
-                  )}
-                  {remaining <= 10 && remaining > 0 && (
-                    <span className="text-amber-600 font-medium"> · {remaining} left</span>
-                  )}
-                  {remaining <= 0 && <span className="text-red-500 font-medium"> · Sold out</span>}
-                </p>
-              </div>
-              <select
-                disabled={remaining <= 0}
-                value={quantities[tt.id] ?? 0}
-                onChange={(e) => setQty(tt.id, Number(e.target.value))}
-                className="zv-input w-20 text-center disabled:opacity-40"
+          <div key={category ?? "__ungrouped"} className="space-y-3">
+            {category && (
+              <button
+                type="button"
+                onClick={() => toggleGroup(category)}
+                aria-expanded={isOpen}
+                className="flex items-center gap-2 w-full text-left group/cat"
               >
-                {Array.from({ length: Math.min(tt.max_per_order, Math.max(remaining, 0)) + 1 }, (_, n) => (
-                  <option key={n} value={n}>
-                    {n}
-                  </option>
-                ))}
-              </select>
-            </div>
+                <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400 group-hover/cat:text-neutral-600 transition-colors">
+                  {category}
+                </span>
+                <span className="text-xs text-neutral-300">{tiers.length}</span>
+                {/* A collapsed group holding a selected ticket would otherwise
+                    look empty while still being charged for. */}
+                {!isOpen && selectedInGroup > 0 && (
+                  <span className="zv-badge bg-neutral-900 text-white text-[10px] px-2 py-0.5">
+                    {selectedInGroup} selected
+                  </span>
+                )}
+                <span className="flex-1 h-px bg-neutral-100" />
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className={`h-3.5 w-3.5 text-neutral-400 transition-transform ${isOpen ? "" : "-rotate-90"}`}
+                >
+                  <path d="m6 9 6 6 6-6" />
+                </svg>
+              </button>
+            )}
+            {isOpen && tiers.map((tt) => {
+              const remaining = tt.quantity_total - tt.quantity_sold;
+              return (
+                <div
+                  key={tt.id}
+                  className="flex items-center justify-between gap-4 rounded-2xl border border-neutral-100 bg-neutral-50/60 px-4 py-3.5"
+                >
+                  <div className="min-w-0">
+                    <p className="font-medium text-sm text-neutral-900">{tt.name}</p>
+                    {tt.description && (
+                      <p className="text-xs text-neutral-500 mt-0.5 whitespace-pre-wrap">
+                        {tt.description}
+                      </p>
+                    )}
+                    {/* Just the price. The approximate conversion and the
+                        remaining-stock count both used to live here; repeated
+                        down a list of five tiers they were noise, and a
+                        scarcity number on every row reads as pressure rather
+                        than information. Sold out stays — a buyer has to know
+                        they can't have it. */}
+                    <p className="text-sm text-neutral-500 mt-0.5">
+                      {tt.price > 0 ? (
+                        <>
+                          {tt.price.toLocaleString()} {event.currency}
+                        </>
+                      ) : (
+                        <span className="font-medium text-emerald-600">Free</span>
+                      )}
+                      {remaining <= 0 && <span className="text-red-500 font-medium"> · Sold out</span>}
+                    </p>
+                  </div>
+                  <select
+                    disabled={remaining <= 0}
+                    value={quantities[tt.id] ?? 0}
+                    onChange={(e) => setQty(tt.id, Number(e.target.value))}
+                    className="zv-input w-20 text-center disabled:opacity-40 shrink-0"
+                  >
+                    {Array.from({ length: Math.min(tt.max_per_order, Math.max(remaining, 0)) + 1 }, (_, n) => (
+                      <option key={n} value={n}>
+                        {n}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              );
+            })}
+          </div>
           );
         })}
       </div>
@@ -175,7 +254,12 @@ export default function TicketSelector({
           {total > 0 && (
             <>
               {" "}
-              <ApproxPrice amount={total} currency={event.currency} className="text-sm font-medium" />
+              <ApproxPrice
+                amount={total}
+                currency={event.currency}
+                detectedCurrency={detectedCurrency}
+                className="text-sm font-medium"
+              />
             </>
           )}
           {total > 0 && (
@@ -217,13 +301,13 @@ export default function TicketSelector({
 
       <p className="text-xs text-neutral-400">
         By checking out, you agree to our{" "}
-        <a href="/terms" className="underline hover:text-neutral-600">
+        <Link href="/terms" className="underline hover:text-neutral-600">
           Terms
-        </a>{" "}
+        </Link>{" "}
         and{" "}
-        <a href="/refund-policy" className="underline hover:text-neutral-600">
+        <Link href="/refund-policy" className="underline hover:text-neutral-600">
           Refund Policy
-        </a>
+        </Link>
         .
       </p>
     </div>

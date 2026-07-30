@@ -8,6 +8,8 @@ import type { TicketType } from "@/lib/types";
 interface RowForm {
   id: string;
   name: string;
+  category: string;
+  description: string;
   price: string;
   free: boolean;
   quantity_total: string;
@@ -18,6 +20,8 @@ function toRowForm(tt: TicketType): RowForm {
   return {
     id: tt.id,
     name: tt.name,
+    category: tt.category ?? "",
+    description: tt.description ?? "",
     price: String(tt.price),
     free: tt.price === 0,
     quantity_total: String(tt.quantity_total),
@@ -30,7 +34,14 @@ interface TemplateEvent {
   title: string;
   starts_at: string;
   currency: string;
-  ticket_types: { name: string; price: number; quantity_total: number; max_per_order: number }[];
+  ticket_types: {
+    name: string;
+    category: string | null;
+    description: string | null;
+    price: number;
+    quantity_total: number;
+    max_per_order: number;
+  }[];
 }
 
 export default function TicketTypesEditor({
@@ -52,7 +63,14 @@ export default function TicketTypesEditor({
   const [error, setError] = useState<string | null>(null);
 
   const [adding, setAdding] = useState(false);
-  const [newRow, setNewRow] = useState({ name: "", price: "", quantity_total: "", free: false });
+  const [newRow, setNewRow] = useState({
+    name: "",
+    category: "",
+    description: "",
+    price: "",
+    quantity_total: "",
+    free: false,
+  });
   const [addError, setAddError] = useState<string | null>(null);
   const [addLoading, setAddLoading] = useState(false);
 
@@ -76,6 +94,8 @@ export default function TicketTypesEditor({
         selected.ticket_types.map((tt) => ({
           event_id: eventId,
           name: tt.name,
+          category: tt.category,
+          description: tt.description,
           // Prices are carried across as-is even if the currencies differ —
           // converting silently would be worse than showing the organizer a
           // number they can see is wrong and fix.
@@ -117,7 +137,15 @@ export default function TicketTypesEditor({
     setSavingId(id);
     const { error: updateError } = await createClient()
       .from("ticket_types")
-      .update({ name: row.name, price, quantity_total: quantityTotal })
+      .update({
+        name: row.name,
+        // Empty string means "no category" — stored as null so the event page
+        // treats it as ungrouped rather than rendering a blank heading.
+        category: row.category.trim() || null,
+        description: row.description.trim() || null,
+        price,
+        quantity_total: quantityTotal,
+      })
       .eq("id", id);
     setSavingId(null);
     if (updateError) {
@@ -140,6 +168,8 @@ export default function TicketTypesEditor({
     const { error: insertError } = await createClient().from("ticket_types").insert({
       event_id: eventId,
       name: newRow.name,
+      category: newRow.category.trim() || null,
+      description: newRow.description.trim() || null,
       price,
       quantity_total: quantityTotal,
       quantity_sold: 0,
@@ -150,7 +180,9 @@ export default function TicketTypesEditor({
       setAddError(insertError.message);
       return;
     }
-    setNewRow({ name: "", price: "", quantity_total: "", free: false });
+    // The category is deliberately kept: an organizer adding "Table of 6" has
+    // almost certainly got "Table of 10" coming next.
+    setNewRow({ name: "", category: newRow.category, description: "", price: "", quantity_total: "", free: false });
     setAdding(false);
     router.refresh();
   }
@@ -159,7 +191,26 @@ export default function TicketTypesEditor({
     <div className="space-y-3">
       <div className="zv-card divide-y divide-neutral-100 overflow-hidden">
         {rows.map((row) => (
-          <div key={row.id} className="grid grid-cols-2 sm:grid-cols-[2fr_1fr_1fr_auto] gap-2 items-center p-3.5">
+          <div key={row.id} className="p-3.5 space-y-2">
+            {/* Category and description sit on their own line above the
+                numbers. Squeezing six fields into one row makes every one of
+                them too narrow to read on a phone, which is where most
+                organizers actually edit this. */}
+            <div className="grid grid-cols-1 sm:grid-cols-[1fr_2fr] gap-2">
+              <input
+                className="zv-input text-sm"
+                placeholder="Group (optional)"
+                value={row.category}
+                onChange={(e) => updateRow(row.id, "category", e.target.value)}
+              />
+              <input
+                className="zv-input text-sm"
+                placeholder="What's included (optional)"
+                value={row.description}
+                onChange={(e) => updateRow(row.id, "description", e.target.value)}
+              />
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-[2fr_1fr_1fr_auto] gap-2 items-center">
             <input
               className="zv-input text-sm"
               value={row.name}
@@ -205,12 +256,28 @@ export default function TicketTypesEditor({
               {savingId === row.id ? "Saving…" : "Save"}
             </button>
             {errorId === row.id && error && <p className="text-xs text-red-600 col-span-2 sm:col-span-4">{error}</p>}
+            </div>
           </div>
         ))}
       </div>
 
       {adding ? (
-        <div className="zv-card p-3.5 grid grid-cols-2 sm:grid-cols-[2fr_1fr_1fr_auto] gap-2 items-start">
+        <div className="zv-card p-3.5 space-y-2">
+          <div className="grid grid-cols-1 sm:grid-cols-[1fr_2fr] gap-2">
+            <input
+              placeholder="Group (e.g. Tables)"
+              className="zv-input text-sm"
+              value={newRow.category}
+              onChange={(e) => setNewRow((r) => ({ ...r, category: e.target.value }))}
+            />
+            <input
+              placeholder="What's included (e.g. Seats 6, bottle of spirits)"
+              className="zv-input text-sm"
+              value={newRow.description}
+              onChange={(e) => setNewRow((r) => ({ ...r, description: e.target.value }))}
+            />
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-[2fr_1fr_1fr_auto] gap-2 items-start">
           <input
             placeholder="Name (e.g. VIP)"
             className="zv-input text-sm"
@@ -254,6 +321,7 @@ export default function TicketTypesEditor({
             </button>
           </div>
           {addError && <p className="text-xs text-red-600 col-span-2 sm:col-span-4">{addError}</p>}
+          </div>
         </div>
       ) : (
         <button onClick={() => setAdding(true)} className="text-sm font-semibold zv-gradient-text">

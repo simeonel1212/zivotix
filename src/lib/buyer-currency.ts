@@ -1,4 +1,3 @@
-import { defaultPayoutCurrency, isValidCountry } from "@/lib/countries";
 import { WORLD_CURRENCIES } from "@/lib/currencies";
 
 // Works out what currency to *show* a buyer prices in.
@@ -13,36 +12,6 @@ const STORAGE_KEY = "zvx_display_currency";
 
 function isSupported(code: string | null | undefined): code is string {
   return !!code && (WORLD_CURRENCIES as readonly string[]).includes(code.toUpperCase());
-}
-
-/**
- * Reads the region out of the browser's locale — "en-GB" gives GB, which maps
- * to GBP. Falls back through the full locale list before giving up, because
- * plain "en" carries no region and is very common.
- */
-export function currencyFromLocale(): string | null {
-  if (typeof navigator === "undefined") return null;
-
-  const locales = [
-    ...(navigator.languages ?? []),
-    navigator.language,
-  ].filter(Boolean) as string[];
-
-  for (const locale of locales) {
-    // Intl gives a properly parsed region where a naive split on "-" would
-    // trip over tags like "zh-Hans-CN".
-    let region: string | undefined;
-    try {
-      region = new Intl.Locale(locale).region ?? undefined;
-    } catch {
-      region = locale.split("-")[1];
-    }
-    if (region && isValidCountry(region)) {
-      const currency = defaultPayoutCurrency(region);
-      if (isSupported(currency)) return currency;
-    }
-  }
-  return null;
 }
 
 /** An explicit choice always beats a detected one. */
@@ -66,8 +35,16 @@ export function storeCurrency(code: string) {
   }
 }
 
-export function resolveDisplayCurrency(): string | null {
-  return readStoredCurrency() ?? currencyFromLocale();
+/**
+ * The currency to show approximations in.
+ *
+ * `detected` comes from the server (lib/geo.ts), which reads the edge network's
+ * IP country. Browser locale is deliberately *not* consulted: a Nigerian laptop
+ * set to English (US) reports en-US, and trusting that put "≈ USD" on naira
+ * tickets for buyers standing in Lagos.
+ */
+export function resolveDisplayCurrency(detected: string | null): string | null {
+  return readStoredCurrency() ?? (isSupported(detected) ? detected.toUpperCase() : null);
 }
 
 // Module-level cache so a page with twenty ticket prices makes one request per

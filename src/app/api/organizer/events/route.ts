@@ -5,6 +5,9 @@ import { sanitizeLinks } from "@/lib/sanitize-links";
 
 interface TicketTypeInput {
   name: string;
+  /** Optional grouping heading, added after an event exists in most cases. */
+  category?: string | null;
+  description?: string | null;
   price: number;
   quantity_total: number;
   max_per_order: number;
@@ -89,6 +92,8 @@ export async function POST(req: Request) {
     body.ticketTypes.map((tt) => ({
       event_id: event.id,
       name: tt.name,
+      category: tt.category?.trim() || null,
+      description: tt.description?.trim() || null,
       price: tt.price,
       quantity_total: tt.quantity_total,
       max_per_order: tt.max_per_order || 10,

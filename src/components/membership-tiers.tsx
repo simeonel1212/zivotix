@@ -10,7 +10,14 @@ import type { MembershipTier } from "@/lib/types";
 // Shown above their events on purpose: a pass is the higher-value purchase and
 // the one that turns a one-off buyer into a regular. Someone who came for a
 // single night should see the season option before they decide.
-export default function MembershipTiers({ tiers }: { tiers: MembershipTier[] }) {
+export default function MembershipTiers({
+  tiers,
+  detectedCurrency = null,
+}: {
+  tiers: MembershipTier[];
+  /** Buyer's currency from the edge network, not from browser language. */
+  detectedCurrency?: string | null;
+}) {
   const [openId, setOpenId] = useState<string | null>(null);
   const [buyer, setBuyer] = useState({ name: "", email: "" });
   const [loading, setLoading] = useState(false);
@@ -69,7 +76,12 @@ export default function MembershipTiers({ tiers }: { tiers: MembershipTier[] }) 
                 <p className="text-2xl font-bold text-neutral-900">
                   {fees.total.toLocaleString()} {tier.currency}
                 </p>
-                <ApproxPrice amount={fees.total} currency={tier.currency} className="text-xs" />
+                <ApproxPrice
+                  amount={fees.total}
+                  currency={tier.currency}
+                  detectedCurrency={detectedCurrency}
+                  className="text-xs"
+                />
                 <p className="mt-1 text-sm text-neutral-500">
                   {tier.event_credits} {tier.event_credits === 1 ? "entry" : "entries"} ·{" "}
                   {perEntry.toLocaleString()} {tier.currency} a night

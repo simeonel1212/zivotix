@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { hasCommunityAccess } from "@/lib/community";
+import { buyerDisplayCurrency } from "@/lib/geo";
 import type { EventRow, MembershipTier, OrganizerPost, PostComment, ReactionType } from "@/lib/types";
 import ResendLinkForm from "./resend-link-form";
 import VerifiedBadge from "@/components/verified-badge";
@@ -140,7 +141,7 @@ export default async function OrganizerProfilePage({
           counts as a child of space-y-8 and leaves a dead gap. */}
       {(tiers ?? []).length > 0 && (
         <div id="passes" className="scroll-mt-24">
-          <MembershipTiers tiers={tiers ?? []} />
+          <MembershipTiers tiers={tiers ?? []} detectedCurrency={await buyerDisplayCurrency()} />
         </div>
       )}
 

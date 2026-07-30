@@ -89,15 +89,17 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
 
   const { data: tiers } = await supabase
     .from("ticket_types")
-    .select("name, price, quantity_total, max_per_order")
+    .select("name, category, description, price, quantity_total, max_per_order")
     .eq("event_id", id)
-    .returns<Pick<TicketType, "name" | "price" | "quantity_total" | "max_per_order">[]>();
+    .returns<Pick<TicketType, "name" | "category" | "description" | "price" | "quantity_total" | "max_per_order">[]>();
 
   if (tiers?.length) {
     const { error: ttError } = await supabase.from("ticket_types").insert(
       tiers.map((tt) => ({
         event_id: copy.id,
         name: tt.name,
+        category: tt.category,
+        description: tt.description,
         price: tt.price,
         quantity_total: tt.quantity_total,
         // Sold counts never carry over — that's the whole point of a new event.

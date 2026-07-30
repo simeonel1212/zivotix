@@ -17,17 +17,24 @@ import { fetchRate, resolveDisplayCurrency, roundApprox } from "@/lib/buyer-curr
 export default function ApproxPrice({
   amount,
   currency,
+  detectedCurrency = null,
   className = "",
 }: {
   amount: number;
   currency: string;
+  /**
+   * Resolved server-side from the request's IP country (lib/geo.ts). Passed in
+   * rather than detected here because the browser only knows the user's
+   * language, and language is not location.
+   */
+  detectedCurrency?: string | null;
   className?: string;
 }) {
   const [display, setDisplay] = useState<{ code: string; value: number } | null>(null);
 
   useEffect(() => {
     if (amount <= 0) return;
-    const target = resolveDisplayCurrency();
+    const target = resolveDisplayCurrency(detectedCurrency);
     if (!target || target === currency.toUpperCase()) return;
 
     let live = true;
@@ -38,7 +45,7 @@ export default function ApproxPrice({
     return () => {
       live = false;
     };
-  }, [amount, currency]);
+  }, [amount, currency, detectedCurrency]);
 
   if (!display) return null;
 

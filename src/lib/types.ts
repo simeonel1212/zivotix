@@ -84,6 +84,10 @@ export interface TicketType {
   id: string;
   event_id: string;
   name: string;
+  /** Optional heading this tier is grouped under, e.g. "Tables". Null = ungrouped. */
+  category: string | null;
+  /** What this tier includes, shown under the name on the event page. */
+  description: string | null;
   price: number;
   quantity_total: number;
   quantity_sold: number;

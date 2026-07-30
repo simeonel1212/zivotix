@@ -28,7 +28,14 @@ export interface TemplateEvent {
   title: string;
   starts_at: string;
   currency: string;
-  ticket_types: { name: string; price: number; quantity_total: number; max_per_order: number }[];
+  ticket_types: {
+    name: string;
+    category: string | null;
+    description: string | null;
+    price: number;
+    quantity_total: number;
+    max_per_order: number;
+  }[];
 }
 
 function one<T>(rel: T | T[] | null): T | null {
@@ -58,7 +65,7 @@ export default async function OrganizerEventDetailPage({
   // every month. RLS scopes this to events they own.
   const { data: otherEvents } = await supabase
     .from("events")
-    .select("id, title, starts_at, currency, ticket_types(name, price, quantity_total, max_per_order)")
+    .select("id, title, starts_at, currency, ticket_types(name, category, description, price, quantity_total, max_per_order)")
     .eq("organizer_id", event.organizer_id)
     .neq("id", id)
     .order("starts_at", { ascending: false })
