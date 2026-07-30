@@ -91,7 +91,9 @@ export default async function OrganizerProfilePage({ params }: { params: Promise
 
       {/* Above the ticket list on purpose: someone who came for one night
           should see the season option before they decide. */}
-      <MembershipTiers tiers={tiers ?? []} />
+      <div id="passes" className="scroll-mt-24">
+        <MembershipTiers tiers={tiers ?? []} />
+      </div>
 
       <div>
         <h2 className="font-semibold text-neutral-900 mb-3">Available tickets</h2>

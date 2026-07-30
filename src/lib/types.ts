@@ -36,6 +36,8 @@ export interface Organizer {
   id: string;
   profile_id: string;
   business_name: string;
+  /** Vanity URL slug — zivotix.site/<handle>. Null until claimed. */
+  handle: string | null;
   country: OrgCountry;
   payout_currency: string;
   commission_rate: number;

@@ -3,11 +3,12 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
-import type { EventRow, TicketType } from "@/lib/types";
+import type { EventRow, TicketType, MembershipTier } from "@/lib/types";
 import { googleMapsUrl, googleMapsEmbedUrl } from "@/lib/maps";
 import { appUrl } from "@/lib/app-url";
 import VerifiedBadge from "@/components/verified-badge";
 import ShareButton from "@/components/share-button";
+import MembershipUpsell from "@/components/membership-upsell";
 import TicketSelector from "./ticket-selector";
 
 // Per-event metadata is the single biggest SEO lever here: it's what makes
@@ -88,9 +89,24 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
   // service role because organizers has no public-select policy.
   const { data: organizer } = await createServiceClient()
     .from("organizers")
-    .select("id, business_name, is_verified")
+    .select("id, business_name, is_verified, handle")
     .eq("id", event.organizer_id)
     .maybeSingle();
+
+  // Prefer the vanity link when they've claimed one — it's the same page, but
+  // it's the link they'd want a buyer to see and remember.
+  const organizerHref = organizer?.handle
+    ? `/${organizer.handle}`
+    : `/community/${event.organizer_id}`;
+
+  // Passes this organizer has on sale, shown beneath the ticket selector.
+  const { data: membershipTiers } = await createServiceClient()
+    .from("membership_tiers")
+    .select("*")
+    .eq("organizer_id", event.organizer_id)
+    .eq("is_active", true)
+    .order("price", { ascending: true })
+    .returns<MembershipTier[]>();
 
   const mapsUrl = googleMapsUrl(event.venue, event.city, event.country);
   const mapsEmbedUrl = googleMapsEmbedUrl(event.venue, event.city, event.country);
@@ -172,7 +188,7 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
       <div className="space-y-4">
         {organizer && (
           <Link
-            href={`/community/${organizer.id}`}
+            href={organizerHref}
             className="inline-flex items-center gap-1.5 text-sm font-semibold zv-gradient-text hover:underline w-fit"
           >
             {organizer.business_name}
@@ -294,6 +310,22 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
         ticketTypes={ticketTypes ?? []}
         feeMode={event.absorb_service_fee ? "absorb" : "pass"}
       />
+
+      {/* Most buyers arrive here from a shared event link, never seeing the
+          organizer's page — so without this, passes would go undiscovered by
+          almost everyone. Placed below the ticket selector deliberately: the
+          person came for this night, and the pass is the upsell after they've
+          seen the price, not a distraction before it. */}
+      {event.members_included && (membershipTiers ?? []).length > 0 && (
+        <MembershipUpsell
+          tiers={membershipTiers ?? []}
+          organizerHref={organizerHref}
+          organizerName={organizer?.business_name ?? null}
+          cheapestTicket={
+            (ticketTypes ?? []).map((t) => t.price).filter((p) => p > 0).sort((a, b) => a - b)[0] ?? null
+          }
+        />
+      )}
 
       {event.logo_image_url && (
         <div className="flex justify-center pt-4">

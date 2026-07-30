@@ -4,6 +4,7 @@ import type { Organizer } from "@/lib/types";
 import { payoutMethod, countryLabel } from "@/lib/countries";
 import BankAccountForm from "./bank-account-form";
 import PayoutCurrencyForm from "./payout-currency-form";
+import HandleForm from "./handle-form";
 
 export default async function OrganizerSettingsPage() {
   const supabase = await createClient();
@@ -30,6 +31,8 @@ export default async function OrganizerSettingsPage() {
             : `Add your bank details so we know where to send your weekly payout. Payouts to ${countryLabel(organizer.country)} are sent by international wire, which takes two to five business days and may carry intermediary bank fees.`}
         </p>
       </div>
+
+      <HandleForm organizerId={organizer.id} current={organizer.handle ?? null} />
 
       <BankAccountForm organizer={organizer} />
 
