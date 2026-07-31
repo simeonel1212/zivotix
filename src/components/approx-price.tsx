@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { fetchRate, resolveDisplayCurrency, roundApprox } from "@/lib/buyer-currency";
+import { formatMoney } from "@/lib/currencies";
 
 // Shows a price in the buyer's own currency, alongside the price the organizer
 // actually set.
@@ -51,7 +52,7 @@ export default function ApproxPrice({
 
   return (
     <span className={`text-neutral-400 ${className}`}>
-      ≈ {display.value.toLocaleString()} {display.code}
+      ≈ {formatMoney(display.value, display.code)}
     </span>
   );
 }

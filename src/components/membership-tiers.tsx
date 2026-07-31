@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { computeFees } from "@/lib/fees";
 import ApproxPrice from "@/components/approx-price";
+import { formatMoney } from "@/lib/currencies";
 import type { MembershipTier } from "@/lib/types";
 
 // Passes for sale on an organizer's public page.
@@ -74,7 +75,7 @@ export default function MembershipTiers({
 
               <div className="mt-4">
                 <p className="text-2xl font-bold text-neutral-900">
-                  {fees.total.toLocaleString()} {tier.currency}
+                  {formatMoney(fees.total, tier.currency)}
                 </p>
                 <ApproxPrice
                   amount={fees.total}
@@ -84,7 +85,7 @@ export default function MembershipTiers({
                 />
                 <p className="mt-1 text-sm text-neutral-500">
                   {tier.event_credits} {tier.event_credits === 1 ? "entry" : "entries"} ·{" "}
-                  {perEntry.toLocaleString()} {tier.currency} a night
+                  {formatMoney(perEntry, tier.currency)} a night
                 </p>
                 <p className="text-xs text-neutral-400 mt-0.5">
                   Use them any time in the next {Math.round(tier.validity_days / 30)} months

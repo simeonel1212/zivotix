@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { EventRow, TicketType } from "@/lib/types";
 import { computeFees, type FeeMode } from "@/lib/fees";
 import ApproxPrice from "@/components/approx-price";
+import { formatMoney } from "@/lib/currencies";
 
 // Checkout is a single button. Paystack's hosted page presents card and
 // Apple Pay itself (both approved on this account), so there's no separate
@@ -189,13 +190,17 @@ export default function TicketSelector({
                         scarcity number on every row reads as pressure rather
                         than information. Sold out stays — a buyer has to know
                         they can't have it. */}
-                    <p className="text-sm text-neutral-500 mt-0.5">
+                    {/* The price carries the brand gradient so it separates
+                        from the grey description above it at a glance — on a
+                        tier with three lines of copy, a same-coloured price
+                        just reads as one more line of text. */}
+                    <p className="text-sm mt-0.5">
                       {tt.price > 0 ? (
-                        <>
-                          {tt.price.toLocaleString()} {event.currency}
-                        </>
+                        <span className="font-bold zv-gradient-text">
+                          {formatMoney(tt.price, event.currency)}
+                        </span>
                       ) : (
-                        <span className="font-medium text-emerald-600">Free</span>
+                        <span className="font-bold text-emerald-600">Free</span>
                       )}
                       {remaining <= 0 && <span className="text-red-500 font-medium"> · Sold out</span>}
                     </p>
@@ -244,13 +249,13 @@ export default function TicketSelector({
           <div className="flex justify-between text-neutral-500">
             <span>Tickets</span>
             <span className="tabular-nums">
-              {subtotal.toLocaleString()} {event.currency}
+              {formatMoney(subtotal, event.currency)}
             </span>
           </div>
           <div className="flex justify-between text-neutral-500">
             <span>Service fee</span>
             <span className="tabular-nums">
-              {fees.serviceFee.toLocaleString()} {event.currency}
+              {formatMoney(fees.serviceFee, event.currency)}
             </span>
           </div>
         </div>
@@ -262,7 +267,7 @@ export default function TicketSelector({
           <br />
           <span className="text-xl font-bold text-neutral-900">
             {total > 0
-              ? `${total.toLocaleString()} ${event.currency}`
+              ? formatMoney(total, event.currency)
               : isFreeEvent
                 ? "Free"
                 : "—"}

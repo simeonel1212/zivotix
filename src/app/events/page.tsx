@@ -8,6 +8,7 @@ import TicketBackdrop from "@/components/ticket-backdrop";
 import { EVENT_CATEGORIES, categoryLabel, isValidCategory } from "@/lib/categories";
 import { countryLabel } from "@/lib/countries";
 import CountryFilter from "./country-filter";
+import { formatMoney } from "@/lib/currencies";
 
 export const revalidate = 60;
 
@@ -176,7 +177,7 @@ export default async function EventsPage({
                       // this page out of its 60-second cache. The conversion
                       // now appears once, on the order total.
                       <p className="text-sm font-semibold text-neutral-900 whitespace-nowrap">
-                        From {fromPrice.toLocaleString()} {event.currency}
+                        From {formatMoney(fromPrice, event.currency)}
                       </p>
                     )
                   )}

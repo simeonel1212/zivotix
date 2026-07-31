@@ -4,6 +4,7 @@ import { createClient, createServiceClient } from "@/lib/supabase/server";
 import type { EventRow, OrganizerPost, ReactionType } from "@/lib/types";
 import ScrollReveal from "@/components/scroll-reveal";
 import VerifiedBadge from "@/components/verified-badge";
+import { formatMoney } from "@/lib/currencies";
 export const revalidate = 60;
 
 type EventWithPrices = EventRow & { ticket_types: { price: number }[] };
@@ -293,7 +294,7 @@ export default async function HomePage() {
                         ) : (
                           fromPrice !== null && (
                             <p className="text-sm font-semibold text-neutral-900 whitespace-nowrap">
-                              From {fromPrice.toLocaleString()} {event.currency}
+                              From {formatMoney(fromPrice, event.currency)}
                             </p>
                           )
                         )}

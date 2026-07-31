@@ -10,6 +10,7 @@ import ResendLinkForm from "./resend-link-form";
 import VerifiedBadge from "@/components/verified-badge";
 import MembershipTiers from "@/components/membership-tiers";
 import PostCard from "@/components/post-card";
+import { formatMoney } from "@/lib/currencies";
 
 export async function generateMetadata({
   params,
@@ -240,7 +241,7 @@ export default async function OrganizerProfilePage({
                     ) : (
                       fromPrice !== null && (
                         <p className="text-xs font-semibold text-neutral-900">
-                          From {fromPrice.toLocaleString()} {event.currency}
+                          From {formatMoney(fromPrice, event.currency)}
                         </p>
                       )
                     )}

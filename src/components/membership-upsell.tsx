@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { computeFees } from "@/lib/fees";
 import type { MembershipTier } from "@/lib/types";
+import { formatMoney } from "@/lib/currencies";
 
 // A nudge on the event page: this organizer sells passes.
 //
@@ -42,19 +43,19 @@ export default function MembershipUpsell({
             Coming to more than one?
           </p>
           <h2 className="mt-1.5 text-lg font-bold text-neutral-900">
-            {best.event_credits} nights for {total.toLocaleString()} {best.currency}
+            {best.event_credits} nights for {formatMoney(total, best.currency)}
           </h2>
           <p className="mt-1.5 text-sm text-neutral-500 leading-relaxed">
             {saves ? (
               <>
-                That&apos;s {perEntry.toLocaleString()} {best.currency} a night instead of{" "}
-                {cheapestTicket!.toLocaleString()}. Use the entries at any{" "}
+                That&apos;s {formatMoney(perEntry, best.currency)} a night instead of{" "}
+                {formatMoney(cheapestTicket!, best.currency)}. Use the entries at any{" "}
                 {organizerName ?? "of this organizer's"} event for the next{" "}
                 {Math.round(best.validity_days / 30)} months.
               </>
             ) : (
               <>
-                {perEntry.toLocaleString()} {best.currency} a night, used at any{" "}
+                {formatMoney(perEntry, best.currency)} a night, used at any{" "}
                 {organizerName ?? "of this organizer's"} event for the next{" "}
                 {Math.round(best.validity_days / 30)} months.
               </>
