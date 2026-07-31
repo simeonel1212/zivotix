@@ -24,22 +24,22 @@ export default function PrivacyPage() {
 
       <Section title="2. What we collect">
         <p>
-          <strong className="text-neutral-900">If you buy a ticket:</strong> your name, email address, the
+          <strong className="text-neutral-50">If you buy a ticket:</strong> your name, email address, the
           tickets and events you bought, the amount and currency charged, the exchange rate applied, and a
           payment reference from Paystack. We also store the unique QR token for each ticket and whether it
           has been scanned.
         </p>
         <p>
-          <strong className="text-neutral-900">If you organize events:</strong> your name, email, phone,
+          <strong className="text-neutral-50">If you organize events:</strong> your name, email, phone,
           business or brand name, event listings and images you upload, and the bank account details we
           need to pay you.
         </p>
         <p>
-          <strong className="text-neutral-900">If you post in a community feed:</strong> the text and images
+          <strong className="text-neutral-50">If you post in a community feed:</strong> the text and images
           you post, and your likes and comments.
         </p>
         <p>
-          <strong className="text-neutral-900">Automatically:</strong> basic technical data such as IP
+          <strong className="text-neutral-50">Automatically:</strong> basic technical data such as IP
           address, browser type and pages visited, kept for security, fraud prevention and debugging.
         </p>
         <p>
@@ -77,24 +77,24 @@ export default function PrivacyPage() {
         <p>We share the minimum necessary with the services that run Zivotix:</p>
         <ul className="list-disc pl-5 space-y-1">
           <li>
-            <strong className="text-neutral-900">Paystack</strong> — payments, refunds and payouts.
+            <strong className="text-neutral-50">Paystack</strong> — payments, refunds and payouts.
           </li>
           <li>
-            <strong className="text-neutral-900">Supabase</strong> — database, authentication and file
+            <strong className="text-neutral-50">Supabase</strong> — database, authentication and file
             storage.
           </li>
           <li>
-            <strong className="text-neutral-900">Resend</strong> — transactional email delivery.
+            <strong className="text-neutral-50">Resend</strong> — transactional email delivery.
           </li>
           <li>
-            <strong className="text-neutral-900">Vercel</strong> — application hosting and logs.
+            <strong className="text-neutral-50">Vercel</strong> — application hosting and logs.
           </li>
           <li>
-            <strong className="text-neutral-900">Google (Gemini)</strong> — only the text an organizer
+            <strong className="text-neutral-50">Google (Gemini)</strong> — only the text an organizer
             chooses to send to the AI writing tools. Buyer data is never sent to it.
           </li>
           <li>
-            <strong className="text-neutral-900">An exchange rate provider</strong> — we send currency codes
+            <strong className="text-neutral-50">An exchange rate provider</strong> — we send currency codes
             only, never personal data.
           </li>
         </ul>

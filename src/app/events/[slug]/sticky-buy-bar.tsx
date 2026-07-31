@@ -66,10 +66,10 @@ export default function StickyBuyBar({
       <div className="zv-glass zv-floating mx-auto flex max-w-3xl items-center justify-between gap-4 rounded-[1.5rem] px-5 py-3">
         <div className="min-w-0">
           {isFree ? (
-            <p className="text-base font-bold text-emerald-600">Free entry</p>
+            <p className="text-base font-bold text-emerald-400">Free entry</p>
           ) : fromPrice !== null ? (
             <>
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-neutral-500">
                 From
               </p>
               <p className="text-lg font-bold zv-gradient-text leading-tight">
@@ -77,7 +77,7 @@ export default function StickyBuyBar({
               </p>
             </>
           ) : (
-            <p className="text-base font-bold text-neutral-900">Tickets</p>
+            <p className="text-base font-bold text-neutral-50">Tickets</p>
           )}
         </div>
         <button onClick={jump} className="zv-btn-primary shrink-0 text-sm">

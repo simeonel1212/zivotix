@@ -37,12 +37,12 @@ export default async function ScanCommunityPage() {
     >();
 
   return (
-    <div className="flex-1 flex flex-col bg-neutral-50">
-      <header className="px-5 pt-[max(1.25rem,env(safe-area-inset-top))] pb-4 bg-white border-b border-neutral-200/70">
+    <div className="flex-1 flex flex-col bg-white/[0.04]">
+      <header className="px-5 pt-[max(1.25rem,env(safe-area-inset-top))] pb-4 bg-neutral-900 border-b border-white/15">
         <div className="flex items-center justify-between gap-3">
           <span className="inline-flex items-center gap-2">
             <ZivotixMark size={24} />
-            <span className="font-bold tracking-tight text-neutral-900 text-sm">
+            <span className="font-bold tracking-tight text-neutral-50 text-sm">
               Zivo<span className="zv-gradient-text">tix</span>
             </span>
           </span>
@@ -53,8 +53,8 @@ export default async function ScanCommunityPage() {
             tone="light"
           />
         </div>
-        <h1 className="mt-4 text-2xl font-bold tracking-tight text-neutral-900">Community</h1>
-        <p className="mt-1 text-sm text-neutral-500 leading-relaxed">
+        <h1 className="mt-4 text-2xl font-bold tracking-tight text-neutral-50">Community</h1>
+        <p className="mt-1 text-sm text-neutral-400 leading-relaxed">
           Post an update for everyone holding a ticket from you. It shows on your community page and
           the Zivotix homepage.
         </p>
@@ -66,18 +66,18 @@ export default async function ScanCommunityPage() {
         </div>
 
         <div>
-          <h2 className="font-semibold text-neutral-900 mb-3 text-sm">Your updates</h2>
+          <h2 className="font-semibold text-neutral-50 mb-3 text-sm">Your updates</h2>
 
           {!posts?.length ? (
             <div className="zv-card p-8 text-center">
-              <p className="text-sm text-neutral-400">Nothing posted yet.</p>
+              <p className="text-sm text-neutral-500">Nothing posted yet.</p>
             </div>
           ) : (
             <ul className="space-y-3">
               {posts.map((post) => (
                 <li key={post.id} className="zv-card p-5">
                   <div className="flex items-start justify-between gap-3">
-                    <p className="text-xs text-neutral-400">
+                    <p className="text-xs text-neutral-500">
                       {new Date(post.created_at).toLocaleString(undefined, {
                         day: "numeric",
                         month: "short",
@@ -88,7 +88,7 @@ export default async function ScanCommunityPage() {
                     <DeletePostButton postId={post.id} />
                   </div>
 
-                  <p className="mt-2 text-sm text-neutral-700 whitespace-pre-wrap leading-relaxed">
+                  <p className="mt-2 text-sm text-neutral-200 whitespace-pre-wrap leading-relaxed">
                     {post.body}
                   </p>
 
@@ -106,7 +106,7 @@ export default async function ScanCommunityPage() {
                     </div>
                   )}
 
-                  <div className="mt-3 flex gap-4 text-xs text-neutral-400">
+                  <div className="mt-3 flex gap-4 text-xs text-neutral-500">
                     <span>{post.post_reactions?.length ?? 0} reactions</span>
                     <span>{post.post_comments?.length ?? 0} comments</span>
                   </div>
@@ -116,7 +116,7 @@ export default async function ScanCommunityPage() {
           )}
         </div>
 
-        <p className="text-center text-xs text-neutral-400">
+        <p className="text-center text-xs text-neutral-500">
           Replying to comments and the full feed live on{" "}
           <Link href="/organizer/community" className="font-semibold zv-gradient-text">
             the dashboard

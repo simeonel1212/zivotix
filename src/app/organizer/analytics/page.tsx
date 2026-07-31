@@ -93,8 +93,8 @@ export default async function OrganizerAnalyticsPage() {
   return (
     <div className="max-w-6xl mx-auto space-y-10">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight text-neutral-900">Analytics</h1>
-        <p className="text-sm text-neutral-500 mt-1">How your sales are trending across every event you run.</p>
+        <h1 className="text-3xl font-bold tracking-tight text-neutral-50">Analytics</h1>
+        <p className="text-sm text-neutral-400 mt-1">How your sales are trending across every event you run.</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
@@ -104,10 +104,10 @@ export default async function OrganizerAnalyticsPage() {
       </div>
 
       <div>
-        <h2 className="font-semibold text-neutral-900 mb-3">Sales in the last 14 days</h2>
+        <h2 className="font-semibold text-neutral-50 mb-3">Sales in the last 14 days</h2>
         {totalRevenue === 0 ? (
           <div className="zv-card p-10 text-center">
-            <p className="text-sm text-neutral-400">No sales yet. This fills in as tickets sell.</p>
+            <p className="text-sm text-neutral-500">No sales yet. This fills in as tickets sell.</p>
           </div>
         ) : (
           <div className="zv-card p-6">
@@ -125,7 +125,7 @@ export default async function OrganizerAnalyticsPage() {
             <div className="flex gap-2 mt-2">
               {days.map((d, i) => (
                 <div key={d.date} className="flex-1 text-center overflow-hidden">
-                  {i % 4 === 0 && <p className="text-[10px] text-neutral-400 whitespace-nowrap">{d.label}</p>}
+                  {i % 4 === 0 && <p className="text-[10px] text-neutral-500 whitespace-nowrap">{d.label}</p>}
                 </div>
               ))}
             </div>
@@ -134,24 +134,24 @@ export default async function OrganizerAnalyticsPage() {
       </div>
 
       <div>
-        <h2 className="font-semibold text-neutral-900 mb-3">Revenue by ticket type</h2>
+        <h2 className="font-semibold text-neutral-50 mb-3">Revenue by ticket type</h2>
         {typeBreakdown.length === 0 ? (
           <div className="zv-card p-10 text-center">
-            <p className="text-sm text-neutral-400">No sales yet.</p>
+            <p className="text-sm text-neutral-500">No sales yet.</p>
           </div>
         ) : (
           <div className="zv-card p-6 space-y-4">
             {typeBreakdown.map((t) => (
               <div key={t.name}>
                 <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-sm mb-1.5">
-                  <span className="font-medium text-neutral-800">
-                    {t.name} <span className="text-neutral-400 font-normal">· {t.quantity} sold</span>
+                  <span className="font-medium text-neutral-100">
+                    {t.name} <span className="text-neutral-500 font-normal">· {t.quantity} sold</span>
                   </span>
-                  <span className="text-neutral-600">
+                  <span className="text-neutral-300">
                     {t.revenue.toLocaleString()} {currency}
                   </span>
                 </div>
-                <div className="h-2 rounded-full bg-neutral-100 overflow-hidden">
+                <div className="h-2 rounded-full bg-white/[0.08] overflow-hidden">
                   <div
                     className="h-full rounded-full bg-gradient-to-r from-yellow-400 to-yellow-600"
                     style={{ width: `${(t.revenue / maxTypeRevenue) * 100}%` }}
@@ -164,22 +164,22 @@ export default async function OrganizerAnalyticsPage() {
       </div>
 
       <div>
-        <h2 className="font-semibold text-neutral-900 mb-3">Revenue by event</h2>
+        <h2 className="font-semibold text-neutral-50 mb-3">Revenue by event</h2>
         {eventBreakdown.length === 0 ? (
           <div className="zv-card p-10 text-center">
-            <p className="text-sm text-neutral-400">No sales yet.</p>
+            <p className="text-sm text-neutral-500">No sales yet.</p>
           </div>
         ) : (
           <div className="zv-card p-6 space-y-4">
             {eventBreakdown.map((e) => (
               <div key={e.eventId}>
                 <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-sm mb-1.5">
-                  <span className="font-medium text-neutral-800">{e.title}</span>
-                  <span className="text-neutral-600">
+                  <span className="font-medium text-neutral-100">{e.title}</span>
+                  <span className="text-neutral-300">
                     {e.revenue.toLocaleString()} {currency}
                   </span>
                 </div>
-                <div className="h-2 rounded-full bg-neutral-100 overflow-hidden">
+                <div className="h-2 rounded-full bg-white/[0.08] overflow-hidden">
                   <div
                     className="h-full rounded-full bg-gradient-to-r from-yellow-600 to-yellow-400"
                     style={{ width: `${(e.revenue / maxEventRevenue) * 100}%` }}
@@ -197,8 +197,8 @@ export default async function OrganizerAnalyticsPage() {
 function Stat({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
   return (
     <div className="zv-card p-5">
-      <p className="text-sm text-neutral-400">{label}</p>
-      <p className={`text-2xl font-bold mt-1.5 ${accent ? "zv-gradient-text" : "text-neutral-900"}`}>{value}</p>
+      <p className="text-sm text-neutral-500">{label}</p>
+      <p className={`text-2xl font-bold mt-1.5 ${accent ? "zv-gradient-text" : "text-neutral-50"}`}>{value}</p>
     </div>
   );
 }

@@ -27,15 +27,15 @@ export default function RefundButton({ orderId }: { orderId: string }) {
     return (
       <div className="flex flex-col items-end gap-1">
         <div className="flex items-center gap-2">
-          <span className="text-xs text-neutral-500">Refund this order?</span>
-          <button onClick={refund} disabled={loading} className="zv-badge bg-red-100 text-red-700 hover:bg-red-200 transition-colors disabled:opacity-40">
+          <span className="text-xs text-neutral-400">Refund this order?</span>
+          <button onClick={refund} disabled={loading} className="zv-badge bg-red-500/15 text-red-300 hover:bg-red-200 transition-colors disabled:opacity-40">
             {loading ? "Refunding…" : "Confirm"}
           </button>
-          <button onClick={() => setConfirming(false)} className="text-xs text-neutral-400 hover:text-neutral-600">
+          <button onClick={() => setConfirming(false)} className="text-xs text-neutral-500 hover:text-neutral-300">
             Cancel
           </button>
         </div>
-        {error && <p className="text-xs text-red-600">{error}</p>}
+        {error && <p className="text-xs text-red-400">{error}</p>}
       </div>
     );
   }
@@ -43,7 +43,7 @@ export default function RefundButton({ orderId }: { orderId: string }) {
   return (
     <button
       onClick={() => setConfirming(true)}
-      className="zv-badge bg-neutral-100 text-neutral-600 hover:bg-neutral-200 transition-colors"
+      className="zv-badge bg-white/[0.08] text-neutral-300 hover:bg-white/[0.14] transition-colors"
     >
       Refund
     </button>

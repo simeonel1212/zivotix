@@ -28,7 +28,7 @@ export default function RemoveStaffButton({ staffId }: { staffId: string }) {
       onClick={remove}
       disabled={removing}
       aria-label="Remove staff"
-      className="text-neutral-400 hover:text-red-500 transition-colors disabled:opacity-40 p-1 -m-1"
+      className="text-neutral-500 hover:text-red-400 transition-colors disabled:opacity-40 p-1 -m-1"
     >
       {removing ? (
         <span className="text-xs">Removing…</span>

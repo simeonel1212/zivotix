@@ -71,7 +71,7 @@ export default function ImageUpload({
 
   return (
     <div className="space-y-2">
-      <label className="text-sm font-medium text-neutral-700">{label}</label>
+      <label className="text-sm font-medium text-neutral-200">{label}</label>
       <div
         onDragOver={(e) => {
           e.preventDefault();
@@ -86,7 +86,7 @@ export default function ImageUpload({
         }}
         onClick={() => inputRef.current?.click()}
         className={`relative ${aspectClassName} ${shapeClassName} border-2 border-dashed cursor-pointer overflow-hidden transition-all duration-300 flex items-center justify-center
-          ${dragOver ? "border-yellow-500 bg-yellow-50 scale-[1.01]" : "border-neutral-200 bg-neutral-50 hover:border-yellow-300 hover:bg-yellow-50/40"}`}
+          ${dragOver ? "border-yellow-500 bg-yellow-50 scale-[1.01]" : "border-white/15 bg-white/[0.04] hover:border-yellow-300 hover:bg-yellow-50/40"}`}
       >
         {value ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -98,13 +98,13 @@ export default function ImageUpload({
                 <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M14 8h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
-            <p className="text-sm font-medium text-neutral-600">Drop an image, or click to browse</p>
-            <p className="text-xs text-neutral-400 mt-1">{helpText}</p>
+            <p className="text-sm font-medium text-neutral-300">Drop an image, or click to browse</p>
+            <p className="text-xs text-neutral-500 mt-1">{helpText}</p>
           </div>
         )}
 
         {uploading && (
-          <div className="absolute inset-0 bg-white/70 backdrop-blur-sm flex items-center justify-center">
+          <div className="absolute inset-0 bg-neutral-900/70 backdrop-blur-sm flex items-center justify-center">
             <div className="h-8 w-8 rounded-full border-2 border-yellow-500 border-t-transparent animate-spin" />
           </div>
         )}
@@ -127,7 +127,7 @@ export default function ImageUpload({
         }}
       />
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-red-400">{error}</p>}
     </div>
   );
 }

@@ -55,7 +55,7 @@ export default function CommissionRateForm({
   }
 
   if (isPlatformOwn) {
-    return <span className="text-xs text-neutral-400">0% (own event)</span>;
+    return <span className="text-xs text-neutral-500">0% (own event)</span>;
   }
 
   return (
@@ -71,24 +71,24 @@ export default function CommissionRateForm({
           aria-label="Commission rate percentage"
           className="zv-input w-16 text-center text-xs py-1.5 px-2"
         />
-        <span className="text-xs text-neutral-400">%</span>
+        <span className="text-xs text-neutral-500">%</span>
         {dirty && (
           <button
             onClick={save}
             disabled={saving}
-            className="zv-badge bg-neutral-900 text-white hover:bg-neutral-700 transition-colors disabled:opacity-40"
+            className="zv-badge bg-white text-neutral-900 hover:bg-neutral-200 transition-colors disabled:opacity-40"
           >
             {saving ? "Saving…" : "Save"}
           </button>
         )}
-        {saved && !dirty && <span className="text-xs text-emerald-600">Saved</span>}
+        {saved && !dirty && <span className="text-xs text-emerald-400">Saved</span>}
       </div>
       {belowFloor && (
-        <p className="text-xs text-amber-600 max-w-[15rem] text-right">
+        <p className="text-xs text-amber-400 max-w-[15rem] text-right">
           Below {PROCESSOR_FLOOR_PERCENT}%, an Apple Pay sale can cost you more than it earns.
         </p>
       )}
-      {error && <p className="text-xs text-red-600 max-w-[15rem] text-right">{error}</p>}
+      {error && <p className="text-xs text-red-400 max-w-[15rem] text-right">{error}</p>}
     </div>
   );
 }

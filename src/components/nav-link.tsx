@@ -115,8 +115,8 @@ export default function NavLink({
       href={href}
       className={`flex items-center gap-3 rounded-xl px-3.5 py-2.5 font-medium transition-all ${
         active
-          ? "bg-white shadow-sm zv-gradient-text"
-          : "text-neutral-600 hover:text-neutral-900 hover:bg-white hover:shadow-sm"
+          ? "bg-neutral-900 shadow-sm zv-gradient-text"
+          : "text-neutral-300 hover:text-neutral-50 hover:bg-neutral-900 hover:shadow-sm"
       }`}
     >
       {icon && ICONS[icon] && (
@@ -127,7 +127,7 @@ export default function NavLink({
           fill="none"
           stroke="currentColor"
           strokeWidth="1.7"
-          className={`shrink-0 ${active ? "" : "text-neutral-400"}`}
+          className={`shrink-0 ${active ? "" : "text-neutral-500"}`}
           style={active ? { color: "var(--accent-solid)" } : undefined}
           aria-hidden="true"
         >

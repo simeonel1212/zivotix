@@ -23,8 +23,8 @@ export default async function OrganizerStaffPage() {
   return (
     <div className="max-w-2xl mx-auto space-y-10">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight text-neutral-900">Door staff</h1>
-        <p className="text-sm text-neutral-500 mt-1">
+        <h1 className="text-3xl font-bold tracking-tight text-neutral-50">Door staff</h1>
+        <p className="text-sm text-neutral-400 mt-1">
           Staff scan tickets at the door with the Zivotix Scanner on their own phone.{" "}
           <Link href="/scanner-app" className="font-semibold zv-gradient-text">
             How to install it
@@ -37,24 +37,24 @@ export default async function OrganizerStaffPage() {
       </div>
 
       <div>
-        <h2 className="font-semibold text-neutral-900 mb-3">Current staff</h2>
+        <h2 className="font-semibold text-neutral-50 mb-3">Current staff</h2>
         {(!staff || staff.length === 0) ? (
           <div className="zv-card p-10 text-center">
-            <p className="text-sm text-neutral-400">No staff added yet.</p>
+            <p className="text-sm text-neutral-500">No staff added yet.</p>
           </div>
         ) : (
-          <div className="zv-card divide-y divide-neutral-100 overflow-hidden">
+          <div className="zv-card divide-y divide-white/10 overflow-hidden">
             {staff.map((s) => {
               const profile = Array.isArray(s.profiles) ? s.profiles[0] : s.profiles;
               const event = events?.find((e) => e.id === s.event_id);
               return (
                 <div key={s.id} className="flex items-center justify-between px-5 py-3.5 text-sm gap-4">
                   <div className="min-w-0">
-                    <p className="font-medium text-neutral-800">{profile?.full_name ?? profile?.email}</p>
-                    <p className="text-neutral-400">{profile?.email}</p>
+                    <p className="font-medium text-neutral-100">{profile?.full_name ?? profile?.email}</p>
+                    <p className="text-neutral-500">{profile?.email}</p>
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
-                    <span className="text-neutral-500">{event ? event.title : "All events"}</span>
+                    <span className="text-neutral-400">{event ? event.title : "All events"}</span>
                     <RemoveStaffButton staffId={s.id} />
                   </div>
                 </div>

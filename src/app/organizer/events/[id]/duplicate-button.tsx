@@ -65,8 +65,8 @@ export default function DuplicateButton({
   return (
     <div className="zv-card w-full sm:w-[26rem] p-5 space-y-4">
       <div>
-        <p className="text-sm font-semibold text-neutral-900">Run this event again</p>
-        <p className="text-xs text-neutral-400 mt-0.5">
+        <p className="text-sm font-semibold text-neutral-50">Run this event again</p>
+        <p className="text-xs text-neutral-500 mt-0.5">
           Copies the description, venue, images, links and ticket tiers into a new draft. Sales and
           guests stay with the original.
         </p>
@@ -95,11 +95,11 @@ export default function DuplicateButton({
             value={date}
             onChange={(e) => setDate(e.target.value)}
           />
-          <p className="mt-1.5 text-xs text-neutral-400">Pre-filled four weeks after the original.</p>
+          <p className="mt-1.5 text-xs text-neutral-500">Pre-filled four weeks after the original.</p>
         </div>
       </div>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-red-400">{error}</p>}
 
       <div className="flex items-center gap-2">
         <button onClick={duplicate} disabled={loading} className="zv-btn-primary text-sm">
@@ -107,7 +107,7 @@ export default function DuplicateButton({
         </button>
         <button
           onClick={() => setOpen(false)}
-          className="text-sm text-neutral-400 hover:text-neutral-600"
+          className="text-sm text-neutral-500 hover:text-neutral-300"
         >
           Cancel
         </button>

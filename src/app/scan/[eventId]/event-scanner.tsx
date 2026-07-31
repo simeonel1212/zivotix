@@ -186,7 +186,7 @@ export default function EventScanner({
         <Link
           href="/scan"
           aria-label="Back to events"
-          className="rounded-full border border-white/15 p-2.5 text-neutral-300 active:scale-95 transition"
+          className="rounded-full border border-white/15 p-2.5 text-neutral-600 active:scale-95 transition"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
             <path d="M15 18l-6-6 6-6" strokeLinecap="round" strokeLinejoin="round" />
@@ -194,7 +194,7 @@ export default function EventScanner({
         </Link>
         <div className="min-w-0 flex-1">
           <p className="font-semibold truncate leading-tight">{eventTitle}</p>
-          <p className="text-xs text-neutral-400 tabular-nums">
+          <p className="text-xs text-neutral-500 tabular-nums">
             {scanned} of {initialSold} in · {remaining} to go
           </p>
         </div>
@@ -203,7 +203,7 @@ export default function EventScanner({
             onClick={toggleTorch}
             aria-label="Toggle torch"
             className={`rounded-full border p-2.5 transition active:scale-95 ${
-              torchOn ? "border-yellow-400 bg-yellow-400/20 text-yellow-300" : "border-white/15 text-neutral-300"
+              torchOn ? "border-yellow-400 bg-yellow-400/20 text-yellow-300" : "border-white/15 text-neutral-600"
             }`}
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
@@ -230,8 +230,8 @@ export default function EventScanner({
         )}
 
         {cameraError && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 p-8 text-center bg-neutral-950">
-            <p className="text-sm text-neutral-300">{cameraError}</p>
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 p-8 text-center bg-black">
+            <p className="text-sm text-neutral-600">{cameraError}</p>
             <button onClick={() => location.reload()} className="zv-btn-primary text-sm">
               Reload
             </button>

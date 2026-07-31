@@ -24,8 +24,8 @@ export default async function OrganizerSettingsPage() {
   return (
     <div className="max-w-xl mx-auto space-y-8">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight text-neutral-900">Payout details</h1>
-        <p className="text-sm text-neutral-500 mt-1">
+        <h1 className="text-3xl font-bold tracking-tight text-neutral-50">Payout details</h1>
+        <p className="text-sm text-neutral-400 mt-1">
           {payoutMethod(organizer.country) === "paystack"
             ? `Add your ${countryLabel(organizer.country)} bank account so weekly payouts reach you automatically by transfer, usually the same day.`
             : `Add your bank details so we know where to send your weekly payout. Payouts to ${countryLabel(organizer.country)} are sent by international wire, which takes two to five business days and may carry intermediary bank fees.`}

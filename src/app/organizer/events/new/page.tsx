@@ -128,8 +128,8 @@ export default function NewEventPage() {
   return (
     <div className="max-w-2xl mx-auto space-y-8">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight text-neutral-900">New event</h1>
-        <p className="text-sm text-neutral-500 mt-1">Fill in the details, then publish when you&apos;re ready.</p>
+        <h1 className="text-3xl font-bold tracking-tight text-neutral-50">New event</h1>
+        <p className="text-sm text-neutral-400 mt-1">Fill in the details, then publish when you&apos;re ready.</p>
       </div>
 
       <div className="zv-card p-6 sm:p-8 space-y-6">
@@ -159,11 +159,11 @@ export default function NewEventPage() {
                 type="button"
                 onClick={generateDescription}
                 disabled={generating}
-                className="zv-badge bg-neutral-100 text-neutral-700 hover:bg-neutral-200 transition-colors disabled:opacity-40"
+                className="zv-badge bg-white/[0.08] text-neutral-200 hover:bg-white/[0.14] transition-colors disabled:opacity-40"
               >
                 {generating ? "Writing…" : "✨ Generate with AI"}
               </button>
-              {genError && <p className="text-xs text-red-600">{genError}</p>}
+              {genError && <p className="text-xs text-red-400">{genError}</p>}
             </div>
           </div>
         </Field>
@@ -193,8 +193,8 @@ export default function NewEventPage() {
             className="mt-0.5 h-4 w-4 shrink-0 accent-yellow-500"
           />
           <span>
-            <span className="text-sm font-medium text-neutral-700">Private event (invite only)</span>
-            <span className="block text-xs text-neutral-400 mt-0.5">
+            <span className="text-sm font-medium text-neutral-200">Private event (invite only)</span>
+            <span className="block text-xs text-neutral-500 mt-0.5">
               For weddings, private parties and corporate events. Anyone with the link can still get
               a ticket, but it won&apos;t appear on Zivotix&apos;s homepage, the events page, or in Google.
             </span>
@@ -232,7 +232,7 @@ export default function NewEventPage() {
 
       <div className="zv-card p-6 sm:p-8 space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="font-semibold text-neutral-900">Ticket types</h2>
+          <h2 className="font-semibold text-neutral-50">Ticket types</h2>
           <button
             type="button"
             onClick={() => setTicketTypes((tts) => [...tts, { ...emptyTicketType, price: pricingMode === "free" ? "0" : "" }])}
@@ -242,12 +242,12 @@ export default function NewEventPage() {
           </button>
         </div>
 
-        <div className="flex rounded-xl bg-neutral-100 p-1 w-fit">
+        <div className="flex rounded-xl bg-white/[0.08] p-1 w-fit">
           <button
             type="button"
             onClick={() => selectPricingMode("paid")}
             className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-              pricingMode === "paid" ? "bg-white text-neutral-900 shadow-sm" : "text-neutral-500"
+              pricingMode === "paid" ? "bg-neutral-900 text-neutral-50 shadow-sm" : "text-neutral-400"
             }`}
           >
             Paid event
@@ -256,7 +256,7 @@ export default function NewEventPage() {
             type="button"
             onClick={() => selectPricingMode("free")}
             className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-              pricingMode === "free" ? "bg-white text-neutral-900 shadow-sm" : "text-neutral-500"
+              pricingMode === "free" ? "bg-neutral-900 text-neutral-50 shadow-sm" : "text-neutral-400"
             }`}
           >
             Free event
@@ -264,7 +264,7 @@ export default function NewEventPage() {
         </div>
 
         {ticketTypes.map((tt, i) => (
-          <div key={i} className="grid grid-cols-2 sm:grid-cols-4 gap-2 rounded-2xl border border-neutral-100 bg-neutral-50/60 p-3">
+          <div key={i} className="grid grid-cols-2 sm:grid-cols-4 gap-2 rounded-2xl border border-white/10 bg-white/[0.04] p-3">
             <input
               placeholder="Name (e.g. Regular)"
               className="zv-input col-span-2"
@@ -272,7 +272,7 @@ export default function NewEventPage() {
               onChange={(e) => updateTicketType(i, "name", e.target.value)}
             />
             {pricingMode === "free" ? (
-              <div className="zv-input flex items-center text-emerald-600 font-medium">Free</div>
+              <div className="zv-input flex items-center text-emerald-400 font-medium">Free</div>
             ) : (
               <input
                 placeholder="Price"
@@ -293,7 +293,7 @@ export default function NewEventPage() {
         ))}
       </div>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-red-400">{error}</p>}
 
       <div className="flex gap-3">
         <button disabled={loading} onClick={() => submit("draft")} className="zv-btn-secondary">

@@ -57,11 +57,11 @@ export default function RefundMembershipButton({
       <button
         onClick={refund}
         disabled={loading}
-        className="text-xs font-medium text-neutral-400 hover:text-red-600 transition-colors disabled:opacity-40"
+        className="text-xs font-medium text-neutral-500 hover:text-red-400 transition-colors disabled:opacity-40"
       >
         {loading ? "Refunding…" : "Refund"}
       </button>
-      {error && <p className="text-[11px] text-red-600 mt-1 max-w-[14rem]">{error}</p>}
+      {error && <p className="text-[11px] text-red-400 mt-1 max-w-[14rem]">{error}</p>}
     </div>
   );
 }

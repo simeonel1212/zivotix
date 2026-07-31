@@ -62,8 +62,8 @@ export default function ScannerAccount({
         aria-expanded={open}
         className={`flex h-10 w-10 items-center justify-center rounded-full border text-sm font-bold transition active:scale-95 ${
           dark
-            ? "border-white/15 bg-white/5 text-white"
-            : "border-neutral-200 bg-neutral-100 text-neutral-700"
+            ? "border-white/15 bg-neutral-900/5 text-white"
+            : "border-white/15 bg-white/[0.08] text-neutral-200"
         }`}
       >
         {initial}
@@ -72,14 +72,14 @@ export default function ScannerAccount({
       {open && (
         <div
           className={`absolute right-0 top-12 z-30 w-64 overflow-hidden rounded-2xl border shadow-2xl ${
-            dark ? "border-white/10 bg-neutral-900" : "border-neutral-200 bg-white"
+            dark ? "border-white/10 bg-neutral-900" : "border-white/15 bg-neutral-900"
           }`}
         >
-          <div className={`px-4 py-3.5 border-b ${dark ? "border-white/10" : "border-neutral-100"}`}>
-            <p className={`text-sm font-semibold truncate ${dark ? "text-white" : "text-neutral-900"}`}>
+          <div className={`px-4 py-3.5 border-b ${dark ? "border-white/10" : "border-white/10"}`}>
+            <p className={`text-sm font-semibold truncate ${dark ? "text-white" : "text-neutral-50"}`}>
               {name}
             </p>
-            <p className={`text-xs truncate ${dark ? "text-neutral-400" : "text-neutral-500"}`}>{email}</p>
+            <p className={`text-xs truncate ${dark ? "text-neutral-500" : "text-neutral-400"}`}>{email}</p>
             <span
               className={`zv-badge mt-2 ${
                 dark ? "bg-yellow-400/15 text-yellow-300" : "bg-yellow-400/20 text-yellow-700"
@@ -93,7 +93,7 @@ export default function ScannerAccount({
             onClick={signOut}
             disabled={signingOut}
             className={`w-full px-4 py-3.5 text-left text-sm font-medium transition disabled:opacity-50 ${
-              dark ? "text-rose-300 hover:bg-white/5" : "text-rose-600 hover:bg-neutral-50"
+              dark ? "text-rose-300 hover:bg-neutral-900/5" : "text-rose-600 hover:bg-white/[0.04]"
             }`}
           >
             {signingOut ? "Signing out…" : "Sign out"}

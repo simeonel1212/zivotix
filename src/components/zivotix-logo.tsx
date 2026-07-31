@@ -32,10 +32,14 @@ export function ZivotixMark({ size = 30 }: { size?: number }) {
       <g transform="rotate(-6 16 16)">
         <rect x="2" y="5" width="28" height="22" rx="5" fill="url(#zv-logo-gold)" mask="url(#zv-logo-notches)" />
         <rect x="2" y="5" width="28" height="11" rx="5" fill="url(#zv-logo-sheen)" mask="url(#zv-logo-notches)" />
-        {/* Z monogram */}
+        {/* Z monogram, cut in near-black rather than white.
+            White-on-gold is the weakest pairing in the palette — both are
+            light, so the letter half-disappears at header size and vanishes
+            entirely once the mark sits on a pale background. Ink on gold is
+            the contrast a ticket is actually printed with. */}
         <path
           d="M11 11.5h10l-10 9h10"
-          stroke="white"
+          stroke="#141414"
           strokeWidth="2.6"
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -56,7 +60,7 @@ export default function ZivotixLogo({
   return (
     <span className="inline-flex items-center gap-2">
       <ZivotixMark size={markSize} />
-      <span className={`font-bold tracking-tight text-neutral-900 ${textClassName}`}>
+      <span className={`font-bold tracking-tight text-neutral-50 ${textClassName}`}>
         Zivo<span className="zv-gradient-text">tix</span>
       </span>
     </span>

@@ -60,8 +60,8 @@ export default function LoginForm() {
     <div className="zv-card w-full max-w-sm p-8">
       <form onSubmit={handleSubmit} className="space-y-5">
         <div>
-          <h1 className="text-2xl font-bold text-neutral-900">Welcome back</h1>
-          <p className="text-sm text-neutral-500 mt-1">Log in to manage your events or scan tickets.</p>
+          <h1 className="text-2xl font-bold text-neutral-50">Welcome back</h1>
+          <p className="text-sm text-neutral-400 mt-1">Log in to manage your events or scan tickets.</p>
         </div>
 
         <div className="space-y-1.5">
@@ -91,13 +91,13 @@ export default function LoginForm() {
           />
         </div>
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <p className="text-sm text-red-400">{error}</p>}
 
         <button type="submit" disabled={loading} className="zv-btn-primary w-full">
           {loading ? "Signing in…" : "Log in"}
         </button>
 
-        <p className="text-sm text-neutral-500 text-center">
+        <p className="text-sm text-neutral-400 text-center">
           Organizing events?{" "}
           <a href="/signup" className="font-semibold zv-gradient-text">
             Create an organizer account

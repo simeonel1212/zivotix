@@ -47,7 +47,7 @@ export default async function CommunityPage() {
   return (
     <main className="flex-1 mx-auto w-full max-w-2xl px-6 py-12 space-y-8">
       <div>
-        <h1 className="zv-h1 text-neutral-900">Community</h1>
+        <h1 className="zv-h1 text-neutral-50">Community</h1>
         <p className="zv-lead mt-3">
           What&apos;s happening across every organizer on Zivotix. React and comment on any post.
           You&apos;ll need a ticket from that organizer to do it.
@@ -56,7 +56,7 @@ export default async function CommunityPage() {
 
       {!posts || posts.length === 0 ? (
         <div className="zv-card p-10 text-center">
-          <p className="text-sm text-neutral-400">No updates yet. Check back soon.</p>
+          <p className="text-sm text-neutral-500">No updates yet. Check back soon.</p>
         </div>
       ) : (
         <div className="space-y-4">

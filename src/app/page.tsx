@@ -98,7 +98,7 @@ export default async function HomePage() {
     <main className="flex-1">
       {/* ---------- Boxed photo hero ---------- */}
       <section className="mx-auto max-w-6xl px-6 pt-8">
-        <div className="relative overflow-hidden rounded-[2rem] bg-neutral-950 text-white px-6 py-20 sm:px-16 sm:py-24 text-center shadow-[0_32px_80px_-24px_rgba(0,0,0,0.5)]">
+        <div className="relative overflow-hidden rounded-[2rem] bg-black text-white px-6 py-20 sm:px-16 sm:py-24 text-center shadow-[0_32px_80px_-24px_rgba(0,0,0,0.5)]">
           {/* Party photo backdrop, dimmed for legibility */}
           <Image
             src={heroImage}
@@ -141,7 +141,7 @@ export default async function HomePage() {
               </Link>
               <Link
                 href="/events"
-                className="inline-flex items-center justify-center gap-2 w-60 rounded-full border border-white/40 bg-transparent px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/10"
+                className="inline-flex items-center justify-center gap-2 w-60 rounded-full border border-white/40 bg-transparent px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-neutral-900/10"
               >
                 Find Events
               </Link>
@@ -152,7 +152,7 @@ export default async function HomePage() {
 
       {/* ---------- Trust strip ---------- */}
       <section className="mx-auto max-w-6xl px-6 pt-10">
-        <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-xs sm:text-sm text-neutral-500">
+        <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-xs sm:text-sm text-neutral-400">
           <span className="flex items-center gap-1.5">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
               <rect x="4" y="10" width="16" height="10" rx="2" />
@@ -180,10 +180,10 @@ export default async function HomePage() {
           A marketplace that makes you scroll past three pitch sections to
           reach its inventory is asking a visitor to take its word for it. */}
       <ScrollReveal className="mx-auto max-w-6xl px-6 pt-14 block">
-        <h2 className="zv-h2 text-neutral-900 mb-6">Tickets on sale now</h2>
+        <h2 className="zv-h2 text-neutral-50 mb-6">Tickets on sale now</h2>
         {(!events || events.length === 0) ? (
           <div className="zv-card p-16 text-center">
-            <p className="text-neutral-400">No events on sale right now. Check back soon.</p>
+            <p className="text-neutral-500">No events on sale right now. Check back soon.</p>
           </div>
         ) : (
           <div className="zv-stagger grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
@@ -201,7 +201,7 @@ export default async function HomePage() {
                   href={`/events/${event.slug}`}
                   className="zv-card zv-card-hover block overflow-hidden group"
                 >
-                  <div className="aspect-video bg-gradient-to-br from-yellow-100 via-yellow-50 to-white relative overflow-hidden">
+                  <div className="aspect-video bg-gradient-to-br from-yellow-500/25 via-yellow-600/10 to-transparent relative overflow-hidden">
                     {event.cover_image_url ? (
                       <Image
                         src={event.cover_image_url}
@@ -225,7 +225,7 @@ export default async function HomePage() {
                         alt={`${event.title} logo`}
                         width={40}
                         height={40}
-                        className="h-10 w-10 rounded-xl object-cover ring-1 ring-neutral-200/70 shadow-sm shrink-0"
+                        className="h-10 w-10 rounded-xl object-cover ring-1 ring-white/15 shadow-sm shrink-0"
                       />
                     )}
                     <div className="space-y-1.5 min-w-0 flex-1">
@@ -237,14 +237,14 @@ export default async function HomePage() {
                         })}{" "}
                         · {event.city}
                       </p>
-                      <h2 className="font-semibold text-base sm:text-lg leading-snug text-neutral-900 line-clamp-2">{event.title}</h2>
+                      <h2 className="font-semibold text-base sm:text-lg leading-snug text-neutral-50 line-clamp-2">{event.title}</h2>
                       <div className="flex items-center justify-between gap-3">
-                        <p className="text-sm text-neutral-500 truncate">{event.venue}</p>
+                        <p className="text-sm text-neutral-400 truncate">{event.venue}</p>
                         {isFree ? (
-                          <p className="text-sm font-semibold text-emerald-600 whitespace-nowrap">Free</p>
+                          <p className="text-sm font-semibold text-emerald-400 whitespace-nowrap">Free</p>
                         ) : (
                           fromPrice !== null && (
-                            <p className="text-sm font-semibold text-neutral-900 whitespace-nowrap">
+                            <p className="text-sm font-semibold text-neutral-50 whitespace-nowrap">
                               From {formatMoney(fromPrice, event.currency)}
                             </p>
                           )
@@ -268,10 +268,10 @@ export default async function HomePage() {
         <ScrollReveal className="mx-auto max-w-6xl px-6 pt-16 block">
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 sm:gap-4 mb-5">
             <div>
-              <h2 className="zv-h2 text-neutral-900">
+              <h2 className="zv-h2 text-neutral-50">
                 Don&apos;t just buy tickets, be part of the community
               </h2>
-              <p className="text-sm text-neutral-500 mt-1">
+              <p className="text-sm text-neutral-400 mt-1">
                 Relive the memories, react to what&apos;s next, and connect with people who were there.
               </p>
             </div>
@@ -300,13 +300,13 @@ export default async function HomePage() {
                     {businessName}
                     {post.organizers?.is_verified && <VerifiedBadge />}
                   </Link>
-                  <p className="text-sm text-neutral-800 whitespace-pre-wrap mt-1.5 line-clamp-3">{post.body}</p>
+                  <p className="text-sm text-neutral-100 whitespace-pre-wrap mt-1.5 line-clamp-3">{post.body}</p>
                   {post.image_urls.length > 0 && (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={post.image_urls[0]} alt="" className="mt-3 w-full rounded-2xl object-cover aspect-[16/9]" />
                   )}
-                  <div className="flex items-center justify-between mt-4 pt-3 border-t border-neutral-100">
-                    <span className="text-xs text-neutral-400">
+                  <div className="flex items-center justify-between mt-4 pt-3 border-t border-white/10">
+                    <span className="text-xs text-neutral-500">
                       👍 {likes} · 💬 {commentCount}
                     </span>
                     <Link href={`/community/${post.organizer_id}`} className="text-xs font-semibold zv-gradient-text">
@@ -321,7 +321,7 @@ export default async function HomePage() {
       )}
 
 <ScrollReveal className="mx-auto max-w-6xl px-6 pt-16 block">
-        <h2 className="zv-h2 text-neutral-900 mb-6">Why Zivotix</h2>
+        <h2 className="zv-h2 text-neutral-50 mb-6">Why Zivotix</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {FEATURES.map((f) => (
             <div key={f.title} className="zv-card p-5">
@@ -337,8 +337,8 @@ export default async function HomePage() {
               >
                 {f.icon}
               </svg>
-              <h3 className="font-semibold text-sm text-neutral-900">{f.title}</h3>
-              <p className="text-xs text-neutral-500 mt-1.5 leading-relaxed">{f.body}</p>
+              <h3 className="font-semibold text-sm text-neutral-50">{f.title}</h3>
+              <p className="text-xs text-neutral-400 mt-1.5 leading-relaxed">{f.body}</p>
             </div>
           ))}
         </div>

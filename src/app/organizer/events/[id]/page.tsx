@@ -75,7 +75,7 @@ export default async function OrganizerEventDetailPage({
   const supabase = await createClient();
 
   const { data: event } = await supabase.from("events").select("*").eq("id", id).single<EventRow>();
-  if (!event) return <p className="text-sm text-neutral-500">Event not found.</p>;
+  if (!event) return <p className="text-sm text-neutral-400">Event not found.</p>;
 
   const { data: ticketTypes } = await supabase
     .from("ticket_types")
@@ -146,7 +146,7 @@ export default async function OrganizerEventDetailPage({
       {/* Horizontally scrollable so four tabs never wrap to a second line on a
           narrow phone, which is what made the old header feel disorganised. */}
       <div className="-mx-6 px-6 sm:mx-0 sm:px-0 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        <div className="flex items-center gap-1 border-b border-neutral-200 min-w-max">
+        <div className="flex items-center gap-1 border-b border-white/15 min-w-max">
           {TABS.map((t) => (
             <Tab
               key={t.key}
@@ -177,7 +177,7 @@ export default async function OrganizerEventDetailPage({
 
       {tab === "tickets" && (
         <div>
-          <h2 className="font-semibold text-neutral-900 mb-3">Ticket types</h2>
+          <h2 className="font-semibold text-neutral-50 mb-3">Ticket types</h2>
           <TicketTypesEditor
             eventId={event.id}
             ticketTypes={ticketTypes ?? []}
@@ -197,15 +197,15 @@ export default async function OrganizerEventDetailPage({
       {tab === "sales" && (
       <>
       <div>
-        <h2 className="font-semibold text-neutral-900 mb-3">
-          Tickets & check-ins <span className="text-neutral-400 font-normal">(who&apos;s scanned in at the door)</span>
+        <h2 className="font-semibold text-neutral-50 mb-3">
+          Tickets & check-ins <span className="text-neutral-500 font-normal">(who&apos;s scanned in at the door)</span>
         </h2>
         {(!tickets || tickets.length === 0) ? (
           <div className="zv-card p-10 text-center">
-            <p className="text-sm text-neutral-400">No tickets generated yet. They&apos;re created once an order is paid.</p>
+            <p className="text-sm text-neutral-500">No tickets generated yet. They&apos;re created once an order is paid.</p>
           </div>
         ) : (
-          <div className="zv-card divide-y divide-neutral-100 overflow-hidden">
+          <div className="zv-card divide-y divide-white/10 overflow-hidden">
             {tickets.map((t) => {
               const ticketType = one(t.ticket_types);
               const orderItem = one(t.order_items);
@@ -214,17 +214,17 @@ export default async function OrganizerEventDetailPage({
               return (
                 <div key={t.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-5 py-3.5 text-sm">
                   <div>
-                    <p className="font-medium text-neutral-800">{order?.buyer_name ?? "Unknown buyer"}</p>
-                    <p className="text-neutral-400">
+                    <p className="font-medium text-neutral-100">{order?.buyer_name ?? "Unknown buyer"}</p>
+                    <p className="text-neutral-500">
                       {ticketType?.name ?? "Ticket"} · {order?.buyer_email}
                     </p>
                   </div>
                   {scanned ? (
-                    <span className="zv-badge bg-emerald-100 text-emerald-700">
+                    <span className="zv-badge bg-emerald-500/15 text-emerald-300">
                       Checked in {t.checked_in_at ? new Date(t.checked_in_at).toLocaleTimeString() : ""}
                     </span>
                   ) : (
-                    <span className="zv-badge bg-neutral-100 text-neutral-500">Not yet scanned</span>
+                    <span className="zv-badge bg-white/[0.08] text-neutral-400">Not yet scanned</span>
                   )}
                 </div>
               );
@@ -234,25 +234,25 @@ export default async function OrganizerEventDetailPage({
       </div>
 
       <div>
-        <h2 className="font-semibold text-neutral-900 mb-3">Orders</h2>
+        <h2 className="font-semibold text-neutral-50 mb-3">Orders</h2>
         {(allOrders ?? []).length === 0 ? (
           <div className="zv-card p-10 text-center">
-            <p className="text-sm text-neutral-400">No paid orders yet.</p>
+            <p className="text-sm text-neutral-500">No paid orders yet.</p>
           </div>
         ) : (
-          <div className="zv-card divide-y divide-neutral-100 overflow-hidden">
+          <div className="zv-card divide-y divide-white/10 overflow-hidden">
             {allOrders!.map((o) => (
               <div key={o.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-5 py-3.5 text-sm">
                 <div>
-                  <p className="font-medium text-neutral-800">{o.buyer_name}</p>
-                  <p className="text-neutral-400">{o.buyer_email}</p>
+                  <p className="font-medium text-neutral-100">{o.buyer_name}</p>
+                  <p className="text-neutral-500">{o.buyer_email}</p>
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
-                  <span className={`font-medium ${o.status === "refunded" ? "text-neutral-400 line-through" : "text-neutral-700"}`}>
+                  <span className={`font-medium ${o.status === "refunded" ? "text-neutral-500 line-through" : "text-neutral-200"}`}>
                     {o.base_amount.toLocaleString()} {o.base_currency}
                   </span>
                   {o.status === "refunded" ? (
-                    <span className="zv-badge bg-red-100 text-red-700">Refunded</span>
+                    <span className="zv-badge bg-red-500/15 text-red-300">Refunded</span>
                   ) : (
                     <RefundButton orderId={o.id} />
                   )}
@@ -275,8 +275,8 @@ function Tab({ href, label, active }: { href: string; label: string; active: boo
       scroll={false}
       className={`px-4 py-2.5 text-sm font-semibold border-b-2 -mb-px whitespace-nowrap transition-colors ${
         active
-          ? "border-neutral-900 text-neutral-900"
-          : "border-transparent text-neutral-400 hover:text-neutral-700"
+          ? "border-neutral-900 text-neutral-50"
+          : "border-transparent text-neutral-500 hover:text-neutral-200"
       }`}
     >
       {label}
@@ -287,8 +287,8 @@ function Tab({ href, label, active }: { href: string; label: string; active: boo
 function Stat({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
   return (
     <div className="zv-card p-4">
-      <p className="text-xs text-neutral-400">{label}</p>
-      <p className={`text-lg font-bold mt-1 ${accent ? "zv-gradient-text" : "text-neutral-900"}`}>{value}</p>
+      <p className="text-xs text-neutral-500">{label}</p>
+      <p className={`text-lg font-bold mt-1 ${accent ? "zv-gradient-text" : "text-neutral-50"}`}>{value}</p>
     </div>
   );
 }

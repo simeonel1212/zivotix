@@ -98,8 +98,8 @@ export default function BankAccountForm({ organizer }: { organizer: Organizer })
           </div>
 
           {accountName && (
-            <p className="text-sm text-neutral-500">
-              Verified account name: <span className="font-medium text-neutral-800">{accountName}</span>
+            <p className="text-sm text-neutral-400">
+              Verified account name: <span className="font-medium text-neutral-100">{accountName}</span>
             </p>
           )}
         </>
@@ -140,8 +140,8 @@ export default function BankAccountForm({ organizer }: { organizer: Organizer })
         </>
       )}
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
-      {savedNow && <p className="text-sm text-emerald-600">Bank details saved.</p>}
+      {error && <p className="text-sm text-red-400">{error}</p>}
+      {savedNow && <p className="text-sm text-emerald-400">Bank details saved.</p>}
 
       <button type="submit" disabled={loading} className="zv-btn-primary disabled:opacity-40">
         {loading ? "Saving…" : "Save bank details"}

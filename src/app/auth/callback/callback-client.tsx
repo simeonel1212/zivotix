@@ -52,15 +52,15 @@ export default function AuthCallbackClient() {
       <div className="zv-card max-w-sm w-full text-center space-y-3 p-10">
         {failed ? (
           <>
-            <h1 className="text-xl font-bold text-neutral-900">That link didn&apos;t work</h1>
-            <p className="text-sm text-neutral-500">
+            <h1 className="text-xl font-bold text-neutral-50">That link didn&apos;t work</h1>
+            <p className="text-sm text-neutral-400">
               It may have expired or already been used. Ask whoever invited you to send a fresh link.
             </p>
           </>
         ) : (
           <>
             <div className="mx-auto h-8 w-8 rounded-full border-2 border-yellow-500 border-t-transparent animate-spin" />
-            <p className="text-sm text-neutral-500">Signing you in…</p>
+            <p className="text-sm text-neutral-400">Signing you in…</p>
           </>
         )}
       </div>

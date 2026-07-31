@@ -60,8 +60,8 @@ export default function PostForm({ organizerId }: { organizerId: string }) {
   return (
     <form onSubmit={submit} className="zv-card p-6 space-y-4">
       <div>
-        <label className="text-sm font-medium text-neutral-700">Post an update</label>
-        <p className="text-xs text-neutral-400 mt-1">
+        <label className="text-sm font-medium text-neutral-200">Post an update</label>
+        <p className="text-xs text-neutral-500 mt-1">
           Anyone who&apos;s ever gotten a ticket from you can react and comment. The text and photos
           themselves are public, shown on your community page, the homepage, and search.
         </p>
@@ -77,11 +77,11 @@ export default function PostForm({ organizerId }: { organizerId: string }) {
             type="button"
             onClick={generatePost}
             disabled={generating}
-            className="zv-badge bg-neutral-100 text-neutral-700 hover:bg-neutral-200 transition-colors disabled:opacity-40"
+            className="zv-badge bg-white/[0.08] text-neutral-200 hover:bg-white/[0.14] transition-colors disabled:opacity-40"
           >
             {generating ? "Writing…" : "✨ Polish with AI"}
           </button>
-          {genError && <p className="text-xs text-red-600">{genError}</p>}
+          {genError && <p className="text-xs text-red-400">{genError}</p>}
         </div>
       </div>
       <GalleryUpload
@@ -90,7 +90,7 @@ export default function PostForm({ organizerId }: { organizerId: string }) {
         label="Photos (optional)"
         helpText="Up to 6 photos for this update."
       />
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-red-400">{error}</p>}
       <button disabled={posting || !body.trim()} className="zv-btn-primary">
         {posting ? "Posting…" : "Post update"}
       </button>

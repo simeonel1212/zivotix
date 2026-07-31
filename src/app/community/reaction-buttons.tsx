@@ -69,7 +69,7 @@ export default function ReactionButtons({
           onClick={() => react("like")}
           disabled={pending}
           className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors disabled:opacity-60 ${
-            myReaction === "like" ? "bg-yellow-100 text-yellow-800" : "bg-neutral-100 text-neutral-500 hover:bg-neutral-200"
+            myReaction === "like" ? "bg-yellow-500/15 text-yellow-800" : "bg-white/[0.08] text-neutral-400 hover:bg-white/[0.14]"
           }`}
         >
           <span key={likeBump} className="inline-block zv-pop">
@@ -80,7 +80,7 @@ export default function ReactionButtons({
           onClick={() => react("dislike")}
           disabled={pending}
           className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors disabled:opacity-60 ${
-            myReaction === "dislike" ? "bg-neutral-200 text-neutral-800" : "bg-neutral-100 text-neutral-500 hover:bg-neutral-200"
+            myReaction === "dislike" ? "bg-white/[0.14] text-neutral-100" : "bg-white/[0.08] text-neutral-400 hover:bg-white/[0.14]"
           }`}
         >
           <span key={dislikeBump} className="inline-block zv-pop">
@@ -89,7 +89,7 @@ export default function ReactionButtons({
         </button>
       </div>
       {locked && (
-        <p className="text-xs text-neutral-400 mt-1.5 text-right">
+        <p className="text-xs text-neutral-500 mt-1.5 text-right">
           Get a ticket from {organizerName} to react.{" "}
           <Link href={`/community/${organizerId}`} className="zv-gradient-text font-medium">
             Get tickets →

@@ -48,8 +48,8 @@ export default async function AdminPayoutsPage() {
   return (
     <div className="max-w-4xl space-y-12">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight text-neutral-900">Payouts</h1>
-        <p className="text-sm text-neutral-500 mt-1 max-w-2xl">
+        <h1 className="text-3xl font-bold tracking-tight text-neutral-50">Payouts</h1>
+        <p className="text-sm text-neutral-400 mt-1 max-w-2xl">
           Most payouts appear here on their own — a day after each event ends, its sales are totaled and a
           payout record is created automatically. Use the button below for anything that isn&apos;t covered
           yet (e.g. running events, or catching up sales missed for another reason). Either way, the actual
@@ -59,13 +59,13 @@ export default async function AdminPayoutsPage() {
 
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="font-semibold text-neutral-900">Pending this run</h2>
+          <h2 className="font-semibold text-neutral-50">Pending this run</h2>
           <RunPayoutButton disabled={preview.length === 0} />
         </div>
 
         {preview.length === 0 ? (
           <div className="zv-card p-10 text-center">
-            <p className="text-sm text-neutral-400">
+            <p className="text-sm text-neutral-500">
               Nothing pending. All paid sales have been included in a payout.
             </p>
           </div>
@@ -73,7 +73,7 @@ export default async function AdminPayoutsPage() {
           <div className="zv-card overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
-                <thead className="bg-neutral-50/80 text-left text-neutral-400">
+                <thead className="bg-white/[0.04] text-left text-neutral-500">
                   <tr>
                     <th className="px-5 py-3 font-medium whitespace-nowrap">Organizer</th>
                     <th className="px-5 py-3 font-medium whitespace-nowrap">Gross sales</th>
@@ -83,15 +83,15 @@ export default async function AdminPayoutsPage() {
                 </thead>
                 <tbody>
                   {preview.map((p) => (
-                    <tr key={p.organizer.id} className="border-t border-neutral-100">
-                      <td className="px-5 py-3 font-medium text-neutral-800 whitespace-nowrap">
+                    <tr key={p.organizer.id} className="border-t border-white/10">
+                      <td className="px-5 py-3 font-medium text-neutral-100 whitespace-nowrap">
                         {p.organizer.business_name}
-                        <span className="text-neutral-400 font-normal"> · {p.organizer.country}</span>
+                        <span className="text-neutral-500 font-normal"> · {p.organizer.country}</span>
                       </td>
-                      <td className="px-5 py-3 text-neutral-600 whitespace-nowrap">
+                      <td className="px-5 py-3 text-neutral-300 whitespace-nowrap">
                         {p.grossSales.toLocaleString()} {p.organizer.payout_currency}
                       </td>
-                      <td className="px-5 py-3 text-neutral-600 whitespace-nowrap">
+                      <td className="px-5 py-3 text-neutral-300 whitespace-nowrap">
                         {p.organizer.is_platform_own
                           ? "0 (own event)"
                           : `${p.platformFee.toLocaleString()} ${p.organizer.payout_currency}`}
@@ -103,11 +103,11 @@ export default async function AdminPayoutsPage() {
                   ))}
                 </tbody>
                 <tfoot>
-                  <tr className="border-t border-neutral-200 font-semibold">
-                    <td className="px-5 py-3 text-neutral-700 whitespace-nowrap" colSpan={3}>
+                  <tr className="border-t border-white/15 font-semibold">
+                    <td className="px-5 py-3 text-neutral-200 whitespace-nowrap" colSpan={3}>
                       Total across organizers (mixed currencies)
                     </td>
-                    <td className="px-5 py-3 text-neutral-900 whitespace-nowrap">{totalNetPending.toLocaleString()}</td>
+                    <td className="px-5 py-3 text-neutral-50 whitespace-nowrap">{totalNetPending.toLocaleString()}</td>
                   </tr>
                 </tfoot>
               </table>
@@ -117,26 +117,26 @@ export default async function AdminPayoutsPage() {
       </div>
 
       <div className="space-y-4">
-        <h2 className="font-semibold text-neutral-900">Payout history</h2>
+        <h2 className="font-semibold text-neutral-50">Payout history</h2>
         {(!payouts || payouts.length === 0) ? (
           <div className="zv-card p-10 text-center">
-            <p className="text-sm text-neutral-400">No payouts run yet.</p>
+            <p className="text-sm text-neutral-500">No payouts run yet.</p>
           </div>
         ) : (
-          <div className="zv-card divide-y divide-neutral-100 overflow-hidden">
+          <div className="zv-card divide-y divide-white/10 overflow-hidden">
             {payouts?.map((p) => (
               <div key={p.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 px-5 py-3.5 text-sm">
                 <div>
-                  <p className="font-medium text-neutral-800">
+                  <p className="font-medium text-neutral-100">
                     {p.organizers.business_name}{" "}
-                    <span className="text-neutral-400 font-normal">· {p.organizers.country}</span>
+                    <span className="text-neutral-500 font-normal">· {p.organizers.country}</span>
                     {p.events?.title && (
-                      <span className="zv-badge bg-neutral-100 text-neutral-600 ml-2 align-middle">
+                      <span className="zv-badge bg-white/[0.08] text-neutral-300 ml-2 align-middle">
                         {p.events.title}
                       </span>
                     )}
                   </p>
-                  <p className="text-neutral-400">
+                  <p className="text-neutral-500">
                     {p.net_payable.toLocaleString()} {p.currency} · {new Date(p.created_at).toLocaleDateString()}
                     {p.processor_fee_estimate != null && (
                       <>
@@ -151,11 +151,11 @@ export default async function AdminPayoutsPage() {
                   </p>
                 </div>
                 {p.status === "paid" ? (
-                  <span className="zv-badge bg-emerald-100 text-emerald-700">
+                  <span className="zv-badge bg-emerald-500/15 text-emerald-300">
                     Paid {p.reference ? `· ${p.reference}` : ""}
                   </span>
                 ) : p.status === "processing" ? (
-                  <span className="zv-badge bg-amber-100 text-amber-700">
+                  <span className="zv-badge bg-amber-500/15 text-amber-300">
                     Processing {p.reference ? `· ${p.reference}` : ""}
                   </span>
                 ) : p.organizers.country === "NG" &&

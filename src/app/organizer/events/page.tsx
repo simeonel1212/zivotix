@@ -19,8 +19,8 @@ export default async function OrganizerEventsPage() {
     <div className="max-w-6xl mx-auto space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-neutral-900">My events</h1>
-          <p className="text-sm text-neutral-500 mt-1">Create, publish, and track every event you run.</p>
+          <h1 className="text-3xl font-bold tracking-tight text-neutral-50">My events</h1>
+          <p className="text-sm text-neutral-400 mt-1">Create, publish, and track every event you run.</p>
         </div>
         <Link href="/organizer/events/new" className="zv-btn-primary">
           New event
@@ -29,14 +29,14 @@ export default async function OrganizerEventsPage() {
 
       {(!events || events.length === 0) && (
         <div className="zv-card p-16 text-center">
-          <p className="text-neutral-400">You haven&apos;t created any events yet.</p>
+          <p className="text-neutral-500">You haven&apos;t created any events yet.</p>
         </div>
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
         {events?.map((event) => (
           <Link key={event.id} href={`/organizer/events/${event.id}`} className="zv-card zv-card-hover block overflow-hidden">
-            <div className="aspect-video bg-gradient-to-br from-yellow-100 via-yellow-50 to-white relative">
+            <div className="aspect-video bg-gradient-to-br from-yellow-500/25 via-yellow-600/10 to-transparent relative">
               {event.cover_image_url && (
                 <Image
                   src={event.cover_image_url}
@@ -51,7 +51,7 @@ export default async function OrganizerEventsPage() {
                   event.status === "published"
                     ? "bg-emerald-500 text-white"
                     : event.status === "draft"
-                    ? "bg-white/90 text-neutral-600"
+                    ? "bg-neutral-900/90 text-neutral-300"
                     : "bg-red-500 text-white"
                 }`}
               >
@@ -69,12 +69,12 @@ export default async function OrganizerEventsPage() {
                 <img
                   src={event.logo_image_url}
                   alt={`${event.title} logo`}
-                  className="h-10 w-10 rounded-xl object-cover ring-1 ring-neutral-200/70 shadow-sm shrink-0"
+                  className="h-10 w-10 rounded-xl object-cover ring-1 ring-white/15 shadow-sm shrink-0"
                 />
               )}
               <div className="min-w-0">
-                <p className="font-semibold text-neutral-900">{event.title}</p>
-                <p className="text-sm text-neutral-400 mt-0.5">
+                <p className="font-semibold text-neutral-50">{event.title}</p>
+                <p className="text-sm text-neutral-500 mt-0.5">
                   {new Date(event.starts_at).toLocaleDateString()} · {event.city}
                 </p>
               </div>

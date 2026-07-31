@@ -25,7 +25,7 @@ export default function DeletePostButton({ postId }: { postId: string }) {
       onClick={remove}
       disabled={deleting}
       aria-label="Delete post"
-      className="text-neutral-400 hover:text-red-500 transition-colors disabled:opacity-40 p-1 -m-1"
+      className="text-neutral-500 hover:text-red-400 transition-colors disabled:opacity-40 p-1 -m-1"
     >
       {deleting ? (
         <span className="text-xs">Deleting…</span>

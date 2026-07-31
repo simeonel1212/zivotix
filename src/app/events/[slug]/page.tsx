@@ -195,7 +195,7 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
           Now the image is contained and never cropped, with a blurred copy of
           itself filling whatever space its aspect ratio leaves over. */}
       <div
-        className="relative rounded-3xl bg-gradient-to-br from-yellow-100 via-yellow-50 to-white overflow-hidden shadow-[0_20px_60px_-20px_rgba(0,0,0,0.15)]"
+        className="relative rounded-3xl bg-gradient-to-br from-yellow-500/25 via-yellow-600/10 to-transparent overflow-hidden shadow-[0_20px_60px_-20px_rgba(0,0,0,0.15)]"
         style={{ aspectRatio: String(coverAspect) }}
       >
         {event.cover_image_url && (
@@ -231,7 +231,7 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
           </Link>
         )}
         <div className="flex flex-wrap items-start justify-between gap-4">
-          <h1 className="text-4xl font-bold tracking-tight text-neutral-900">{event.title}</h1>
+          <h1 className="text-4xl font-bold tracking-tight text-neutral-50">{event.title}</h1>
           {/* Sits beside the title rather than down with the ticket selector:
               people share an event when they first recognise it, not after
               they've decided to buy. */}
@@ -245,7 +245,7 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
           />
         </div>
         <div className="space-y-2.5">
-          <div className="flex items-center gap-3 text-neutral-600">
+          <div className="flex items-center gap-3 text-neutral-300">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" strokeWidth="1.8" stroke="currentColor" className="shrink-0" style={{ color: "var(--accent-solid)" }} aria-hidden="true">
               <rect x="3" y="5" width="18" height="16" rx="3" />
               <path d="M3 10h18M8 3v4M16 3v4" strokeLinecap="round" />
@@ -257,7 +257,7 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
               })}
             </span>
           </div>
-          <div className="flex items-center gap-3 text-neutral-600">
+          <div className="flex items-center gap-3 text-neutral-300">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" strokeWidth="1.8" stroke="currentColor" className="shrink-0" style={{ color: "var(--accent-solid)" }} aria-hidden="true">
               <path d="M12 22s7-7.58 7-12.5A7 7 0 0 0 5 9.5C5 14.42 12 22 12 22Z" strokeLinejoin="round" />
               <circle cx="12" cy="9.5" r="2.4" />
@@ -275,7 +275,7 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
             <ExpandableText
               text={event.description}
               lines={7}
-              className="text-neutral-700 leading-relaxed"
+              className="text-neutral-200 leading-relaxed"
             />
           )}
 
@@ -321,7 +321,7 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
 
       {mapsEmbedUrl && (
         <div className="space-y-2">
-          <div className="rounded-3xl overflow-hidden border border-neutral-200/70 shadow-[0_20px_60px_-20px_rgba(0,0,0,0.12)]">
+          <div className="rounded-3xl overflow-hidden border border-white/15 shadow-[0_20px_60px_-20px_rgba(0,0,0,0.12)]">
             <iframe
               src={mapsEmbedUrl}
               className="w-full h-64 sm:h-80"
@@ -386,7 +386,7 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
             alt={`${event.title} logo`}
             width={112}
             height={112}
-            className="h-28 w-28 rounded-3xl object-cover ring-1 ring-neutral-200/70 shadow-[0_12px_30px_-10px_rgba(0,0,0,0.2)]"
+            className="h-28 w-28 rounded-3xl object-cover ring-1 ring-white/15 shadow-[0_12px_30px_-10px_rgba(0,0,0,0.2)]"
           />
         </div>
       )}

@@ -21,7 +21,7 @@ export default function ResendLinkForm({ organizerId }: { organizerId: string })
 
   if (sent) {
     return (
-      <p className="text-sm text-neutral-500">
+      <p className="text-sm text-neutral-400">
         If that email has a ticket from this organizer, a fresh link is on its way. Check your inbox.
       </p>
     );

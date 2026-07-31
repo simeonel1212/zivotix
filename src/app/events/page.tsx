@@ -62,7 +62,7 @@ export default async function EventsPage({
       </div>
       <div className="mb-8 relative z-10 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
         <div>
-          <h1 className="zv-h1 text-neutral-900">Upcoming events</h1>
+          <h1 className="zv-h1 text-neutral-50">Upcoming events</h1>
           <p className="zv-lead mt-3">
             {activeCountry
               ? `What's on in ${countryLabel(activeCountry)}.`
@@ -80,7 +80,7 @@ export default async function EventsPage({
         <Link
           href={activeCountry ? `/events?country=${activeCountry}` : "/events"}
           className={`zv-badge transition-colors ${
-            !activeCategory ? "bg-neutral-900 text-white" : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+            !activeCategory ? "bg-white text-neutral-900" : "bg-white/[0.08] text-neutral-300 hover:bg-white/[0.14]"
           }`}
         >
           All
@@ -90,7 +90,7 @@ export default async function EventsPage({
             key={c.value}
             href={`/events?category=${c.value}${activeCountry ? `&country=${activeCountry}` : ""}`}
             className={`zv-badge transition-colors ${
-              activeCategory === c.value ? "bg-neutral-900 text-white" : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+              activeCategory === c.value ? "bg-white text-neutral-900" : "bg-white/[0.08] text-neutral-300 hover:bg-white/[0.14]"
             }`}
           >
             {c.label}
@@ -100,7 +100,7 @@ export default async function EventsPage({
 
       {(!events || events.length === 0) && (
         <div className="zv-card p-16 text-center">
-          <p className="text-neutral-400">
+          <p className="text-neutral-500">
             {activeCountry
               ? `Nothing on sale in ${countryLabel(activeCountry)} right now.`
               : activeCategory
@@ -127,7 +127,7 @@ export default async function EventsPage({
             href={`/events/${event.slug}`}
             className="zv-card zv-card-hover block overflow-hidden group"
           >
-            <div className="aspect-video bg-gradient-to-br from-yellow-100 via-yellow-50 to-white relative overflow-hidden">
+            <div className="aspect-video bg-gradient-to-br from-yellow-500/25 via-yellow-600/10 to-transparent relative overflow-hidden">
               {event.cover_image_url ? (
                 <Image
                   src={event.cover_image_url}
@@ -141,7 +141,7 @@ export default async function EventsPage({
                   <span className="text-3xl font-bold zv-gradient-text opacity-40">{event.title.slice(0, 1)}</span>
                 </div>
               )}
-              <span className="absolute top-3 left-3 zv-badge bg-white/90 backdrop-blur-sm text-neutral-700 text-xs shadow-sm">
+              <span className="absolute top-3 left-3 zv-badge bg-neutral-900/90 backdrop-blur-sm text-neutral-200 text-xs shadow-sm">
                 {categoryLabel(event.category)}
               </span>
             </div>
@@ -152,7 +152,7 @@ export default async function EventsPage({
                   alt={`${event.title} logo`}
                   width={40}
                   height={40}
-                  className="h-10 w-10 rounded-xl object-cover ring-1 ring-neutral-200/70 shadow-sm shrink-0"
+                  className="h-10 w-10 rounded-xl object-cover ring-1 ring-white/15 shadow-sm shrink-0"
                 />
               )}
               <div className="space-y-1.5 min-w-0 flex-1">
@@ -164,11 +164,11 @@ export default async function EventsPage({
                   })}{" "}
                   · {event.city}
                 </p>
-                <h2 className="font-semibold text-base sm:text-lg leading-snug text-neutral-900 line-clamp-2">{event.title}</h2>
+                <h2 className="font-semibold text-base sm:text-lg leading-snug text-neutral-50 line-clamp-2">{event.title}</h2>
                 <div className="flex items-center justify-between gap-3">
-                  <p className="text-sm text-neutral-500 truncate">{event.venue}</p>
+                  <p className="text-sm text-neutral-400 truncate">{event.venue}</p>
                   {isFree ? (
-                    <p className="text-sm font-semibold text-emerald-600 whitespace-nowrap">Free</p>
+                    <p className="text-sm font-semibold text-emerald-400 whitespace-nowrap">Free</p>
                   ) : (
                     fromPrice !== null && (
                       // No approximate conversion on the browse grid: it was
@@ -176,7 +176,7 @@ export default async function EventsPage({
                       // buyer's country needs request headers, which would opt
                       // this page out of its 60-second cache. The conversion
                       // now appears once, on the order total.
-                      <p className="text-sm font-semibold text-neutral-900 whitespace-nowrap">
+                      <p className="text-sm font-semibold text-neutral-50 whitespace-nowrap">
                         From {formatMoney(fromPrice, event.currency)}
                       </p>
                     )

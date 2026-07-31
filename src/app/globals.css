@@ -2,21 +2,30 @@
 
 /*
   Zivotix design system.
-  Bright, glossy, Apple-marketing-page energy: soft off-white canvas,
-  a single vivid sun-yellow accent, big rounded corners, and layered
-  "3D" shadows that lift on hover instead of flat Tailwind defaults.
+  Dark, glossy, after-dark energy: near-black canvas, a single vivid
+  sun-yellow accent, big rounded corners, and layered depth that lifts on
+  hover instead of flat Tailwind defaults.
+
+  Everything is driven by the tokens below, so the whole site's mood is four
+  hex values. Surfaces sit a step above the page rather than a step below it —
+  on dark UI a card darker than its background reads as a hole.
 */
 
 :root {
-  --background: #f5f5f7;
-  --surface: #ffffff;
-  --foreground: #1d1d1f;
-  --muted: #6e6e73;
-  --border: #e5e5ea;
+  /* Dark canvas. Not pure black — #0b0b0d keeps the film grain and the
+     yellow mesh readable, and stops the OLED smearing you get when large
+     areas of #000 scroll. Surfaces sit a step above the page so cards read as
+     lifted rather than as holes cut in it. */
+  --background: #0b0b0d;
+  --surface: #17171a;
+  --surface-2: #202024;
+  --foreground: #f5f5f7;
+  --muted: #a1a1a8;
+  --border: #2a2a2f;
 
   --accent-from: #facc15; /* yellow-400 */
   --accent-to: #ca8a04; /* yellow-600 */
-  --accent-solid: #ca8a04;
+  --accent-solid: #facc15;
 
   --shadow-color: 41 96% 40%;
 }
@@ -34,7 +43,7 @@
 }
 
 html {
-  color-scheme: light;
+  color-scheme: dark;
   /* Anchor jumps and the sticky bar's "Get tickets" glide instead of teleport,
      which is the difference between the page reacting and the page reloading.
      Overridden back to auto under prefers-reduced-motion further down. */
@@ -51,8 +60,9 @@ body {
   position: relative;
 }
 
-/* Subtle film-grain texture over the whole app so flat gradients and
-   off-white surfaces feel tactile instead of dead-flat. Fixed + blended +
+/* Subtle film-grain over the whole app so large flat dark areas feel tactile
+   instead of dead. soft-light rather than overlay: overlay against near-black
+   lifts the whole page to grey. Fixed + blended +
    pointer-events:none so it never affects layout, scroll, or clicks. */
 body::before {
   content: "";
@@ -60,8 +70,8 @@ body::before {
   inset: 0;
   z-index: 60;
   pointer-events: none;
-  opacity: 0.06;
-  mix-blend-mode: overlay;
+  mix-blend-mode: soft-light;
+  opacity: 0.09;
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
   background-repeat: repeat;
 }
@@ -76,10 +86,10 @@ body::after {
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 900px 520px at 10% -10%, rgba(250, 204, 21, 0.18), transparent 60%),
-    radial-gradient(ellipse 700px 550px at 108% 6%, rgba(202, 138, 4, 0.13), transparent 60%),
-    radial-gradient(ellipse 640px 520px at 50% 118%, rgba(250, 204, 21, 0.1), transparent 60%),
-    radial-gradient(circle at 1px 1px, rgba(29, 29, 31, 0.05) 1px, transparent 0) 0 0/24px 24px;
+    radial-gradient(ellipse 900px 520px at 10% -10%, rgba(250, 204, 21, 0.13), transparent 60%),
+    radial-gradient(ellipse 700px 550px at 108% 6%, rgba(202, 138, 4, 0.12), transparent 60%),
+    radial-gradient(ellipse 640px 520px at 50% 118%, rgba(250, 204, 21, 0.08), transparent 60%),
+    radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.05) 1px, transparent 0) 0 0/24px 24px;
 }
 
 /* ---------- Reusable primitives ----------
@@ -135,13 +145,13 @@ body::after {
   padding: 0.75rem 1.5rem;
   border-radius: 999px;
   border: 1px solid var(--border);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
   transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
 }
 .zv-btn-secondary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px -6px rgba(0, 0, 0, 0.12);
-  border-color: #d1d1d6;
+  box-shadow: 0 8px 20px -6px rgba(0, 0, 0, 0.6);
+  border-color: #3a3a41;
 }
 .zv-btn-secondary:active {
   transform: translateY(0) scale(0.98);
@@ -152,18 +162,18 @@ body::after {
   border-radius: 1.75rem;
   border: 1px solid var(--border);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.8),
-    0 1px 2px rgba(0, 0, 0, 0.03),
-    0 12px 32px -12px rgba(0, 0, 0, 0.12);
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 1px 2px rgba(0, 0, 0, 0.4),
+    0 18px 40px -16px rgba(0, 0, 0, 0.8);
   transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.25s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .zv-card-hover:hover {
   transform: translateY(-5px) scale(1.008) rotate(-0.25deg);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.8),
-    0 4px 8px rgba(0, 0, 0, 0.05),
-    0 28px 52px -16px hsl(var(--shadow-color) / 0.28),
-    0 12px 24px -10px rgba(0, 0, 0, 0.14);
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 4px 10px rgba(0, 0, 0, 0.4),
+    0 32px 60px -18px hsl(var(--shadow-color) / 0.3),
+    0 16px 30px -12px rgba(0, 0, 0, 0.7);
 }
 
 .zv-input {
@@ -182,7 +192,7 @@ body::after {
   box-shadow: 0 0 0 4px hsl(var(--shadow-color) / 0.15);
 }
 .zv-input::placeholder {
-  color: #a1a1a6;
+  color: #6b6b73;
 }
 
 .zv-label {
@@ -328,11 +338,11 @@ body::after {
    The solid fallback matters: without backdrop-filter support this is still an
    opaque bar, not unreadable text over a photo. */
 .zv-glass {
-  background: rgba(255, 255, 255, 0.98);
+  background: rgba(18, 18, 21, 0.98);
 }
 @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
   .zv-glass {
-    background: rgba(255, 255, 255, 0.72);
+    background: rgba(18, 18, 21, 0.72);
     backdrop-filter: saturate(180%) blur(20px);
     -webkit-backdrop-filter: saturate(180%) blur(20px);
   }
@@ -341,11 +351,11 @@ body::after {
 /* The floating buy bar's own lift, kept off .zv-glass so the header doesn't
    inherit a shadow it has no business having. */
 .zv-floating {
-  border: 1px solid rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.9),
-    0 10px 36px -10px rgba(0, 0, 0, 0.28),
-    0 2px 8px rgba(0, 0, 0, 0.06);
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 14px 44px -10px rgba(0, 0, 0, 0.85),
+    0 2px 10px rgba(0, 0, 0, 0.5);
 }
 
 .zv-slide-up {

@@ -29,7 +29,7 @@ export default function TicketCard({
 }) {
   return (
     <div className="w-full max-w-sm mx-auto">
-      <div className="rounded-3xl overflow-hidden shadow-[0_24px_64px_-16px_rgba(0,0,0,0.25)] bg-white">
+      <div className="rounded-3xl overflow-hidden shadow-[0_24px_64px_-16px_rgba(0,0,0,0.25)] bg-neutral-900">
         {/* Header band */}
         <div className="bg-gradient-to-br from-yellow-400 via-yellow-500 to-yellow-600 px-6 pt-6 pb-5 text-white">
           <div className="flex items-center justify-between">
@@ -38,7 +38,7 @@ export default function TicketCard({
             </span>
             <span
               className={`zv-badge ${
-                status === "valid" ? "bg-white/25 text-white" : status === "used" ? "bg-black/30 text-white" : "bg-red-600 text-white"
+                status === "valid" ? "bg-neutral-900/25 text-white" : status === "used" ? "bg-black/30 text-white" : "bg-red-600 text-white"
               }`}
             >
               {status === "valid" ? "Valid" : status === "used" ? "Checked in" : "Void"}
@@ -51,25 +51,25 @@ export default function TicketCard({
         {/* Details */}
         <div className="px-6 py-5 space-y-3 text-sm">
           <div className="flex justify-between gap-4">
-            <span className="text-neutral-400">Venue</span>
-            <span className="font-medium text-neutral-900 text-right">
+            <span className="text-neutral-500">Venue</span>
+            <span className="font-medium text-neutral-50 text-right">
               {venue}
               {city ? `, ${city}` : ""}
             </span>
           </div>
           <div className="flex justify-between gap-4">
-            <span className="text-neutral-400">Ticket</span>
-            <span className="font-medium text-neutral-900">{ticketTypeName}</span>
+            <span className="text-neutral-500">Ticket</span>
+            <span className="font-medium text-neutral-50">{ticketTypeName}</span>
           </div>
           {buyerName && (
             <div className="flex justify-between gap-4">
-              <span className="text-neutral-400">Holder</span>
-              <span className="font-medium text-neutral-900">{buyerName}</span>
+              <span className="text-neutral-500">Holder</span>
+              <span className="font-medium text-neutral-50">{buyerName}</span>
             </div>
           )}
           <div className="flex justify-between gap-4">
-            <span className="text-neutral-400">Ref</span>
-            <span className="font-mono font-medium text-neutral-900">{reference}</span>
+            <span className="text-neutral-500">Ref</span>
+            <span className="font-mono font-medium text-neutral-50">{reference}</span>
           </div>
         </div>
 
@@ -77,14 +77,14 @@ export default function TicketCard({
         <div className="relative">
           <div className="absolute -left-3 -top-3 h-6 w-6 rounded-full bg-[var(--background)]" />
           <div className="absolute -right-3 -top-3 h-6 w-6 rounded-full bg-[var(--background)]" />
-          <div className="border-t-2 border-dashed border-neutral-200" />
+          <div className="border-t-2 border-dashed border-white/15" />
         </div>
 
         {/* QR */}
         <div className="px-6 py-6 flex flex-col items-center gap-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={qrDataUrl} alt="Ticket QR code" className="h-52 w-52 rounded-xl" />
-          <p className="text-xs text-neutral-400 text-center">Show this code at the door. One scan per ticket.</p>
+          <p className="text-xs text-neutral-500 text-center">Show this code at the door. One scan per ticket.</p>
         </div>
       </div>
 
@@ -95,7 +95,7 @@ export default function TicketCard({
             alt="Event logo"
             width={48}
             height={48}
-            className="h-12 w-12 rounded-xl object-cover ring-1 ring-neutral-200/70 shadow-sm"
+            className="h-12 w-12 rounded-xl object-cover ring-1 ring-white/15 shadow-sm"
           />
         </div>
       )}

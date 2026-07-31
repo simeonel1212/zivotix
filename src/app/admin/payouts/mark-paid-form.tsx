@@ -11,7 +11,7 @@ export default function MarkPaidForm({ payoutId }: { payoutId: string }) {
 
   if (!open) {
     return (
-      <button onClick={() => setOpen(true)} className="zv-badge bg-neutral-100 text-neutral-600 hover:bg-neutral-200 transition-colors">
+      <button onClick={() => setOpen(true)} className="zv-badge bg-white/[0.08] text-neutral-300 hover:bg-white/[0.14] transition-colors">
         Mark paid
       </button>
     );

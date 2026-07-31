@@ -8,12 +8,12 @@ import Link from "next/link";
 export default function NoOrganizerNotice({ title }: { title: string }) {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <h1 className="text-3xl font-bold tracking-tight text-neutral-900">{title}</h1>
+      <h1 className="text-3xl font-bold tracking-tight text-neutral-50">{title}</h1>
       <div className="zv-card p-8 space-y-3">
-        <p className="text-sm text-neutral-700 font-medium">
+        <p className="text-sm text-neutral-200 font-medium">
           This account isn&apos;t set up as an organizer yet.
         </p>
-        <p className="text-sm text-neutral-500 leading-relaxed">
+        <p className="text-sm text-neutral-400 leading-relaxed">
           You&apos;re signed in, but there&apos;s no business profile attached to this account, so
           there are no events or updates to show. If you signed up to sell tickets and are seeing
           this, your signup didn&apos;t finish. Get in touch and we&apos;ll fix it on our side.

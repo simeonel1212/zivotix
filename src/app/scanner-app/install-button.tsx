@@ -64,7 +64,7 @@ export default function InstallButton() {
   }
 
   if (platform === null) {
-    return <div className="h-[52px] w-full sm:w-64 animate-pulse rounded-full bg-white/10" />;
+    return <div className="h-[52px] w-full sm:w-64 animate-pulse rounded-full bg-neutral-900/10" />;
   }
 
   if (platform === "installed") {
@@ -89,7 +89,7 @@ export default function InstallButton() {
           {installing ? "Installing…" : "Install app"}
         </button>
         {dismissed && (
-          <p className="mt-2 text-xs text-neutral-400">
+          <p className="mt-2 text-xs text-neutral-500">
             Install cancelled. Tap again whenever you&apos;re ready.
           </p>
         )}

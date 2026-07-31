@@ -247,7 +247,7 @@ export default function TicketTypesEditor({
         ))}
       </datalist>
 
-      <div className="zv-card divide-y divide-neutral-100 overflow-hidden">
+      <div className="zv-card divide-y divide-white/10 overflow-hidden">
         {rows.map((row) => (
           <div key={row.id} className="p-3.5 space-y-2">
             {/* Category and description sit on their own line above the
@@ -284,7 +284,7 @@ export default function TicketTypesEditor({
                 onChange={(e) => updateRow(row.id, "price", e.target.value)}
                 placeholder={`Price (${currency})`}
               />
-              <label className="flex items-center gap-1.5 text-[11px] text-neutral-500">
+              <label className="flex items-center gap-1.5 text-[11px] text-neutral-400">
                 <input
                   type="checkbox"
                   checked={row.free}
@@ -305,7 +305,7 @@ export default function TicketTypesEditor({
                 value={row.quantity_total}
                 onChange={(e) => updateRow(row.id, "quantity_total", e.target.value)}
               />
-              <p className="text-[11px] text-neutral-400 mt-1">{row.quantity_sold} sold</p>
+              <p className="text-[11px] text-neutral-500 mt-1">{row.quantity_sold} sold</p>
             </div>
             </div>
 
@@ -316,7 +316,7 @@ export default function TicketTypesEditor({
                 It also states outright when there's something unsaved, because
                 a button that looks identical either way teaches nobody. */}
             <div className="flex items-center justify-between gap-3 pt-1">
-              <p className="text-xs text-amber-600">
+              <p className="text-xs text-amber-400">
                 {isDirty(row) && savingId !== row.id ? "Unsaved changes" : " "}
               </p>
               <button
@@ -324,14 +324,14 @@ export default function TicketTypesEditor({
                 disabled={savingId === row.id || !isDirty(row)}
                 className={`text-sm font-semibold px-4 py-2 rounded-full transition-colors disabled:opacity-40 ${
                   isDirty(row)
-                    ? "bg-neutral-900 text-white hover:bg-neutral-800"
-                    : "bg-neutral-100 text-neutral-500"
+                    ? "bg-white text-neutral-900 hover:bg-neutral-800"
+                    : "bg-white/[0.08] text-neutral-400"
                 }`}
               >
                 {savingId === row.id ? "Saving…" : isDirty(row) ? "Save changes" : "Saved"}
               </button>
             </div>
-            {errorId === row.id && error && <p className="text-xs text-red-600">{error}</p>}
+            {errorId === row.id && error && <p className="text-xs text-red-400">{error}</p>}
           </div>
         ))}
       </div>
@@ -369,7 +369,7 @@ export default function TicketTypesEditor({
               disabled={newRow.free}
               onChange={(e) => setNewRow((r) => ({ ...r, price: e.target.value }))}
             />
-            <label className="flex items-center gap-1.5 text-[11px] text-neutral-500">
+            <label className="flex items-center gap-1.5 text-[11px] text-neutral-400">
               <input
                 type="checkbox"
                 checked={newRow.free}
@@ -392,11 +392,11 @@ export default function TicketTypesEditor({
             <button onClick={addTicketType} disabled={addLoading} className="zv-btn-primary text-xs px-3 py-1.5 disabled:opacity-40">
               {addLoading ? "Adding…" : "Add"}
             </button>
-            <button onClick={() => setAdding(false)} className="text-xs text-neutral-400 hover:text-neutral-600">
+            <button onClick={() => setAdding(false)} className="text-xs text-neutral-500 hover:text-neutral-300">
               Cancel
             </button>
           </div>
-          {addError && <p className="text-xs text-red-600 col-span-2 sm:col-span-4">{addError}</p>}
+          {addError && <p className="text-xs text-red-400 col-span-2 sm:col-span-4">{addError}</p>}
           </div>
         </div>
       ) : (
@@ -408,8 +408,8 @@ export default function TicketTypesEditor({
       {templates.length > 0 && (
         <div className="zv-card p-4 sm:p-5 space-y-3">
           <div>
-            <p className="text-sm font-semibold text-neutral-900">Reuse tiers from a previous event</p>
-            <p className="text-xs text-neutral-400 mt-0.5">
+            <p className="text-sm font-semibold text-neutral-50">Reuse tiers from a previous event</p>
+            <p className="text-xs text-neutral-500 mt-0.5">
               Copies the names, prices, quantities and limits. Nothing already here is removed.
             </p>
           </div>
@@ -442,9 +442,9 @@ export default function TicketTypesEditor({
           </div>
 
           {selected && (
-            <div className="rounded-2xl bg-neutral-50/80 border border-neutral-100 px-4 py-3 space-y-1.5">
+            <div className="rounded-2xl bg-white/[0.04] border border-white/10 px-4 py-3 space-y-1.5">
               {selected.ticket_types.map((tt, i) => (
-                <div key={i} className="flex justify-between text-sm text-neutral-600">
+                <div key={i} className="flex justify-between text-sm text-neutral-300">
                   <span>{tt.name}</span>
                   <span className="tabular-nums">
                     {tt.price > 0 ? `${tt.price.toLocaleString()} ${selected.currency}` : "Free"} ·{" "}
@@ -453,7 +453,7 @@ export default function TicketTypesEditor({
                 </div>
               ))}
               {selected.currency !== currency && (
-                <p className="pt-1 text-xs text-amber-600">
+                <p className="pt-1 text-xs text-amber-400">
                   That event was priced in {selected.currency}, this one is in {currency}. Prices copy
                   across unchanged — check them after.
                 </p>
@@ -461,7 +461,7 @@ export default function TicketTypesEditor({
             </div>
           )}
 
-          {copyError && <p className="text-xs text-red-600">{copyError}</p>}
+          {copyError && <p className="text-xs text-red-400">{copyError}</p>}
         </div>
       )}
     </div>

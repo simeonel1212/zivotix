@@ -32,13 +32,13 @@ export default function DeleteEventButton({ eventId, title }: { eventId: string;
   }
 
   return (
-    <div className="zv-card p-5 sm:p-6 border-red-100 space-y-3">
+    <div className="zv-card p-5 sm:p-6 border-red-500/25 space-y-3">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="min-w-0">
-          <p className="font-semibold text-neutral-900">
+          <p className="font-semibold text-neutral-50">
             {armed ? `Delete "${title}"?` : "Delete this event"}
           </p>
-          <p className="text-sm text-neutral-500 mt-0.5">
+          <p className="text-sm text-neutral-400 mt-0.5">
             {armed
               ? "This can't be undone."
               : "Gone for good, along with its ticket types. Not possible once someone has paid for a ticket — free ones don't count."}
@@ -49,7 +49,7 @@ export default function DeleteEventButton({ eventId, title }: { eventId: string;
           {armed && (
             <button
               onClick={() => setArmed(false)}
-              className="text-sm text-neutral-400 hover:text-neutral-600"
+              className="text-sm text-neutral-500 hover:text-neutral-300"
             >
               Cancel
             </button>
@@ -60,7 +60,7 @@ export default function DeleteEventButton({ eventId, title }: { eventId: string;
             className={`text-sm font-semibold shrink-0 transition-colors disabled:opacity-40 ${
               armed
                 ? "px-4 py-2 rounded-full bg-red-600 text-white hover:bg-red-700"
-                : "text-red-600 hover:text-red-700"
+                : "text-red-400 hover:text-red-300"
             }`}
           >
             {deleting ? "Deleting…" : armed ? "Yes, delete" : "Delete"}
@@ -68,7 +68,7 @@ export default function DeleteEventButton({ eventId, title }: { eventId: string;
         </div>
       </div>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-red-400">{error}</p>}
     </div>
   );
 }

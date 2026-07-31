@@ -162,8 +162,8 @@ export default function SignupPage() {
         <div className="zv-card w-full max-w-sm p-8 relative z-10">
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <h1 className="text-2xl font-bold text-neutral-900">Start selling tickets</h1>
-              <p className="text-sm text-neutral-500 mt-1">Set up your organizer account in a minute.</p>
+              <h1 className="text-2xl font-bold text-neutral-50">Start selling tickets</h1>
+              <p className="text-sm text-neutral-400 mt-1">Set up your organizer account in a minute.</p>
             </div>
 
             <div className="space-y-1.5">
@@ -218,7 +218,7 @@ export default function SignupPage() {
                     ))}
                 </optgroup>
               </select>
-              <p className="text-xs text-neutral-400">{payoutMethodLabel(form.country)}</p>
+              <p className="text-xs text-neutral-500">{payoutMethodLabel(form.country)}</p>
             </div>
 
             <div className="space-y-1.5">
@@ -234,7 +234,7 @@ export default function SignupPage() {
                   </option>
                 ))}
               </select>
-              <p className="text-xs text-neutral-400">
+              <p className="text-xs text-neutral-500">
                 Doesn&apos;t have to match your country — we can pay out in any currency. You can
                 change this later.
               </p>
@@ -263,26 +263,26 @@ export default function SignupPage() {
               />
             </div>
 
-            {error && <p className="text-sm text-red-600">{error}</p>}
+            {error && <p className="text-sm text-red-400">{error}</p>}
 
             <button type="submit" disabled={loading} className="zv-btn-primary w-full">
               {loading ? "Creating account…" : "Create account"}
             </button>
 
-            <p className="text-center text-sm text-neutral-500">
+            <p className="text-center text-sm text-neutral-400">
               Already have an account?{" "}
               <a href="/login" className="font-semibold zv-gradient-text">
                 Sign in
               </a>
             </p>
 
-            <p className="text-center text-xs text-neutral-400">
+            <p className="text-center text-xs text-neutral-500">
               By creating an account, you agree to our{" "}
-              <a href="/terms" className="underline hover:text-neutral-600">
+              <a href="/terms" className="underline hover:text-neutral-300">
                 Terms
               </a>{" "}
               and{" "}
-              <a href="/privacy" className="underline hover:text-neutral-600">
+              <a href="/privacy" className="underline hover:text-neutral-300">
                 Privacy Policy
               </a>
               .
@@ -293,9 +293,9 @@ export default function SignupPage() {
         <div className="zv-card w-full max-w-sm p-8 relative z-10">
           <form onSubmit={handleVerify} className="space-y-5">
             <div>
-              <h1 className="text-2xl font-bold text-neutral-900">Check your email</h1>
-              <p className="text-sm text-neutral-500 mt-1">
-                We sent a verification code to <span className="font-medium text-neutral-800">{form.email}</span>.
+              <h1 className="text-2xl font-bold text-neutral-50">Check your email</h1>
+              <p className="text-sm text-neutral-400 mt-1">
+                We sent a verification code to <span className="font-medium text-neutral-100">{form.email}</span>.
                 Enter it below to activate your account.
               </p>
             </div>
@@ -314,15 +314,15 @@ export default function SignupPage() {
               />
             </div>
 
-            {error && <p className="text-sm text-red-600">{error}</p>}
-            {resendMsg && <p className="text-sm text-emerald-600">{resendMsg}</p>}
+            {error && <p className="text-sm text-red-400">{error}</p>}
+            {resendMsg && <p className="text-sm text-emerald-400">{resendMsg}</p>}
 
             <button type="submit" disabled={loading || code.length < 6} className="zv-btn-primary w-full disabled:opacity-40">
               {loading ? "Verifying…" : "Verify & continue"}
             </button>
 
             <div className="flex items-center justify-between text-sm">
-              <button type="button" onClick={() => setStep("form")} className="text-neutral-500 hover:text-neutral-800">
+              <button type="button" onClick={() => setStep("form")} className="text-neutral-400 hover:text-neutral-100">
                 ← Back
               </button>
               <button type="button" onClick={handleResend} className="font-semibold zv-gradient-text">

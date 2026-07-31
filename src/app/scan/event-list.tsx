@@ -49,7 +49,7 @@ export default function EventList({
   }, [load]);
 
   return (
-    <div className="flex-1 flex flex-col bg-neutral-950 text-white">
+    <div className="flex-1 flex flex-col bg-black text-white">
       <header className="px-5 pt-[max(1.25rem,env(safe-area-inset-top))] pb-5">
         <div className="flex items-center justify-between gap-3">
           <span className="inline-flex items-center gap-2">
@@ -63,7 +63,7 @@ export default function EventList({
               onClick={load}
               disabled={refreshing}
               aria-label="Refresh"
-              className="rounded-full border border-white/15 p-2.5 text-neutral-300 active:scale-95 transition disabled:opacity-40"
+              className="rounded-full border border-white/15 p-2.5 text-neutral-600 active:scale-95 transition disabled:opacity-40"
             >
               <svg
                 width="16"
@@ -86,7 +86,7 @@ export default function EventList({
           </div>
         </div>
         <h1 className="mt-6 text-2xl font-bold tracking-tight">Your events</h1>
-        <p className="mt-1 text-sm text-neutral-400">Tap an event to start scanning.</p>
+        <p className="mt-1 text-sm text-neutral-500">Tap an event to start scanning.</p>
       </header>
 
       <div className="flex-1 px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] space-y-3">
@@ -98,8 +98,8 @@ export default function EventList({
         )}
 
         {error && (
-          <div className="rounded-3xl border border-white/10 bg-white/5 p-6 text-center">
-            <p className="text-sm text-neutral-300">{error}</p>
+          <div className="rounded-3xl border border-white/10 bg-neutral-900/5 p-6 text-center">
+            <p className="text-sm text-neutral-600">{error}</p>
             <button onClick={load} className="mt-4 zv-btn-primary text-sm">
               Try again
             </button>
@@ -107,9 +107,9 @@ export default function EventList({
         )}
 
         {events?.length === 0 && (
-          <div className="rounded-3xl border border-white/10 bg-white/5 p-8 text-center">
+          <div className="rounded-3xl border border-white/10 bg-neutral-900/5 p-8 text-center">
             <p className="font-semibold">No events to scan</p>
-            <p className="mt-1.5 text-sm text-neutral-400">
+            <p className="mt-1.5 text-sm text-neutral-500">
               You&apos;ll see an event here once you&apos;re added as door staff, or once one of your own
               events has sold a ticket.
             </p>
@@ -137,12 +137,12 @@ function EventCard({ event }: { event: ScannerEvent }) {
   return (
     <Link
       href={`/scan/${event.id}`}
-      className="block rounded-3xl border border-white/10 bg-white/5 p-5 active:scale-[0.99] transition"
+      className="block rounded-3xl border border-white/10 bg-neutral-900/5 p-5 active:scale-[0.99] transition"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="font-semibold leading-snug truncate">{event.title}</p>
-          <p className="mt-0.5 text-xs text-neutral-400 truncate">
+          <p className="mt-0.5 text-xs text-neutral-500 truncate">
             {starts.toLocaleDateString(undefined, { day: "numeric", month: "short" })}
             {" · "}
             {starts.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}
@@ -158,14 +158,14 @@ function EventCard({ event }: { event: ScannerEvent }) {
         <div>
           <p className="text-2xl font-bold tabular-nums">
             {event.scanned}
-            <span className="text-neutral-500 font-semibold text-lg"> / {event.sold}</span>
+            <span className="text-neutral-400 font-semibold text-lg"> / {event.sold}</span>
           </p>
-          <p className="text-xs text-neutral-400">scanned in</p>
+          <p className="text-xs text-neutral-500">scanned in</p>
         </div>
-        <p className="text-sm text-neutral-300 tabular-nums">{remaining} to go</p>
+        <p className="text-sm text-neutral-600 tabular-nums">{remaining} to go</p>
       </div>
 
-      <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+      <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-neutral-900/10">
         <div
           className="h-full rounded-full bg-gradient-to-r from-yellow-300 to-yellow-600 transition-[width] duration-500"
           style={{ width: `${pct}%` }}
@@ -177,11 +177,11 @@ function EventCard({ event }: { event: ScannerEvent }) {
 
 function SkeletonCard() {
   return (
-    <div className="rounded-3xl border border-white/10 bg-white/5 p-5 animate-pulse">
-      <div className="h-4 w-2/3 rounded bg-white/10" />
-      <div className="mt-2 h-3 w-1/2 rounded bg-white/10" />
-      <div className="mt-5 h-7 w-24 rounded bg-white/10" />
-      <div className="mt-3 h-1.5 w-full rounded-full bg-white/10" />
+    <div className="rounded-3xl border border-white/10 bg-neutral-900/5 p-5 animate-pulse">
+      <div className="h-4 w-2/3 rounded bg-neutral-900/10" />
+      <div className="mt-2 h-3 w-1/2 rounded bg-neutral-900/10" />
+      <div className="mt-5 h-7 w-24 rounded bg-neutral-900/10" />
+      <div className="mt-3 h-1.5 w-full rounded-full bg-neutral-900/10" />
     </div>
   );
 }

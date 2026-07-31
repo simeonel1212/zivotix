@@ -14,8 +14,8 @@ export default function OfflinePage() {
   return (
     <main className="flex-1 flex flex-col items-center justify-center gap-4 px-8 py-20 text-center">
       <ZivotixMark size={36} />
-      <h1 className="text-xl font-bold tracking-tight text-neutral-900">You&apos;re offline</h1>
-      <p className="max-w-sm text-sm text-neutral-500 leading-relaxed">
+      <h1 className="text-xl font-bold tracking-tight text-neutral-50">You&apos;re offline</h1>
+      <p className="max-w-sm text-sm text-neutral-400 leading-relaxed">
         The scanner needs a connection to check tickets in. Nothing you scanned while offline was
         recorded, so re-scan those guests once you&apos;re back on.
       </p>

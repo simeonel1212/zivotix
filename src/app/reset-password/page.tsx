@@ -76,13 +76,13 @@ export default function ResetPasswordPage() {
 
       <div className="zv-card w-full max-w-sm p-8 relative z-10">
         {status === "checking" && (
-          <p className="text-sm text-neutral-500 text-center py-8">Verifying your reset link…</p>
+          <p className="text-sm text-neutral-400 text-center py-8">Verifying your reset link…</p>
         )}
 
         {status === "invalid" && (
           <div className="space-y-4 text-center">
-            <h1 className="text-2xl font-bold text-neutral-900">Link expired</h1>
-            <p className="text-sm text-neutral-500">
+            <h1 className="text-2xl font-bold text-neutral-50">Link expired</h1>
+            <p className="text-sm text-neutral-400">
               This reset link is invalid or has already been used. Request a new one below.
             </p>
             <a href="/forgot-password" className="inline-block text-sm font-semibold zv-gradient-text">
@@ -94,8 +94,8 @@ export default function ResetPasswordPage() {
         {status === "ready" && !done && (
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <h1 className="text-2xl font-bold text-neutral-900">Set a new password</h1>
-              <p className="text-sm text-neutral-500 mt-1">Choose something you haven&apos;t used before.</p>
+              <h1 className="text-2xl font-bold text-neutral-50">Set a new password</h1>
+              <p className="text-sm text-neutral-400 mt-1">Choose something you haven&apos;t used before.</p>
             </div>
 
             <div className="space-y-1.5">
@@ -123,7 +123,7 @@ export default function ResetPasswordPage() {
               />
             </div>
 
-            {error && <p className="text-sm text-red-600">{error}</p>}
+            {error && <p className="text-sm text-red-400">{error}</p>}
 
             <button type="submit" disabled={loading} className="zv-btn-primary w-full">
               {loading ? "Saving…" : "Save new password"}
@@ -133,8 +133,8 @@ export default function ResetPasswordPage() {
 
         {status === "ready" && done && (
           <div className="space-y-3 text-center">
-            <h1 className="text-2xl font-bold text-neutral-900">Password updated</h1>
-            <p className="text-sm text-neutral-500">Taking you to sign in…</p>
+            <h1 className="text-2xl font-bold text-neutral-50">Password updated</h1>
+            <p className="text-sm text-neutral-400">Taking you to sign in…</p>
           </div>
         )}
       </div>

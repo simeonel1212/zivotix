@@ -121,16 +121,16 @@ export default async function OrganizerProfilePage({
           ← Community
         </Link>
         <div className="flex items-center gap-4 mt-3">
-          <div className="h-16 w-16 rounded-full bg-yellow-100 flex items-center justify-center text-2xl font-bold zv-gradient-text shrink-0">
+          <div className="h-16 w-16 rounded-full bg-yellow-500/15 flex items-center justify-center text-2xl font-bold zv-gradient-text shrink-0">
             {organizer.business_name.slice(0, 1).toUpperCase()}
           </div>
           <div className="min-w-0">
-            <h1 className="zv-h1 text-neutral-900 flex items-center gap-2">
+            <h1 className="zv-h1 text-neutral-50 flex items-center gap-2">
               {organizer.business_name}
               {organizer.is_verified && <VerifiedBadge />}
             </h1>
             {organizer.handle && (
-              <p className="text-sm text-neutral-400 mt-0.5">zivotix.site/{organizer.handle}</p>
+              <p className="text-sm text-neutral-500 mt-0.5">zivotix.site/{organizer.handle}</p>
             )}
           </div>
         </div>
@@ -146,7 +146,7 @@ export default async function OrganizerProfilePage({
         </div>
       )}
 
-      <div className="flex items-center gap-1 border-b border-neutral-200">
+      <div className="flex items-center gap-1 border-b border-white/15">
         <Tab href={base} label="Tickets" count={eventCount} active={!showPosts} />
         <Tab href={`${base}?tab=posts`} label="Posts" count={postCount} active={showPosts} />
       </div>
@@ -154,7 +154,7 @@ export default async function OrganizerProfilePage({
       {showPosts ? (
         !posts?.length ? (
           <div className="zv-card p-10 text-center">
-            <p className="text-sm text-neutral-400">
+            <p className="text-sm text-neutral-500">
               {organizer.business_name} hasn&apos;t posted yet.
             </p>
           </div>
@@ -188,7 +188,7 @@ export default async function OrganizerProfilePage({
         )
       ) : !events || events.length === 0 ? (
         <div className="zv-card p-10 text-center">
-          <p className="text-sm text-neutral-400">Nothing on sale right now. Check back soon.</p>
+          <p className="text-sm text-neutral-500">Nothing on sale right now. Check back soon.</p>
         </div>
       ) : (
         // A side-scrolling row rather than a grid: it keeps the page short so
@@ -209,7 +209,7 @@ export default async function OrganizerProfilePage({
                   href={`/events/${event.slug}`}
                   className="zv-card zv-card-hover block overflow-hidden group w-44 shrink-0 snap-start"
                 >
-                  <div className="aspect-[4/5] bg-gradient-to-br from-yellow-100 via-yellow-50 to-white relative overflow-hidden">
+                  <div className="aspect-[4/5] bg-gradient-to-br from-yellow-500/25 via-yellow-600/10 to-transparent relative overflow-hidden">
                     {event.cover_image_url ? (
                       <Image
                         src={event.cover_image_url}
@@ -233,14 +233,14 @@ export default async function OrganizerProfilePage({
                         day: "numeric",
                       })}
                     </p>
-                    <h3 className="font-semibold text-sm text-neutral-900 line-clamp-2">
+                    <h3 className="font-semibold text-sm text-neutral-50 line-clamp-2">
                       {event.title}
                     </h3>
                     {isFree ? (
-                      <p className="text-xs font-semibold text-emerald-600">Free</p>
+                      <p className="text-xs font-semibold text-emerald-400">Free</p>
                     ) : (
                       fromPrice !== null && (
-                        <p className="text-xs font-semibold text-neutral-900">
+                        <p className="text-xs font-semibold text-neutral-50">
                           From {formatMoney(fromPrice, event.currency)}
                         </p>
                       )
@@ -255,7 +255,7 @@ export default async function OrganizerProfilePage({
 
       {!allowed && (
         <div className="zv-card p-6 space-y-3">
-          <p className="text-sm text-neutral-600">
+          <p className="text-sm text-neutral-300">
             {user
               ? `You're signed in as ${user.email}, but we don't see a ticket from ${organizer.business_name} on this email.`
               : `Got a ticket from ${organizer.business_name}? Sign in to react and comment on their posts.`}
@@ -284,12 +284,12 @@ function Tab({
       scroll={false}
       className={`px-4 py-2.5 text-sm font-semibold border-b-2 -mb-px transition-colors ${
         active
-          ? "border-neutral-900 text-neutral-900"
-          : "border-transparent text-neutral-400 hover:text-neutral-700"
+          ? "border-neutral-900 text-neutral-50"
+          : "border-transparent text-neutral-500 hover:text-neutral-200"
       }`}
     >
       {label}
-      {count > 0 && <span className="ml-1.5 text-xs font-medium text-neutral-400">{count}</span>}
+      {count > 0 && <span className="ml-1.5 text-xs font-medium text-neutral-500">{count}</span>}
     </Link>
   );
 }

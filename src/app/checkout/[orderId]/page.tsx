@@ -112,8 +112,8 @@ export default async function CheckoutStatusPage({
           style={{ background: "linear-gradient(135deg, #fde047, #eab308)" }}
         />
         <div className="relative max-w-sm mx-auto text-center mb-8 zv-pop-in">
-          <h1 className="text-2xl font-bold tracking-tight text-neutral-900">You&apos;re in!</h1>
-          <p className="mt-2 text-neutral-500 text-sm leading-relaxed">
+          <h1 className="text-2xl font-bold tracking-tight text-neutral-50">You&apos;re in!</h1>
+          <p className="mt-2 text-neutral-400 text-sm leading-relaxed">
             {ticketCards.length > 1 ? "Here are your tickets" : "Here's your ticket"}, also emailed to {refreshed?.buyer_email}.
           </p>
         </div>
@@ -137,7 +137,7 @@ export default async function CheckoutStatusPage({
       <div className={`zv-card relative max-w-sm w-full text-center space-y-4 p-10 ${paid ? "zv-pop-in" : ""}`}>
         <div
           className={`mx-auto h-16 w-16 rounded-full flex items-center justify-center ${
-            paid ? "bg-gradient-to-br from-yellow-400 to-yellow-600 text-white" : "bg-neutral-100 text-neutral-400"
+            paid ? "bg-gradient-to-br from-yellow-400 to-yellow-600 text-white" : "bg-white/[0.08] text-neutral-500"
           }`}
         >
           {paid ? (
@@ -151,10 +151,10 @@ export default async function CheckoutStatusPage({
             </svg>
           )}
         </div>
-        <h1 className="text-2xl font-bold tracking-tight text-neutral-900">
+        <h1 className="text-2xl font-bold tracking-tight text-neutral-50">
           {paid ? "You're in!" : "Payment processing…"}
         </h1>
-        <p className="text-neutral-500 text-sm leading-relaxed">
+        <p className="text-neutral-400 text-sm leading-relaxed">
           {paid
             ? `Your tickets have been emailed to ${refreshed?.buyer_email}. Check your inbox (and spam folder).`
             : "This can take a minute. Refresh this page shortly, or check your email. We'll send your tickets as soon as payment clears."}

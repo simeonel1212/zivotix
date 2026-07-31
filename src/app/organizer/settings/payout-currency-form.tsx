@@ -51,8 +51,8 @@ export default function PayoutCurrencyForm({
   return (
     <div className="zv-card p-6 space-y-4">
       <div>
-        <h2 className="font-semibold text-neutral-900">Payout currency</h2>
-        <p className="text-sm text-neutral-500 mt-1">
+        <h2 className="font-semibold text-neutral-50">Payout currency</h2>
+        <p className="text-sm text-neutral-400 mt-1">
           {disabled
             ? disabledReason
             : "We can pay out in any currency, whatever your country. Sales in other currencies are converted at the live rate on payout day."}
@@ -81,7 +81,7 @@ export default function PayoutCurrencyForm({
         </button>
       </div>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-red-400">{error}</p>}
     </div>
   );
 }

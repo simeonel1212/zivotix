@@ -51,7 +51,7 @@ export default function ApproxPrice({
   if (!display) return null;
 
   return (
-    <span className={`text-neutral-400 ${className}`}>
+    <span className={`text-neutral-500 ${className}`}>
       ≈ {formatMoney(display.value, display.code)}
     </span>
   );

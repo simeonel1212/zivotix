@@ -48,7 +48,7 @@ export default function SiteHeader() {
   if (HIDDEN_PREFIXES.some((p) => pathname.startsWith(p))) return null;
 
   return (
-    <header className="sticky top-0 z-40 zv-glass border-b border-neutral-200/60">
+    <header className="sticky top-0 z-40 zv-glass border-b border-white/15">
       <div className="mx-auto max-w-6xl px-6 h-20 lg:h-24 flex items-center justify-between">
         <Link href="/" className="flex items-center">
           <ZivotixLogo markSize={52} textClassName="text-3xl" />
@@ -64,7 +64,7 @@ export default function SiteHeader() {
               <a
                 key={item.label}
                 href={item.href}
-                className="text-sm font-medium text-neutral-600 hover:text-neutral-900 transition-colors"
+                className="text-sm font-medium text-neutral-300 hover:text-neutral-50 transition-colors"
               >
                 {item.label}
               </a>
@@ -73,7 +73,7 @@ export default function SiteHeader() {
                 key={item.label}
                 href={item.href}
                 className={`text-sm font-medium transition-colors ${
-                  pathname.startsWith(item.href) ? "text-neutral-900" : "text-neutral-600 hover:text-neutral-900"
+                  pathname.startsWith(item.href) ? "text-neutral-50" : "text-neutral-300 hover:text-neutral-50"
                 }`}
               >
                 {item.label}
@@ -91,7 +91,7 @@ export default function SiteHeader() {
             onClick={() => setOpen((o) => !o)}
             aria-label={open ? "Close menu" : "Open menu"}
             aria-expanded={open}
-            className="p-2.5 -mr-2 rounded-xl text-neutral-700 hover:text-neutral-900 hover:bg-white/70 transition-colors"
+            className="p-2.5 -mr-2 rounded-xl text-neutral-200 hover:text-neutral-50 hover:bg-neutral-900/70 transition-colors"
           >
             {open ? (
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -106,7 +106,7 @@ export default function SiteHeader() {
 
           {open && (
             <div
-              className="absolute right-0 top-full mt-3 w-64 rounded-2xl bg-white border border-neutral-200/70 shadow-[0_24px_56px_-16px_rgba(0,0,0,0.25)] overflow-hidden"
+              className="absolute right-0 top-full mt-3 w-64 rounded-2xl bg-neutral-900 border border-white/15 shadow-[0_24px_56px_-16px_rgba(0,0,0,0.25)] overflow-hidden"
               onClick={() => setOpen(false)}
             >
               <nav className="py-2">
@@ -115,7 +115,7 @@ export default function SiteHeader() {
                     <a
                       key={item.label}
                       href={item.href}
-                      className="block px-5 py-3 text-sm font-medium text-neutral-700 hover:bg-neutral-50 hover:text-neutral-900 transition-colors"
+                      className="block px-5 py-3 text-sm font-medium text-neutral-200 hover:bg-white/[0.04] hover:text-neutral-50 transition-colors"
                     >
                       {item.label}
                     </a>
@@ -123,14 +123,14 @@ export default function SiteHeader() {
                     <Link
                       key={item.label}
                       href={item.href}
-                      className="block px-5 py-3 text-sm font-medium text-neutral-700 hover:bg-neutral-50 hover:text-neutral-900 transition-colors"
+                      className="block px-5 py-3 text-sm font-medium text-neutral-200 hover:bg-white/[0.04] hover:text-neutral-50 transition-colors"
                     >
                       {item.label}
                     </Link>
                   )
                 )}
               </nav>
-              <div className="border-t border-neutral-100 p-3">
+              <div className="border-t border-white/10 p-3">
                 <Link href="/login" className="zv-btn-primary w-full text-sm">
                   Log in
                 </Link>

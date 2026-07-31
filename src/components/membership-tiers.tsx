@@ -54,8 +54,8 @@ export default function MembershipTiers({
   return (
     <section className="space-y-3">
       <div>
-        <h2 className="text-xl font-bold tracking-tight text-neutral-900">Become a member</h2>
-        <p className="text-sm text-neutral-500 mt-1">
+        <h2 className="text-xl font-bold tracking-tight text-neutral-50">Become a member</h2>
+        <p className="text-sm text-neutral-400 mt-1">
           Buy your nights up front and use them whenever.
         </p>
       </div>
@@ -68,13 +68,13 @@ export default function MembershipTiers({
 
           return (
             <div key={tier.id} className="zv-card p-5 flex flex-col">
-              <p className="font-semibold text-neutral-900">{tier.name}</p>
+              <p className="font-semibold text-neutral-50">{tier.name}</p>
               {tier.description && (
-                <p className="mt-1.5 text-sm text-neutral-500 leading-relaxed">{tier.description}</p>
+                <p className="mt-1.5 text-sm text-neutral-400 leading-relaxed">{tier.description}</p>
               )}
 
               <div className="mt-4">
-                <p className="text-2xl font-bold text-neutral-900">
+                <p className="text-2xl font-bold text-neutral-50">
                   {formatMoney(fees.total, tier.currency)}
                 </p>
                 <ApproxPrice
@@ -83,11 +83,11 @@ export default function MembershipTiers({
                   detectedCurrency={detectedCurrency}
                   className="text-xs"
                 />
-                <p className="mt-1 text-sm text-neutral-500">
+                <p className="mt-1 text-sm text-neutral-400">
                   {tier.event_credits} {tier.event_credits === 1 ? "entry" : "entries"} ·{" "}
                   {formatMoney(perEntry, tier.currency)} a night
                 </p>
-                <p className="text-xs text-neutral-400 mt-0.5">
+                <p className="text-xs text-neutral-500 mt-0.5">
                   Use them any time in the next {Math.round(tier.validity_days / 30)} months
                 </p>
               </div>
@@ -107,7 +107,7 @@ export default function MembershipTiers({
                     value={buyer.email}
                     onChange={(e) => setBuyer((b) => ({ ...b, email: e.target.value }))}
                   />
-                  {error && <p className="text-xs text-red-600">{error}</p>}
+                  {error && <p className="text-xs text-red-400">{error}</p>}
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => buy(tier.id)}
@@ -118,7 +118,7 @@ export default function MembershipTiers({
                     </button>
                     <button
                       onClick={() => setOpenId(null)}
-                      className="text-sm text-neutral-400 hover:text-neutral-600"
+                      className="text-sm text-neutral-500 hover:text-neutral-300"
                     >
                       Cancel
                     </button>

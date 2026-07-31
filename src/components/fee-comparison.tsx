@@ -50,7 +50,7 @@ export default function FeeComparison() {
   return (
     <section className="zv-card p-7 sm:p-10">
       <div className="max-w-xl">
-        <h2 className="zv-h2 text-neutral-900">
+        <h2 className="zv-h2 text-neutral-50">
           {Math.round(ngnRate * 100)}% in Nigeria. {Math.round(usdRate * 100)}% everywhere else.
         </h2>
         <p className="zv-lead mt-3">
@@ -61,21 +61,21 @@ export default function FeeComparison() {
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2">
         {rows.map((row) => (
-          <div key={row.label} className="rounded-2xl border border-neutral-100 bg-neutral-50/60 p-5">
-            <p className="text-xs font-semibold uppercase tracking-wider text-neutral-400">
+          <div key={row.label} className="rounded-2xl border border-white/10 bg-white/[0.04] p-5">
+            <p className="text-xs font-semibold uppercase tracking-wider text-neutral-500">
               {row.label} · on a {row.ticket} ticket
             </p>
 
             <div className="mt-4 flex items-baseline justify-between gap-3">
-              <span className="font-bold text-neutral-900">Zivotix</span>
+              <span className="font-bold text-neutral-50">Zivotix</span>
               <span className="text-xl font-bold zv-gradient-text tabular-nums">{row.ours}</span>
             </div>
 
-            <div className="mt-3 space-y-2 border-t border-neutral-200/70 pt-3">
+            <div className="mt-3 space-y-2 border-t border-white/15 pt-3">
               {row.theirs.map((c) => (
                 <div key={c.name} className="flex items-baseline justify-between gap-3 text-sm">
-                  <span className="text-neutral-500">{c.name}</span>
-                  <span className="text-neutral-400 tabular-nums">{c.fee}</span>
+                  <span className="text-neutral-400">{c.name}</span>
+                  <span className="text-neutral-500 tabular-nums">{c.fee}</span>
                 </div>
               ))}
             </div>
@@ -83,7 +83,7 @@ export default function FeeComparison() {
         ))}
       </div>
 
-      <p className="mt-5 text-xs text-neutral-400">
+      <p className="mt-5 text-xs text-neutral-500">
         Competitor rates from their published pricing, July 2026. Card processing is charged
         separately by the payment provider in every case, including ours.
       </p>

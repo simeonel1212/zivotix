@@ -37,7 +37,7 @@ export default function VerifyOrganizerButton({
       onClick={toggle}
       disabled={loading}
       className={`zv-badge transition-colors disabled:opacity-40 ${
-        isVerified ? "bg-blue-100 text-blue-700 hover:bg-blue-200" : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+        isVerified ? "bg-blue-100 text-blue-700 hover:bg-blue-200" : "bg-white/[0.08] text-neutral-300 hover:bg-white/[0.14]"
       }`}
     >
       {isVerified ? "Remove verification" : "Mark verified"}

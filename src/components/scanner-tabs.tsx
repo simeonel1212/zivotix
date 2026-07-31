@@ -23,7 +23,7 @@ export default function ScannerTabs({ showCommunity }: { showCommunity: boolean 
   if (tabs.length < 2) return null;
 
   return (
-    <nav className="sticky bottom-0 z-20 border-t border-neutral-200/70 bg-white/90 backdrop-blur-lg pb-[env(safe-area-inset-bottom)]">
+    <nav className="sticky bottom-0 z-20 border-t border-white/15 bg-neutral-900/90 backdrop-blur-lg pb-[env(safe-area-inset-bottom)]">
       <div className="mx-auto flex max-w-md">
         {tabs.map((tab) => {
           const active = pathname === tab.href;
@@ -33,7 +33,7 @@ export default function ScannerTabs({ showCommunity }: { showCommunity: boolean 
               key={tab.href}
               href={tab.href}
               className={`flex flex-1 flex-col items-center gap-1 py-3 text-[11px] font-semibold transition-colors ${
-                active ? "text-neutral-900" : "text-neutral-400"
+                active ? "text-neutral-50" : "text-neutral-500"
               }`}
             >
               <Icon active={active} />

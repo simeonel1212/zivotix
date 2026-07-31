@@ -40,17 +40,17 @@ export default function PostCard({
     <div className="zv-card p-5">
       {showByline && (
         <Link href={organizerHref} className="flex items-center gap-2.5 mb-3 w-fit group">
-          <div className="h-8 w-8 rounded-full bg-yellow-100 flex items-center justify-center text-xs font-bold zv-gradient-text shrink-0">
+          <div className="h-8 w-8 rounded-full bg-yellow-500/15 flex items-center justify-center text-xs font-bold zv-gradient-text shrink-0">
             {organizerName.slice(0, 1).toUpperCase()}
           </div>
-          <span className="text-sm font-semibold text-neutral-900 group-hover:underline flex items-center gap-1">
+          <span className="text-sm font-semibold text-neutral-50 group-hover:underline flex items-center gap-1">
             {organizerName}
             {organizerVerified && <VerifiedBadge />}
           </span>
         </Link>
       )}
 
-      <p className="text-sm text-neutral-800 whitespace-pre-wrap">{post.body}</p>
+      <p className="text-sm text-neutral-100 whitespace-pre-wrap">{post.body}</p>
 
       {post.image_urls.length > 0 && (
         <div className={`mt-3 grid gap-1.5 ${post.image_urls.length === 1 ? "grid-cols-1" : "grid-cols-3"}`}>
@@ -69,7 +69,7 @@ export default function PostCard({
       )}
 
       <div className="flex items-center justify-between mt-4">
-        <span className="text-xs text-neutral-400">
+        <span className="text-xs text-neutral-500">
           {new Date(post.created_at).toLocaleString(undefined, {
             dateStyle: "medium",
             timeStyle: "short",

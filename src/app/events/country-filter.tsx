@@ -48,7 +48,7 @@ export default function CountryFilter({ countries }: { countries: string[] }) {
         stroke="currentColor"
         strokeWidth="2.5"
         aria-hidden="true"
-        className="pointer-events-none absolute right-3.5 text-neutral-400"
+        className="pointer-events-none absolute right-3.5 text-neutral-500"
       >
         <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
       </svg>

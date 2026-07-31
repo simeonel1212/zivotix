@@ -73,17 +73,17 @@ export default function ShareButton({
       type="button"
       onClick={onClick}
       aria-label={canShare ? `Share ${title}` : `Copy link to ${title}`}
-      className={`inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-white px-4 py-2.5 text-sm font-semibold text-neutral-700 transition hover:border-neutral-300 hover:bg-neutral-50 active:scale-95 ${className}`}
+      className={`inline-flex items-center gap-2 rounded-full border border-white/15 bg-neutral-900 px-4 py-2.5 text-sm font-semibold text-neutral-200 transition hover:border-neutral-300 hover:bg-white/[0.04] active:scale-95 ${className}`}
     >
       {copied ? (
         <>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2.5" aria-hidden="true">
             <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-          <span className="text-emerald-600">Link copied</span>
+          <span className="text-emerald-400">Link copied</span>
         </>
       ) : error ? (
-        <span className="text-red-600">Couldn&apos;t copy — long-press the URL</span>
+        <span className="text-red-400">Couldn&apos;t copy — long-press the URL</span>
       ) : (
         <>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">

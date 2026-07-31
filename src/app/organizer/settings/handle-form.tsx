@@ -57,17 +57,17 @@ export default function HandleForm({
   return (
     <div className="zv-card p-6 space-y-4">
       <div>
-        <h2 className="font-semibold text-neutral-900">Your Zivotix link</h2>
-        <p className="text-sm text-neutral-500 mt-1">
+        <h2 className="font-semibold text-neutral-50">Your Zivotix link</h2>
+        <p className="text-sm text-neutral-400 mt-1">
           A short link for your bio and your flyers. Your old link keeps working.
         </p>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-2">
-        <div className="flex items-center gap-0 flex-1 rounded-2xl border border-neutral-200 bg-white overflow-hidden">
-          <span className="pl-4 pr-1 text-sm text-neutral-400 select-none">zivotix.site/</span>
+        <div className="flex items-center gap-0 flex-1 rounded-2xl border border-white/15 bg-neutral-900 overflow-hidden">
+          <span className="pl-4 pr-1 text-sm text-neutral-500 select-none">zivotix.site/</span>
           <input
-            className="flex-1 py-3 pr-4 text-sm text-neutral-900 outline-none"
+            className="flex-1 py-3 pr-4 text-sm text-neutral-50 outline-none"
             placeholder="eden"
             value={value}
             onChange={(e) => {
@@ -86,15 +86,15 @@ export default function HandleForm({
       </div>
 
       {handle && handle !== value.trim().toLowerCase() && (
-        <p className="text-xs text-neutral-400">
-          Will be saved as <strong className="text-neutral-600">zivotix.site/{handle}</strong>
+        <p className="text-xs text-neutral-500">
+          Will be saved as <strong className="text-neutral-300">zivotix.site/{handle}</strong>
         </p>
       )}
-      {handle && !check.ok && check.error && <p className="text-xs text-amber-600">{check.error}</p>}
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {handle && !check.ok && check.error && <p className="text-xs text-amber-400">{check.error}</p>}
+      {error && <p className="text-sm text-red-400">{error}</p>}
       {current && (
-        <p className="text-xs text-neutral-400">
-          Live at <strong className="text-neutral-600">zivotix.site/{current}</strong>
+        <p className="text-xs text-neutral-500">
+          Live at <strong className="text-neutral-300">zivotix.site/{current}</strong>
         </p>
       )}
     </div>

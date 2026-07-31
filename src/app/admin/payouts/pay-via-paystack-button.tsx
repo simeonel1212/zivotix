@@ -27,11 +27,11 @@ export default function PayViaPaystackButton({ payoutId }: { payoutId: string })
   if (confirming) {
     return (
       <div className="flex items-center gap-2">
-        <span className="text-xs text-neutral-500">Send this transfer for real?</span>
+        <span className="text-xs text-neutral-400">Send this transfer for real?</span>
         <button onClick={pay} disabled={loading} className="zv-btn-primary text-xs px-3 py-1.5 disabled:opacity-40">
           {loading ? "Sending…" : "Confirm"}
         </button>
-        <button onClick={() => setConfirming(false)} className="text-xs text-neutral-400 hover:text-neutral-600">
+        <button onClick={() => setConfirming(false)} className="text-xs text-neutral-500 hover:text-neutral-300">
           Cancel
         </button>
       </div>
@@ -42,11 +42,11 @@ export default function PayViaPaystackButton({ payoutId }: { payoutId: string })
     <div className="flex flex-col items-end gap-1">
       <button
         onClick={() => setConfirming(true)}
-        className="zv-badge bg-emerald-100 text-emerald-700 hover:bg-emerald-200 transition-colors"
+        className="zv-badge bg-emerald-500/15 text-emerald-300 hover:bg-emerald-200 transition-colors"
       >
         Pay via Paystack
       </button>
-      {message && <p className="text-xs text-amber-600 max-w-xs text-right">{message}</p>}
+      {message && <p className="text-xs text-amber-400 max-w-xs text-right">{message}</p>}
     </div>
   );
 }

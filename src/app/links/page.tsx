@@ -38,7 +38,7 @@ const LINKS = [
 
 export default function LinksPage() {
   return (
-    <main className="flex-1 relative overflow-hidden bg-neutral-950">
+    <main className="flex-1 relative overflow-hidden bg-black">
       <div
         aria-hidden="true"
         className="pointer-events-none absolute -right-24 -top-32 h-80 w-80 rounded-full bg-yellow-400/20 blur-3xl"
@@ -53,7 +53,7 @@ export default function LinksPage() {
         <h1 className="mt-5 text-2xl font-bold tracking-tight text-white">
           Zivo<span className="zv-gradient-text">tix</span>
         </h1>
-        <p className="mt-2 text-center text-sm text-neutral-400">
+        <p className="mt-2 text-center text-sm text-neutral-500">
           Sell out your event. Get paid.
         </p>
 
@@ -65,7 +65,7 @@ export default function LinksPage() {
               className={`block rounded-2xl px-5 py-4 transition active:scale-[0.98] ${
                 l.primary
                   ? "bg-gradient-to-br from-yellow-400 to-yellow-600 text-neutral-950 shadow-lg shadow-yellow-500/25"
-                  : "border border-white/15 bg-white/5 text-white hover:bg-white/10"
+                  : "border border-white/15 bg-neutral-900/5 text-white hover:bg-neutral-900/10"
               }`}
             >
               <span className="flex items-center justify-between gap-3">
@@ -73,7 +73,7 @@ export default function LinksPage() {
                   <span className="block font-semibold">{l.label}</span>
                   <span
                     className={`block text-xs ${
-                      l.primary ? "text-neutral-900/70" : "text-neutral-400"
+                      l.primary ? "text-neutral-50/70" : "text-neutral-500"
                     }`}
                   >
                     {l.sub}
@@ -96,19 +96,19 @@ export default function LinksPage() {
           ))}
         </nav>
 
-        <div className="mt-10 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-neutral-500">
-          <Link href="/contact" className="hover:text-neutral-300 transition-colors">
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-neutral-400">
+          <Link href="/contact" className="hover:text-neutral-600 transition-colors">
             Contact
           </Link>
-          <Link href="/terms" className="hover:text-neutral-300 transition-colors">
+          <Link href="/terms" className="hover:text-neutral-600 transition-colors">
             Terms
           </Link>
-          <Link href="/privacy" className="hover:text-neutral-300 transition-colors">
+          <Link href="/privacy" className="hover:text-neutral-600 transition-colors">
             Privacy
           </Link>
         </div>
 
-        <p className="mt-8 text-center text-[11px] text-neutral-600">
+        <p className="mt-8 text-center text-[11px] text-neutral-300">
           zivotix.site · Eden Cloudwave Technology
         </p>
       </div>

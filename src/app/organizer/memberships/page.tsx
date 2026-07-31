@@ -42,8 +42,8 @@ export default async function OrganizerMembershipsPage() {
     <div className="max-w-3xl mx-auto space-y-10">
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-neutral-900">Memberships</h1>
-          <p className="text-sm text-neutral-500 mt-1">
+          <h1 className="text-3xl font-bold tracking-tight text-neutral-50">Memberships</h1>
+          <p className="text-sm text-neutral-400 mt-1">
             Sell a set number of entries up front. Members use them at any of your events until the
             pass expires — money in before the night, not after.
           </p>
@@ -64,10 +64,10 @@ export default async function OrganizerMembershipsPage() {
       )}
 
       <section>
-        <h2 className="font-semibold text-neutral-900 mb-3">Passes on sale</h2>
+        <h2 className="font-semibold text-neutral-50 mb-3">Passes on sale</h2>
         {!tiers?.length ? (
           <div className="zv-card p-10 text-center">
-            <p className="text-sm text-neutral-400">
+            <p className="text-sm text-neutral-500">
               No passes yet. Create one and it appears on your community page for fans to buy.
             </p>
           </div>
@@ -86,27 +86,27 @@ export default async function OrganizerMembershipsPage() {
       </section>
 
       <section>
-        <h2 className="font-semibold text-neutral-900 mb-3">Members</h2>
+        <h2 className="font-semibold text-neutral-50 mb-3">Members</h2>
         {!paid.length ? (
           <div className="zv-card p-10 text-center">
-            <p className="text-sm text-neutral-400">Nobody has bought a pass yet.</p>
+            <p className="text-sm text-neutral-500">Nobody has bought a pass yet.</p>
           </div>
         ) : (
-          <div className="zv-card divide-y divide-neutral-100 overflow-hidden">
+          <div className="zv-card divide-y divide-white/10 overflow-hidden">
             {paid.map((m) => {
               const state = assessMembership(m);
               return (
                 <div key={m.id} className="flex items-center justify-between gap-4 p-4">
                   <div className="min-w-0">
-                    <p className="text-sm font-medium text-neutral-900 truncate">{m.member_name}</p>
-                    <p className="text-xs text-neutral-400 truncate">{m.member_email}</p>
+                    <p className="text-sm font-medium text-neutral-50 truncate">{m.member_name}</p>
+                    <p className="text-xs text-neutral-500 truncate">{m.member_email}</p>
                   </div>
                   <div className="flex items-center gap-4 shrink-0">
                     <div className="text-right">
-                      <p className="text-sm font-semibold text-neutral-900 tabular-nums">
+                      <p className="text-sm font-semibold text-neutral-50 tabular-nums">
                         {state.creditsLeft} / {m.credits_total}
                       </p>
-                      <p className="text-xs text-neutral-400">
+                      <p className="text-xs text-neutral-500">
                         {state.usable
                           ? `until ${new Date(m.expires_at).toLocaleDateString(undefined, { day: "numeric", month: "short" })}`
                           : state.reason === "spent"
@@ -131,7 +131,7 @@ export default async function OrganizerMembershipsPage() {
         )}
       </section>
 
-      <p className="text-xs text-neutral-400">
+      <p className="text-xs text-neutral-500">
         Passes don&apos;t apply to events you&apos;ve marked members-excluded — set that per event on{" "}
         <Link href="/organizer/events" className="font-semibold zv-gradient-text">
           your events page
@@ -145,8 +145,8 @@ export default async function OrganizerMembershipsPage() {
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div className="zv-card p-4">
-      <p className="text-xl font-bold text-neutral-900 tabular-nums">{value}</p>
-      <p className="text-xs text-neutral-500 mt-0.5">{label}</p>
+      <p className="text-xl font-bold text-neutral-50 tabular-nums">{value}</p>
+      <p className="text-xs text-neutral-400 mt-0.5">{label}</p>
     </div>
   );
 }

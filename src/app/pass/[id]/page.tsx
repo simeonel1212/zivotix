@@ -83,8 +83,8 @@ export default async function PassPage({ params }: { params: Promise<{ id: strin
   if (!paid) {
     return (
       <main className="flex-1 mx-auto w-full max-w-md px-6 py-20 text-center">
-        <h1 className="text-2xl font-bold text-neutral-900">Confirming your payment…</h1>
-        <p className="mt-3 text-sm text-neutral-500">
+        <h1 className="text-2xl font-bold text-neutral-50">Confirming your payment…</h1>
+        <p className="mt-3 text-sm text-neutral-400">
           This usually takes a few seconds. Refresh the page if it doesn&apos;t update — your pass
           appears here as soon as the payment clears.
         </p>
@@ -108,13 +108,13 @@ export default async function PassPage({ params }: { params: Promise<{ id: strin
         <div className="p-7 space-y-6">
           <div className="flex items-baseline justify-between">
             <div>
-              <p className="text-4xl font-bold text-neutral-900 tabular-nums">
+              <p className="text-4xl font-bold text-neutral-50 tabular-nums">
                 {state.creditsLeft}
-                <span className="text-lg font-semibold text-neutral-400"> / {fresh!.credits_total}</span>
+                <span className="text-lg font-semibold text-neutral-500"> / {fresh!.credits_total}</span>
               </p>
-              <p className="text-sm text-neutral-500">entries left</p>
+              <p className="text-sm text-neutral-400">entries left</p>
             </div>
-            <p className="text-sm text-neutral-500">
+            <p className="text-sm text-neutral-400">
               Valid until{" "}
               {new Date(fresh!.expires_at).toLocaleDateString(undefined, {
                 day: "numeric",
@@ -131,19 +131,19 @@ export default async function PassPage({ params }: { params: Promise<{ id: strin
             className={`mx-auto h-56 w-56 ${state.usable ? "" : "opacity-25"}`}
           />
 
-          <p className="text-center text-sm text-neutral-500">
+          <p className="text-center text-sm text-neutral-400">
             {state.usable
               ? "Show this at the door. One entry per event."
               : "This pass can't be used right now."}
           </p>
 
-          <p className="text-center text-xs text-neutral-400">
+          <p className="text-center text-xs text-neutral-500">
             {fresh!.member_name} · {fresh!.member_email}
           </p>
         </div>
       </div>
 
-      <p className="mt-6 text-center text-xs text-neutral-400">
+      <p className="mt-6 text-center text-xs text-neutral-500">
         Bookmark this page — it&apos;s your pass. We&apos;ve emailed you a copy too.
       </p>
     </main>

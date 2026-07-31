@@ -113,14 +113,14 @@ export default function TierForm({
 
   return (
     <div className="zv-card p-6 space-y-5">
-      <h2 className="font-semibold text-neutral-900">
+      <h2 className="font-semibold text-neutral-50">
         {editing ? "Edit pass" : "New membership pass"}
       </h2>
 
       {/* The reassurance that makes editing usable. Without it an organizer
           with paying members will simply never touch this form. */}
       {editing && memberCount > 0 && (
-        <div className="rounded-2xl bg-amber-50 border border-amber-100 px-4 py-3 text-sm text-amber-800">
+        <div className="rounded-2xl bg-amber-500/10 border border-amber-500/25 px-4 py-3 text-sm text-amber-200">
           {memberCount} {memberCount === 1 ? "person has" : "people have"} already bought this pass.
           Changes here apply to new buyers only — existing members keep the entries, price and expiry
           date they paid for.
@@ -208,26 +208,26 @@ export default function TierForm({
       {/* The sanity check. An organizer should see what they've actually built
           before anyone can buy it. */}
       {perEntry !== null && fees && (
-        <div className="rounded-2xl bg-neutral-50/80 border border-neutral-100 px-4 py-3 text-sm text-neutral-600 space-y-1">
+        <div className="rounded-2xl bg-white/[0.04] border border-white/10 px-4 py-3 text-sm text-neutral-300 space-y-1">
           <p>
-            Members pay <strong className="text-neutral-900">{fees.total.toLocaleString()} {form.currency}</strong>{" "}
+            Members pay <strong className="text-neutral-50">{fees.total.toLocaleString()} {form.currency}</strong>{" "}
             for {credits} {credits === 1 ? "entry" : "entries"} — about{" "}
             {perEntry.toLocaleString()} {form.currency} a night.
           </p>
-          <p className="text-neutral-500">
+          <p className="text-neutral-400">
             You receive {fees.organizerReceives.toLocaleString()} {form.currency}. Entries can be used at
             any of your events until the pass expires.
           </p>
         </div>
       )}
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-red-400">{error}</p>}
 
       <div className="flex flex-wrap items-center gap-2">
         <button onClick={save} disabled={saving} className="zv-btn-primary text-sm">
           {saving ? "Saving…" : editing ? "Save changes" : "Create pass"}
         </button>
-        <button onClick={close} className="text-sm text-neutral-400 hover:text-neutral-600">
+        <button onClick={close} className="text-sm text-neutral-500 hover:text-neutral-300">
           Cancel
         </button>
 
@@ -238,13 +238,13 @@ export default function TierForm({
           <div className="ml-auto">
             {confirmingDelete ? (
               <span className="flex items-center gap-2 text-sm">
-                <span className="text-neutral-500">Delete this pass?</span>
-                <button onClick={remove} disabled={saving} className="font-semibold text-red-600">
+                <span className="text-neutral-400">Delete this pass?</span>
+                <button onClick={remove} disabled={saving} className="font-semibold text-red-400">
                   Yes, delete
                 </button>
                 <button
                   onClick={() => setConfirmingDelete(false)}
-                  className="text-neutral-400 hover:text-neutral-600"
+                  className="text-neutral-500 hover:text-neutral-300"
                 >
                   No
                 </button>
@@ -252,7 +252,7 @@ export default function TierForm({
             ) : (
               <button
                 onClick={() => setConfirmingDelete(true)}
-                className="text-sm text-neutral-400 hover:text-red-600"
+                className="text-sm text-neutral-500 hover:text-red-400"
               >
                 Delete
               </button>

@@ -15,7 +15,7 @@ export default function OrganisePage() {
   return (
     <main className="flex-1 mx-auto w-full max-w-6xl px-6 py-10 space-y-16">
       {/* ---------- Party hero box ---------- */}
-      <section className="relative overflow-hidden rounded-[2rem] bg-neutral-950 text-white px-6 py-20 sm:px-16 sm:py-24 text-center shadow-[0_32px_80px_-24px_rgba(0,0,0,0.5)]">
+      <section className="relative overflow-hidden rounded-[2rem] bg-black text-white px-6 py-20 sm:px-16 sm:py-24 text-center shadow-[0_32px_80px_-24px_rgba(0,0,0,0.5)]">
         {/* Party glow */}
         <div
           className="zv-glow-orb w-[480px] h-[480px] -top-40 -left-32 opacity-60"
@@ -43,7 +43,7 @@ export default function OrganisePage() {
           <h1 className="mt-5 text-4xl sm:text-6xl font-bold tracking-tight leading-[1.08]">
             Empowering organisers to <span className="zv-gradient-text">sell out every show.</span>
           </h1>
-          <p className="mt-6 mx-auto max-w-xl text-neutral-300 leading-relaxed">
+          <p className="mt-6 mx-auto max-w-xl text-neutral-600 leading-relaxed">
             Our vision is simple: give independent promoters the same ticketing power as global
             platforms, without the complexity or the cost. Secure payments, instant QR tickets,
             live sales insight. You bring the energy. We handle everything between the
@@ -101,8 +101,8 @@ export default function OrganisePage() {
                 {f.icon}
               </svg>
             </div>
-            <h2 className="font-semibold text-lg text-neutral-900">{f.title}</h2>
-            <p className="mt-2 text-sm text-neutral-500 leading-relaxed">{f.body}</p>
+            <h2 className="font-semibold text-lg text-neutral-50">{f.title}</h2>
+            <p className="mt-2 text-sm text-neutral-400 leading-relaxed">{f.body}</p>
           </div>
         ))}
       </section>
@@ -112,7 +112,7 @@ export default function OrganisePage() {
           point an organizer is weighing up whether running the door is going
           to be a hassle, and "your staff already own the hardware" is the
           answer to that. */}
-      <section className="relative overflow-hidden rounded-3xl bg-neutral-950 p-8 sm:p-12">
+      <section className="relative overflow-hidden rounded-3xl bg-black p-8 sm:p-12">
         <div
           aria-hidden="true"
           className="pointer-events-none absolute -right-20 -top-24 h-72 w-72 rounded-full bg-yellow-400/20 blur-3xl"
@@ -134,7 +134,7 @@ export default function OrganisePage() {
             <h2 className="mt-2 text-2xl sm:text-3xl font-bold tracking-tight text-white">
               The Zivotix Scanner app
             </h2>
-            <p className="mt-2.5 max-w-lg text-sm sm:text-[15px] leading-relaxed text-neutral-300">
+            <p className="mt-2.5 max-w-lg text-sm sm:text-[15px] leading-relaxed text-neutral-600">
               Installs on any Android or iPhone in seconds. Your door staff scan tickets with the
               camera and watch the headcount climb live. Run two doors at once and the same ticket
               still can&apos;t get through twice.
@@ -159,10 +159,10 @@ export default function OrganisePage() {
           style={{ background: "linear-gradient(135deg, #fde047, #eab308)" }}
         />
         <div className="relative z-10">
-          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-neutral-900">
+          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-neutral-50">
             Your next event <span className="zv-gradient-text">starts here.</span>
           </h2>
-          <p className="mt-4 mx-auto max-w-md text-neutral-500">
+          <p className="mt-4 mx-auto max-w-md text-neutral-400">
             Set up your organiser account in under a minute. No contracts, no setup fees.
           </p>
           <Link href="/signup" className="zv-btn-primary mt-8 inline-flex">

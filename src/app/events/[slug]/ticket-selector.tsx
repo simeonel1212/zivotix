@@ -123,7 +123,7 @@ export default function TicketSelector({
 
   return (
     <div className="zv-card p-6 sm:p-8 space-y-6">
-      <h2 className="font-semibold text-lg text-neutral-900">Tickets</h2>
+      <h2 className="font-semibold text-lg text-neutral-50">Tickets</h2>
 
       <div className="space-y-6">
         {groups.map(({ key, label, tiers }) => {
@@ -138,18 +138,18 @@ export default function TicketSelector({
                 aria-expanded={isOpen}
                 className="flex items-center gap-2 w-full text-left group/cat"
               >
-                <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400 group-hover/cat:text-neutral-600 transition-colors">
+                <span className="text-xs font-semibold uppercase tracking-wider text-neutral-500 group-hover/cat:text-neutral-300 transition-colors">
                   {label}
                 </span>
-                <span className="text-xs text-neutral-300">{tiers.length}</span>
+                <span className="text-xs text-neutral-600">{tiers.length}</span>
                 {/* A collapsed group holding a selected ticket would otherwise
                     look empty while still being charged for. */}
                 {!isOpen && selectedInGroup > 0 && (
-                  <span className="zv-badge bg-neutral-900 text-white text-[10px] px-2 py-0.5">
+                  <span className="zv-badge bg-white text-neutral-900 text-[10px] px-2 py-0.5">
                     {selectedInGroup} selected
                   </span>
                 )}
-                <span className="flex-1 h-px bg-neutral-100" />
+                <span className="flex-1 h-px bg-white/[0.08]" />
                 <svg
                   viewBox="0 0 24 24"
                   fill="none"
@@ -157,7 +157,7 @@ export default function TicketSelector({
                   strokeWidth="2.5"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  className={`h-3.5 w-3.5 text-neutral-400 transition-transform ${isOpen ? "" : "-rotate-90"}`}
+                  className={`h-3.5 w-3.5 text-neutral-500 transition-transform ${isOpen ? "" : "-rotate-90"}`}
                 >
                   <path d="m6 9 6 6 6-6" />
                 </svg>
@@ -171,16 +171,16 @@ export default function TicketSelector({
                   // items-start, not items-center: with a few lines of
                   // description the quantity box would otherwise float to the
                   // middle of the card, away from the ticket it belongs to.
-                  className="flex items-start justify-between gap-4 rounded-2xl border border-neutral-100 bg-neutral-50/60 px-4 py-3.5"
+                  className="flex items-start justify-between gap-4 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3.5"
                 >
                   <div className="min-w-0">
-                    <p className="font-medium text-sm text-neutral-900">{tt.name}</p>
+                    <p className="font-medium text-sm text-neutral-50">{tt.name}</p>
                     {/* whitespace-pre-wrap keeps the organizer's own line
                         breaks, and the leading gives multi-line copy room to
                         read as separate points rather than one block of text
                         running into the price underneath it. */}
                     {tt.description && (
-                      <p className="text-xs text-neutral-500 mt-1 mb-1.5 leading-relaxed whitespace-pre-wrap">
+                      <p className="text-xs text-neutral-400 mt-1 mb-1.5 leading-relaxed whitespace-pre-wrap">
                         {tt.description}
                       </p>
                     )}
@@ -200,9 +200,9 @@ export default function TicketSelector({
                           {formatMoney(tt.price, event.currency)}
                         </span>
                       ) : (
-                        <span className="font-bold text-emerald-600">Free</span>
+                        <span className="font-bold text-emerald-400">Free</span>
                       )}
-                      {remaining <= 0 && <span className="text-red-500 font-medium"> · Sold out</span>}
+                      {remaining <= 0 && <span className="text-red-400 font-medium"> · Sold out</span>}
                     </p>
                   </div>
                   <select
@@ -225,7 +225,7 @@ export default function TicketSelector({
         })}
       </div>
 
-      <div className="border-t border-neutral-100 pt-6 space-y-3">
+      <div className="border-t border-white/10 pt-6 space-y-3">
         <input
           placeholder="Full name"
           value={buyer.name}
@@ -245,14 +245,14 @@ export default function TicketSelector({
           the fee is the organizer's cost, and showing a buyer a line item
           they aren't being charged would just be confusing. */}
       {subtotal > 0 && fees.mode === "pass" && (
-        <div className="rounded-2xl bg-neutral-50/80 border border-neutral-100 px-4 py-3 space-y-1.5 text-sm">
-          <div className="flex justify-between text-neutral-500">
+        <div className="rounded-2xl bg-white/[0.04] border border-white/10 px-4 py-3 space-y-1.5 text-sm">
+          <div className="flex justify-between text-neutral-400">
             <span>Tickets</span>
             <span className="tabular-nums">
               {formatMoney(subtotal, event.currency)}
             </span>
           </div>
-          <div className="flex justify-between text-neutral-500">
+          <div className="flex justify-between text-neutral-400">
             <span>Service fee</span>
             <span className="tabular-nums">
               {formatMoney(fees.serviceFee, event.currency)}
@@ -262,10 +262,10 @@ export default function TicketSelector({
       )}
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between pt-2 gap-4">
-        <p className="text-sm text-neutral-500">
+        <p className="text-sm text-neutral-400">
           Total
           <br />
-          <span className="text-xl font-bold text-neutral-900">
+          <span className="text-xl font-bold text-neutral-50">
             {total > 0
               ? formatMoney(total, event.currency)
               : isFreeEvent
@@ -286,7 +286,7 @@ export default function TicketSelector({
           {total > 0 && (
             <>
               <br />
-              <span className="text-xs text-neutral-400">
+              <span className="text-xs text-neutral-500">
                 {event.currency === "NGN"
                   ? "Card or Apple Pay, charged in NGN"
                   : "Card or Apple Pay, charged in USD at the live rate"}
@@ -318,15 +318,15 @@ export default function TicketSelector({
         </div>
       </div>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-red-400">{error}</p>}
 
-      <p className="text-xs text-neutral-400">
+      <p className="text-xs text-neutral-500">
         By checking out, you agree to our{" "}
-        <Link href="/terms" className="underline hover:text-neutral-600">
+        <Link href="/terms" className="underline hover:text-neutral-300">
           Terms
         </Link>{" "}
         and{" "}
-        <Link href="/refund-policy" className="underline hover:text-neutral-600">
+        <Link href="/refund-policy" className="underline hover:text-neutral-300">
           Refund Policy
         </Link>
         .

@@ -57,7 +57,7 @@ export default function ContactPage() {
           <h1 className="mt-5 text-3xl sm:text-4xl font-bold tracking-tight text-white">
             Talk to a human
           </h1>
-          <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-neutral-300">
+          <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-neutral-600">
             Lost a ticket, chasing a refund, thinking about putting your event on Zivotix? Send us a
             message. We read every one and usually reply within a business day.
           </p>
@@ -123,8 +123,8 @@ export default function ContactPage() {
 function QuickCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="zv-card p-5">
-      <h2 className="font-semibold text-sm text-neutral-900">{title}</h2>
-      <div className="mt-1.5 text-sm text-neutral-500 leading-relaxed">{children}</div>
+      <h2 className="font-semibold text-sm text-neutral-50">{title}</h2>
+      <div className="mt-1.5 text-sm text-neutral-400 leading-relaxed">{children}</div>
     </section>
   );
 }

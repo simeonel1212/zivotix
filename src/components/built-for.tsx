@@ -50,7 +50,7 @@ export default function BuiltFor() {
 
   return (
     <section className="zv-card p-7 sm:p-10">
-      <h2 className="zv-h2 text-neutral-900">Built for</h2>
+      <h2 className="zv-h2 text-neutral-50">Built for</h2>
 
       {/* Scrolls sideways rather than wrapping: four labels this long stack
           into three ragged rows on a phone and stop reading as a control. */}
@@ -63,8 +63,8 @@ export default function BuiltFor() {
               aria-pressed={i === active}
               className={`zv-badge whitespace-nowrap transition-colors ${
                 i === active
-                  ? "bg-neutral-900 text-white"
-                  : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                  ? "bg-white text-neutral-900"
+                  : "bg-white/[0.08] text-neutral-300 hover:bg-white/[0.14]"
               }`}
             >
               {s.label}
@@ -75,8 +75,8 @@ export default function BuiltFor() {
 
       <div className="mt-7 grid gap-6 sm:grid-cols-[1.3fr_1fr] sm:items-start">
         <div>
-          <h3 className="zv-h2 text-neutral-900" style={{ fontSize: "clamp(1.35rem, 3vw, 1.9rem)" }}>{seg.headline}</h3>
-          <p className="mt-2.5 text-neutral-500 leading-relaxed">{seg.body}</p>
+          <h3 className="zv-h2 text-neutral-50" style={{ fontSize: "clamp(1.35rem, 3vw, 1.9rem)" }}>{seg.headline}</h3>
+          <p className="mt-2.5 text-neutral-400 leading-relaxed">{seg.body}</p>
           <Link href="/organizer/events/new" className="zv-btn-primary text-sm mt-6 inline-flex">
             Create your event
           </Link>
@@ -84,7 +84,7 @@ export default function BuiltFor() {
 
         <ul className="space-y-2.5">
           {seg.points.map((p) => (
-            <li key={p} className="flex items-start gap-2.5 text-sm text-neutral-700">
+            <li key={p} className="flex items-start gap-2.5 text-sm text-neutral-200">
               <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-yellow-400" />
               {p}
             </li>

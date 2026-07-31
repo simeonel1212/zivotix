@@ -61,8 +61,8 @@ export default function ContactForm() {
             <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </div>
-        <h2 className="mt-4 text-lg font-semibold text-neutral-900">Message sent</h2>
-        <p className="mt-2 text-sm text-neutral-500">
+        <h2 className="mt-4 text-lg font-semibold text-neutral-50">Message sent</h2>
+        <p className="mt-2 text-sm text-neutral-400">
           We&apos;ve emailed you a confirmation. A real person reads every message and we usually reply
           within one business day.
         </p>
@@ -137,7 +137,7 @@ export default function ContactForm() {
       {showOrderRef && (
         <div className="zv-pop-in">
           <label className="zv-label" htmlFor="contact-order">
-            Order reference <span className="font-normal text-neutral-400">(optional, speeds things up)</span>
+            Order reference <span className="font-normal text-neutral-500">(optional, speeds things up)</span>
           </label>
           <input
             id="contact-order"
@@ -146,7 +146,7 @@ export default function ContactForm() {
             value={form.orderRef}
             onChange={(e) => set("orderRef", e.target.value)}
           />
-          <p className="mt-1.5 text-xs text-neutral-400">
+          <p className="mt-1.5 text-xs text-neutral-500">
             It&apos;s at the top of your ticket email, and on your ticket page.
           </p>
         </div>
@@ -180,15 +180,15 @@ export default function ContactForm() {
         />
       </div>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-red-400">{error}</p>}
 
       <div className="flex flex-col sm:flex-row sm:items-center gap-3 pt-1">
         <button type="submit" disabled={loading} className="zv-btn-primary w-full sm:w-auto">
           {loading ? "Sending…" : "Send message"}
         </button>
-        <p className="text-xs text-neutral-400">
+        <p className="text-xs text-neutral-500">
           By sending this you agree to our{" "}
-          <a href="/privacy" className="underline hover:text-neutral-600">
+          <a href="/privacy" className="underline hover:text-neutral-300">
             Privacy Policy
           </a>
           .

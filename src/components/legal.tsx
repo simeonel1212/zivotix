@@ -45,8 +45,8 @@ export function LegalPage({
             </span>
           </span>
           <h1 className="mt-5 text-3xl sm:text-4xl font-bold tracking-tight text-white">{title}</h1>
-          <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-neutral-300">{intro}</p>
-          <div className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-neutral-400">
+          <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-neutral-600">{intro}</p>
+          <div className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-neutral-500">
             <span>{LEGAL_ENTITY}</span>
             <span aria-hidden="true">·</span>
             <span>zivotix.site</span>
@@ -56,7 +56,7 @@ export function LegalPage({
         </div>
       </header>
 
-      <div className="mt-10 space-y-8 text-neutral-700 leading-relaxed">{children}</div>
+      <div className="mt-10 space-y-8 text-neutral-200 leading-relaxed">{children}</div>
 
       <LegalFooterNav />
     </main>
@@ -66,7 +66,7 @@ export function LegalPage({
 export function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section>
-      <h2 className="text-lg font-semibold text-neutral-900 mb-2">{title}</h2>
+      <h2 className="text-lg font-semibold text-neutral-50 mb-2">{title}</h2>
       <div className="space-y-3">{children}</div>
     </section>
   );
@@ -85,17 +85,17 @@ export function SupportLink({ subject }: { subject?: string }) {
 
 function LegalFooterNav() {
   return (
-    <nav className="mt-14 border-t border-neutral-200/70 pt-6 flex flex-wrap gap-x-6 gap-y-2 text-sm text-neutral-500">
-      <Link href="/terms" className="hover:text-neutral-800 transition-colors">
+    <nav className="mt-14 border-t border-white/15 pt-6 flex flex-wrap gap-x-6 gap-y-2 text-sm text-neutral-400">
+      <Link href="/terms" className="hover:text-neutral-100 transition-colors">
         Terms of Service
       </Link>
-      <Link href="/privacy" className="hover:text-neutral-800 transition-colors">
+      <Link href="/privacy" className="hover:text-neutral-100 transition-colors">
         Privacy Policy
       </Link>
-      <Link href="/refund-policy" className="hover:text-neutral-800 transition-colors">
+      <Link href="/refund-policy" className="hover:text-neutral-100 transition-colors">
         Refund Policy
       </Link>
-      <Link href="/contact" className="hover:text-neutral-800 transition-colors">
+      <Link href="/contact" className="hover:text-neutral-100 transition-colors">
         Contact us
       </Link>
     </nav>

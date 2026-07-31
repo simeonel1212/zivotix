@@ -35,7 +35,7 @@ export default function ScannerAppPage() {
       />
 
       {/* Hero */}
-      <section className="relative overflow-hidden bg-neutral-950">
+      <section className="relative overflow-hidden bg-black">
         <div
           aria-hidden="true"
           className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full bg-yellow-400/20 blur-3xl"
@@ -67,11 +67,11 @@ export default function ScannerAppPage() {
               <h1 className="text-3xl sm:text-5xl font-bold tracking-tight text-white">
                 Zivotix Scanner
               </h1>
-              <p className="mt-3 max-w-xl text-[15px] sm:text-base leading-relaxed text-neutral-300">
+              <p className="mt-3 max-w-xl text-[15px] sm:text-base leading-relaxed text-neutral-600">
                 Check guests in with your phone&apos;s camera. Watch your headcount climb live as
                 they walk through the door.
               </p>
-              <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-neutral-400">
+              <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-neutral-500">
                 <span>Android &amp; iPhone</span>
                 <span aria-hidden="true">·</span>
                 <span>Free</span>
@@ -85,7 +85,7 @@ export default function ScannerAppPage() {
             <InstallButton />
             <Link
               href="/scan"
-              className="inline-flex items-center justify-center gap-2 rounded-full border border-white/20 px-8 py-3.5 text-base font-semibold text-white transition hover:bg-white/5"
+              className="inline-flex items-center justify-center gap-2 rounded-full border border-white/20 px-8 py-3.5 text-base font-semibold text-white transition hover:bg-neutral-900/5"
             >
               Open in browser
             </Link>
@@ -112,8 +112,8 @@ export default function ScannerAppPage() {
 
       {/* Install steps */}
       <section id="how-to-install" className="mx-auto max-w-4xl px-6 pb-14 scroll-mt-8">
-        <h2 className="text-2xl font-bold tracking-tight text-neutral-900">Installing it</h2>
-        <p className="mt-1.5 text-sm text-neutral-500">
+        <h2 className="text-2xl font-bold tracking-tight text-neutral-50">Installing it</h2>
+        <p className="mt-1.5 text-sm text-neutral-400">
           Do this on the phone you&apos;ll actually use at the door. Takes about fifteen seconds.
         </p>
 
@@ -124,25 +124,25 @@ export default function ScannerAppPage() {
             note="Chrome, Edge, Samsung Internet or Brave"
           >
             <Step n={1}>
-              Tap <strong className="text-neutral-900">Install app</strong> at the top of this page
+              Tap <strong className="text-neutral-50">Install app</strong> at the top of this page
             </Step>
             <Step n={2}>Confirm in the dialog Chrome shows you</Step>
             <Step n={3}>Zivotix appears in your app drawer</Step>
-            <p className="pt-1 text-xs text-neutral-400">
+            <p className="pt-1 text-xs text-neutral-500">
               No install button showing? Open the ⋮ menu and choose Install app.
             </p>
           </PlatformCard>
 
           <PlatformCard platform="iPhone & iPad" icon={<AppleIcon />} note="Safari only">
             <Step n={1}>
-              Open <strong className="text-neutral-900">zivotix.site/scanner-app</strong> in Safari
+              Open <strong className="text-neutral-50">zivotix.site/scanner-app</strong> in Safari
             </Step>
             <Step n={2}>Tap the Share button, the square with the arrow</Step>
             <Step n={3}>
-              Scroll down, tap <strong className="text-neutral-900">Add to Home Screen</strong>
+              Scroll down, tap <strong className="text-neutral-50">Add to Home Screen</strong>
             </Step>
             <Step n={4}>Tap Add. The Zivotix icon lands on your home screen</Step>
-            <p className="pt-1 text-xs text-neutral-400">
+            <p className="pt-1 text-xs text-neutral-500">
               Apple doesn&apos;t allow apps to install from a website, so this is the route on iPhone.
               It behaves identically once it&apos;s on your home screen.
             </p>
@@ -153,23 +153,23 @@ export default function ScannerAppPage() {
       {/* Practical notes */}
       <section className="mx-auto max-w-4xl px-6 pb-20">
         <div className="zv-card p-6 sm:p-8">
-          <h2 className="text-lg font-semibold text-neutral-900">Before the doors open</h2>
-          <ul className="mt-3 space-y-2.5 text-sm text-neutral-600 leading-relaxed">
+          <h2 className="text-lg font-semibold text-neutral-50">Before the doors open</h2>
+          <ul className="mt-3 space-y-2.5 text-sm text-neutral-300 leading-relaxed">
             <li>
-              <strong className="text-neutral-900">Sign in on the phone first.</strong> Door staff
+              <strong className="text-neutral-50">Sign in on the phone first.</strong> Door staff
               need adding to the event by an organizer, under Staff in the dashboard.
             </li>
             <li>
-              <strong className="text-neutral-900">Allow camera access</strong> the first time you
+              <strong className="text-neutral-50">Allow camera access</strong> the first time you
               open it. Without that there&apos;s nothing to scan with.
             </li>
             <li>
-              <strong className="text-neutral-900">Check the signal at the venue.</strong> Check-ins
+              <strong className="text-neutral-50">Check the signal at the venue.</strong> Check-ins
               are recorded on our servers as they happen. If the connection drops the app says so,
               rather than pretending someone was checked in.
             </li>
             <li>
-              <strong className="text-neutral-900">It updates itself.</strong> Nothing to download
+              <strong className="text-neutral-50">It updates itself.</strong> Nothing to download
               again — open it and you have the current version.
             </li>
           </ul>
@@ -191,8 +191,8 @@ export default function ScannerAppPage() {
 function Feature({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="zv-card p-5">
-      <h3 className="text-sm font-semibold text-neutral-900">{title}</h3>
-      <p className="mt-1.5 text-sm leading-relaxed text-neutral-500">{children}</p>
+      <h3 className="text-sm font-semibold text-neutral-50">{title}</h3>
+      <p className="mt-1.5 text-sm leading-relaxed text-neutral-400">{children}</p>
     </div>
   );
 }
@@ -211,12 +211,12 @@ function PlatformCard({
   return (
     <div className="zv-card p-6">
       <div className="flex items-center gap-3">
-        <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-neutral-900 text-white">
+        <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-neutral-900">
           {icon}
         </span>
         <div>
-          <h3 className="font-semibold text-neutral-900">{platform}</h3>
-          <p className="text-xs text-neutral-400">{note}</p>
+          <h3 className="font-semibold text-neutral-50">{platform}</h3>
+          <p className="text-xs text-neutral-500">{note}</p>
         </div>
       </div>
       <ol className="mt-5 space-y-3">{children}</ol>
@@ -226,7 +226,7 @@ function PlatformCard({
 
 function Step({ n, children }: { n: number; children: React.ReactNode }) {
   return (
-    <li className="flex gap-3 text-sm text-neutral-600">
+    <li className="flex gap-3 text-sm text-neutral-300">
       <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-neutral-900 text-xs font-semibold text-white">
         {n}
       </span>

@@ -96,8 +96,8 @@ export default function EventEditForm({ event, headerActions }: { event: EventRo
     return (
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-neutral-900">{event.title}</h1>
-          <p className="text-sm text-neutral-500 mt-1">
+          <h1 className="text-3xl font-bold tracking-tight text-neutral-50">{event.title}</h1>
+          <p className="text-sm text-neutral-400 mt-1">
             {new Date(event.starts_at).toLocaleString()} · {event.venue}, {event.city}
           </p>
         </div>
@@ -115,7 +115,7 @@ export default function EventEditForm({ event, headerActions }: { event: EventRo
 
   return (
     <div className="zv-card p-6 sm:p-8 space-y-6">
-      <h2 className="font-semibold text-neutral-900">Edit event details</h2>
+      <h2 className="font-semibold text-neutral-50">Edit event details</h2>
 
       <Field label="Title">
         <input className="zv-input" value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} />
@@ -133,11 +133,11 @@ export default function EventEditForm({ event, headerActions }: { event: EventRo
               type="button"
               onClick={generateDescription}
               disabled={generating}
-              className="zv-badge bg-neutral-100 text-neutral-700 hover:bg-neutral-200 transition-colors disabled:opacity-40"
+              className="zv-badge bg-white/[0.08] text-neutral-200 hover:bg-white/[0.14] transition-colors disabled:opacity-40"
             >
               {generating ? "Writing…" : "✨ Generate with AI"}
             </button>
-            {genError && <p className="text-xs text-red-600">{genError}</p>}
+            {genError && <p className="text-xs text-red-400">{genError}</p>}
           </div>
         </div>
       </Field>
@@ -171,8 +171,8 @@ export default function EventEditForm({ event, headerActions }: { event: EventRo
           className="mt-0.5 h-4 w-4 shrink-0 accent-yellow-500"
         />
         <span>
-          <span className="text-sm font-medium text-neutral-700">Private event (invite only)</span>
-          <span className="block text-xs text-neutral-400 mt-0.5">
+          <span className="text-sm font-medium text-neutral-200">Private event (invite only)</span>
+          <span className="block text-xs text-neutral-500 mt-0.5">
             Hidden from the homepage, the events page and Google. Anyone with the link can still get
             a ticket.
           </span>
@@ -187,10 +187,10 @@ export default function EventEditForm({ event, headerActions }: { event: EventRo
           className="mt-0.5 h-4 w-4 shrink-0 accent-yellow-500"
         />
         <span>
-          <span className="text-sm font-medium text-neutral-700">
+          <span className="text-sm font-medium text-neutral-200">
             Membership passes don&apos;t cover this event
           </span>
-          <span className="block text-xs text-neutral-400 mt-0.5">
+          <span className="block text-xs text-neutral-500 mt-0.5">
             By default members get in on their pass. Tick this for a headliner or a special night
             where everyone should buy a ticket — pass holders are told at the door to buy one.
           </span>
@@ -217,7 +217,7 @@ export default function EventEditForm({ event, headerActions }: { event: EventRo
         </Field>
       </div>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-red-400">{error}</p>}
 
       <div className="flex gap-3">
         <button

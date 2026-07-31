@@ -18,7 +18,7 @@ export default function LinksInput({
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <label className="text-sm font-medium text-neutral-700">Links</label>
+        <label className="text-sm font-medium text-neutral-200">Links</label>
         {value.length < 4 && (
           <button
             type="button"
@@ -29,7 +29,7 @@ export default function LinksInput({
           </button>
         )}
       </div>
-      <p className="text-xs text-neutral-400">
+      <p className="text-xs text-neutral-500">
         Optional buttons on your event page, like &quot;Chat on WhatsApp&quot; or &quot;Follow us on Instagram&quot;.
       </p>
 
@@ -52,7 +52,7 @@ export default function LinksInput({
             type="button"
             aria-label="Remove link"
             onClick={() => onChange(value.filter((_, idx) => idx !== i))}
-            className="shrink-0 self-center p-2 text-neutral-400 hover:text-red-500 transition-colors"
+            className="shrink-0 self-center p-2 text-neutral-500 hover:text-red-400 transition-colors"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" />

@@ -67,8 +67,8 @@ export default function GalleryUpload({
 
   return (
     <div className="space-y-2">
-      <label className="text-sm font-medium text-neutral-700">{label}</label>
-      <p className="text-xs text-neutral-400">{helpText}</p>
+      <label className="text-sm font-medium text-neutral-200">{label}</label>
+      <p className="text-xs text-neutral-500">{helpText}</p>
 
       <div className="grid grid-cols-3 gap-3">
         {value.map((url, i) => (
@@ -93,7 +93,7 @@ export default function GalleryUpload({
             type="button"
             onClick={() => inputRef.current?.click()}
             disabled={uploading}
-            className="aspect-square rounded-2xl border-2 border-dashed border-neutral-200 bg-neutral-50 hover:border-yellow-300 hover:bg-yellow-50/40 transition-all flex flex-col items-center justify-center gap-1.5 text-neutral-400 hover:text-neutral-600 disabled:opacity-50"
+            className="aspect-square rounded-2xl border-2 border-dashed border-white/15 bg-white/[0.04] hover:border-yellow-300 hover:bg-yellow-50/40 transition-all flex flex-col items-center justify-center gap-1.5 text-neutral-500 hover:text-neutral-300 disabled:opacity-50"
           >
             {uploading ? (
               <div className="h-6 w-6 rounded-full border-2 border-yellow-500 border-t-transparent animate-spin" />
@@ -127,7 +127,7 @@ export default function GalleryUpload({
         }}
       />
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-red-400">{error}</p>}
     </div>
   );
 }

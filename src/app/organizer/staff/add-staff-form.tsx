@@ -51,7 +51,7 @@ export default function AddStaffForm({ events }: { events: EventRow[] }) {
       <button disabled={loading} className="zv-btn-primary shrink-0">
         Add
       </button>
-      {error && <p className="text-sm text-red-600 sm:ml-2 self-center">{error}</p>}
+      {error && <p className="text-sm text-red-400 sm:ml-2 self-center">{error}</p>}
     </form>
   );
 }

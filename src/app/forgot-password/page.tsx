@@ -46,9 +46,9 @@ export default function ForgotPasswordPage() {
       <div className="zv-card w-full max-w-sm p-8 relative z-10">
         {sent ? (
           <div className="space-y-5 text-center">
-            <h1 className="text-2xl font-bold text-neutral-900">Check your email</h1>
-            <p className="text-sm text-neutral-500">
-              If an account exists for <span className="font-medium text-neutral-800">{email}</span>, we&apos;ve
+            <h1 className="text-2xl font-bold text-neutral-50">Check your email</h1>
+            <p className="text-sm text-neutral-400">
+              If an account exists for <span className="font-medium text-neutral-100">{email}</span>, we&apos;ve
               sent a link to reset your password. It may take a minute to arrive, so check spam too.
             </p>
             <a href="/login" className="inline-block text-sm font-semibold zv-gradient-text">
@@ -58,8 +58,8 @@ export default function ForgotPasswordPage() {
         ) : (
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <h1 className="text-2xl font-bold text-neutral-900">Reset your password</h1>
-              <p className="text-sm text-neutral-500 mt-1">
+              <h1 className="text-2xl font-bold text-neutral-50">Reset your password</h1>
+              <p className="text-sm text-neutral-400 mt-1">
                 Enter the email on your account and we&apos;ll send you a reset link.
               </p>
             </div>
@@ -76,13 +76,13 @@ export default function ForgotPasswordPage() {
               />
             </div>
 
-            {error && <p className="text-sm text-red-600">{error}</p>}
+            {error && <p className="text-sm text-red-400">{error}</p>}
 
             <button type="submit" disabled={loading} className="zv-btn-primary w-full">
               {loading ? "Sending…" : "Send reset link"}
             </button>
 
-            <p className="text-center text-sm text-neutral-500">
+            <p className="text-center text-sm text-neutral-400">
               Remembered it after all?{" "}
               <a href="/login" className="font-semibold zv-gradient-text">
                 Sign in

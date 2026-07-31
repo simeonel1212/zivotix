@@ -42,10 +42,10 @@ export default function MembershipUpsell({
           <p className="text-xs font-semibold uppercase tracking-wider zv-gradient-text">
             Coming to more than one?
           </p>
-          <h2 className="mt-1.5 text-lg font-bold text-neutral-900">
+          <h2 className="mt-1.5 text-lg font-bold text-neutral-50">
             {best.event_credits} nights for {formatMoney(total, best.currency)}
           </h2>
-          <p className="mt-1.5 text-sm text-neutral-500 leading-relaxed">
+          <p className="mt-1.5 text-sm text-neutral-400 leading-relaxed">
             {saves ? (
               <>
                 That&apos;s {formatMoney(perEntry, best.currency)} a night instead of{" "}
