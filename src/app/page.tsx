@@ -7,6 +7,8 @@ import VerifiedBadge from "@/components/verified-badge";
 import { formatMoney } from "@/lib/currencies";
 import BuiltFor from "@/components/built-for";
 import FeeComparison from "@/components/fee-comparison";
+import Tilt3D from "@/components/tilt-3d";
+import Ticket3D from "@/components/ticket-3d";
 
 export const revalidate = 60;
 
@@ -109,6 +111,22 @@ export default async function HomePage() {
           />
           <div className="absolute inset-0 bg-gradient-to-b from-black/75 via-black/60 to-black/75" />
 
+          {/* Real 3D tickets turning in the corners of the hero. Hidden on
+              phones: at that width they'd land on top of the headline, and a
+              decoration that fights the sentence it's decorating is just
+              noise. */}
+          <div className="absolute inset-0 hidden lg:block" aria-hidden>
+            <div className="absolute left-10 top-16 opacity-70 [animation:zv-float_7s_ease-in-out_infinite]">
+              <Ticket3D size={150} />
+            </div>
+            <div
+              className="absolute right-12 bottom-16 opacity-60 [animation:zv-float_9s_ease-in-out_infinite]"
+              style={{ animationDelay: "-3s" }}
+            >
+              <Ticket3D size={115} />
+            </div>
+          </div>
+
           <div className="relative z-10 mx-auto max-w-2xl">
             <h1 className="zv-display">
               Where <span className="zv-gradient-text">unforgettable events</span> come to life.
@@ -175,8 +193,11 @@ export default async function HomePage() {
               const fromPrice = paidPrices.length ? Math.min(...paidPrices) : null;
               const isFree = allPrices.length > 0 && paidPrices.length === 0;
               return (
+                // Tilt wraps the card rather than sitting inside it, because
+                // perspective has to be applied by an ancestor of the thing
+                // that rotates.
+                <Tilt3D key={event.id}>
                 <Link
-                  key={event.id}
                   href={`/events/${event.slug}`}
                   className="zv-card zv-card-hover block overflow-hidden group"
                 >
@@ -232,6 +253,7 @@ export default async function HomePage() {
                     </div>
                   </div>
                 </Link>
+                </Tilt3D>
               );
             })}
           </div>
