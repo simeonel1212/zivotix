@@ -10,6 +10,8 @@ import { buyerDisplayCurrency } from "@/lib/geo";
 import VerifiedBadge from "@/components/verified-badge";
 import ShareButton from "@/components/share-button";
 import MembershipUpsell from "@/components/membership-upsell";
+import ExpandableText from "@/components/expandable-text";
+import StickyBuyBar from "./sticky-buy-bar";
 import TicketSelector from "./ticket-selector";
 
 // Per-event metadata is the single biggest SEO lever here: it's what makes
@@ -112,6 +114,8 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
   // Resolved from the request's IP country, not the browser's language.
   const detectedCurrency = await buyerDisplayCurrency();
 
+  const paidPrices = (ticketTypes ?? []).map((tt) => tt.price).filter((p) => p > 0);
+
   const mapsUrl = googleMapsUrl(event.venue, event.city, event.country);
   const mapsEmbedUrl = googleMapsEmbedUrl(event.venue, event.city, event.country);
 
@@ -165,7 +169,7 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
   };
 
   return (
-    <main className="flex-1 mx-auto w-full max-w-3xl px-6 py-12 space-y-10">
+    <main className="flex-1 mx-auto w-full max-w-3xl px-6 py-12 pb-32 space-y-10">
       {/* Structured data exists to earn Google event rich results, so it's
           pointless (and counterproductive) on an unlisted private event. */}
       {!event.is_unlisted && (
@@ -176,16 +180,34 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       )}
-      <div className="relative aspect-[21/9] rounded-3xl bg-gradient-to-br from-yellow-100 via-yellow-50 to-white overflow-hidden shadow-[0_20px_60px_-20px_rgba(0,0,0,0.15)]">
+      {/* The flyer, whole.
+          This was a 21:9 banner with object-cover, which is the wrong shape for
+          the artwork organizers actually have: event flyers are portrait and
+          they have type on them — the venue, the line-up, the door time. A wide
+          crop cut all of that off, so organizers were designing a poster and
+          watching the site throw two thirds of it away.
+          Now the image is contained and never cropped, with a blurred copy of
+          itself filling whatever space its aspect ratio leaves over. */}
+      <div className="relative aspect-[4/5] sm:aspect-[3/2] rounded-3xl bg-gradient-to-br from-yellow-100 via-yellow-50 to-white overflow-hidden shadow-[0_20px_60px_-20px_rgba(0,0,0,0.15)]">
         {event.cover_image_url && (
-          <Image
-            src={event.cover_image_url}
-            alt={event.title}
-            fill
-            priority
-            sizes="(max-width: 768px) 100vw, 768px"
-            className="object-cover"
-          />
+          <>
+            <Image
+              src={event.cover_image_url}
+              alt=""
+              aria-hidden
+              fill
+              sizes="(max-width: 768px) 100vw, 768px"
+              className="object-cover scale-110 blur-2xl brightness-75"
+            />
+            <Image
+              src={event.cover_image_url}
+              alt={event.title}
+              fill
+              priority
+              sizes="(max-width: 768px) 100vw, 768px"
+              className="object-contain"
+            />
+          </>
         )}
       </div>
 
@@ -241,7 +263,11 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
       {(event.description || (event.links ?? []).some((l) => /^https?:\/\//i.test(l.url))) && (
         <div className="zv-card p-6 sm:p-8 space-y-5">
           {event.description && (
-            <p className="text-neutral-700 leading-relaxed whitespace-pre-line">{event.description}</p>
+            <ExpandableText
+              text={event.description}
+              lines={7}
+              className="text-neutral-700 leading-relaxed"
+            />
           )}
 
           {(event.links ?? []).filter((l) => /^https?:\/\//i.test(l.url)).length > 0 && (
@@ -309,10 +335,23 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
         </div>
       )}
 
-      <TicketSelector
-        event={event}
-        ticketTypes={ticketTypes ?? []}
-        detectedCurrency={detectedCurrency}
+      <div id="tickets" className="scroll-mt-6">
+        <TicketSelector
+          event={event}
+          ticketTypes={ticketTypes ?? []}
+          detectedCurrency={detectedCurrency}
+        />
+      </div>
+
+      <StickyBuyBar
+        fromPrice={paidPrices.length ? Math.min(...paidPrices) : null}
+        currency={event.currency}
+        isFree={(ticketTypes ?? []).length > 0 && paidPrices.length === 0}
+        soldOut={
+          (ticketTypes ?? []).length > 0 &&
+          (ticketTypes ?? []).every((tt) => tt.quantity_sold >= tt.quantity_total)
+        }
+        targetId="tickets"
       />
 
       {/* Most buyers arrive here from a shared event link, never seeing the

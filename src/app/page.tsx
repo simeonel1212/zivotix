@@ -5,6 +5,9 @@ import type { EventRow, OrganizerPost, ReactionType } from "@/lib/types";
 import ScrollReveal from "@/components/scroll-reveal";
 import VerifiedBadge from "@/components/verified-badge";
 import { formatMoney } from "@/lib/currencies";
+import BuiltFor from "@/components/built-for";
+import FeeComparison from "@/components/fee-comparison";
+
 export const revalidate = 60;
 
 type EventWithPrices = EventRow & { ticket_types: { price: number }[] };
@@ -306,6 +309,14 @@ export default async function HomePage() {
             })}
           </div>
         )}
+      </ScrollReveal>
+
+      {/* Below the events, not above them: the homepage's first job is to show
+          a visitor something worth buying. The pitch to organizers works
+          harder once they've seen the platform actually has events on it. */}
+      <ScrollReveal className="mx-auto max-w-6xl px-6 pt-20 space-y-6">
+        <BuiltFor />
+        <FeeComparison />
       </ScrollReveal>
     </main>
   );
