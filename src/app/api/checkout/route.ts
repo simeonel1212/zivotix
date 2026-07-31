@@ -143,14 +143,11 @@ export async function POST(req: Request) {
   const reference = `zvx${randomUUID().replace(/-/g, "")}`;
   const provider = "paystack";
 
-  // Zivotix's revenue is the 5% service fee. Whether the buyer pays it on top
-  // or the organizer absorbs it into their listed price is the organizer's
-  // choice, per event — see events.absorb_service_fee.
-  const fees = computeFees(
-    baseAmount,
-    event.currency,
-    event.absorb_service_fee ? "absorb" : "pass"
-  );
+  // Zivotix's revenue is the service fee, and the buyer always pays it on top
+  // of the organizer's listed price. It used to be a per-event choice; that
+  // was a decision organizers had no reason to make and every reason to get
+  // wrong, so the answer is now the same everywhere and stated at checkout.
+  const fees = computeFees(baseAmount, event.currency, "pass");
 
   // NGN events are charged in NGN: the buyer's own currency, and Paystack's
   // cheaper local card rate. Everything else converts to USD, since Paystack

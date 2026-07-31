@@ -312,7 +312,6 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
       <TicketSelector
         event={event}
         ticketTypes={ticketTypes ?? []}
-        feeMode={event.absorb_service_fee ? "absorb" : "pass"}
         detectedCurrency={detectedCurrency}
       />
 

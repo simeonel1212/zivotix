@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { appUrl } from "@/lib/app-url";
 import ShareButton from "@/components/share-button";
@@ -10,6 +11,7 @@ import RefundButton from "./refund-button";
 import EventEditForm from "./event-edit-form";
 import TicketTypesEditor from "./ticket-types-editor";
 import DuplicateButton from "./duplicate-button";
+import DeleteEventButton from "./delete-button";
 
 interface TicketRow {
   id: string;
@@ -43,11 +45,32 @@ function one<T>(rel: T | T[] | null): T | null {
   return Array.isArray(rel) ? rel[0] ?? null : rel;
 }
 
+// Sections an organizer can be looking at. The page used to be one continuous
+// scroll — title, publish button, duplicate panel, three image editors, stats,
+// ticket tiers, every ticket, every order. On a phone that's a wall you have to
+// swipe through to find the one thing you came for.
+//
+// The tab lives in the URL so a back button and a bookmark both behave, and so
+// nothing here needs to become a client component just to remember which
+// section is open.
+const TABS = [
+  { key: "overview", label: "Overview" },
+  { key: "tickets", label: "Tickets" },
+  { key: "sales", label: "Sales" },
+  { key: "settings", label: "Settings" },
+] as const;
+
+type TabKey = (typeof TABS)[number]["key"];
+
 export default async function OrganizerEventDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ tab?: string }>;
 }) {
+  const { tab: rawTab } = await searchParams;
+  const tab: TabKey = (TABS.find((t) => t.key === rawTab)?.key ?? "overview") as TabKey;
   const { id } = await params;
   const supabase = await createClient();
 
@@ -120,33 +143,59 @@ export default async function OrganizerEventDetailPage({
         }
       />
 
-      {/* Below the header rather than inside it: the panel expands, and a
-          growing card inside a header row shoves the title around. */}
-      <DuplicateButton eventId={event.id} title={event.title} startsAt={event.starts_at} />
-
-      <CoverEditor eventId={event.id} initialUrl={event.cover_image_url ?? ""} />
-
-      <LogoEditor eventId={event.id} initialUrl={event.logo_image_url ?? ""} />
-
-      <GalleryEditor eventId={event.id} initialUrls={event.gallery_image_urls ?? []} />
-
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <Stat label="Gross sales" value={`${grossSales.toLocaleString()} ${event.currency}`} accent />
-        <Stat label="Tickets sold" value={String(ticketsSold)} />
-        <Stat label="Orders" value={String((orders ?? []).length)} />
-        <Stat label="Checked in" value={`${checkedInCount}/${(tickets ?? []).length}`} />
+      {/* Horizontally scrollable so four tabs never wrap to a second line on a
+          narrow phone, which is what made the old header feel disorganised. */}
+      <div className="-mx-6 px-6 sm:mx-0 sm:px-0 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="flex items-center gap-1 border-b border-neutral-200 min-w-max">
+          {TABS.map((t) => (
+            <Tab
+              key={t.key}
+              href={`/organizer/events/${event.id}${t.key === "overview" ? "" : `?tab=${t.key}`}`}
+              label={t.label}
+              active={tab === t.key}
+            />
+          ))}
+        </div>
       </div>
 
-      <div>
-        <h2 className="font-semibold text-neutral-900 mb-3">Ticket types</h2>
-        <TicketTypesEditor
-          eventId={event.id}
-          ticketTypes={ticketTypes ?? []}
-          currency={event.currency}
-          templates={templates}
-        />
-      </div>
+      {tab === "overview" && (
+        <>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <Stat label="Gross sales" value={`${grossSales.toLocaleString()} ${event.currency}`} accent />
+            <Stat label="Tickets sold" value={String(ticketsSold)} />
+            <Stat label="Orders" value={String((orders ?? []).length)} />
+            <Stat label="Checked in" value={`${checkedInCount}/${(tickets ?? []).length}`} />
+          </div>
 
+          <CoverEditor eventId={event.id} initialUrl={event.cover_image_url ?? ""} />
+
+          <LogoEditor eventId={event.id} initialUrl={event.logo_image_url ?? ""} />
+
+          <GalleryEditor eventId={event.id} initialUrls={event.gallery_image_urls ?? []} />
+        </>
+      )}
+
+      {tab === "tickets" && (
+        <div>
+          <h2 className="font-semibold text-neutral-900 mb-3">Ticket types</h2>
+          <TicketTypesEditor
+            eventId={event.id}
+            ticketTypes={ticketTypes ?? []}
+            currency={event.currency}
+            templates={templates}
+          />
+        </div>
+      )}
+
+      {tab === "settings" && (
+        <>
+          <DuplicateButton eventId={event.id} title={event.title} startsAt={event.starts_at} />
+          <DeleteEventButton eventId={event.id} title={event.title} />
+        </>
+      )}
+
+      {tab === "sales" && (
+      <>
       <div>
         <h2 className="font-semibold text-neutral-900 mb-3">
           Tickets & check-ins <span className="text-neutral-400 font-normal">(who&apos;s scanned in at the door)</span>
@@ -213,7 +262,25 @@ export default async function OrganizerEventDetailPage({
           </div>
         )}
       </div>
+      </>
+      )}
     </div>
+  );
+}
+
+function Tab({ href, label, active }: { href: string; label: string; active: boolean }) {
+  return (
+    <Link
+      href={href}
+      scroll={false}
+      className={`px-4 py-2.5 text-sm font-semibold border-b-2 -mb-px whitespace-nowrap transition-colors ${
+        active
+          ? "border-neutral-900 text-neutral-900"
+          : "border-transparent text-neutral-400 hover:text-neutral-700"
+      }`}
+    >
+      {label}
+    </Link>
   );
 }
 

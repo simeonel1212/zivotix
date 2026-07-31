@@ -7,7 +7,6 @@ import type { EventRow, EventLink } from "@/lib/types";
 import LinksInput from "@/components/links-input";
 import { EVENT_CATEGORIES } from "@/lib/categories";
 import { WORLD_CURRENCIES, currencyLabel } from "@/lib/currencies";
-import { serviceFeeLabel } from "@/lib/fees";
 
 // Converts an ISO timestamp to the "YYYY-MM-DDTHH:mm" shape a
 // datetime-local input expects, in the browser's local time.
@@ -29,7 +28,6 @@ export default function EventEditForm({ event, headerActions }: { event: EventRo
     currency: event.currency,
     category: event.category ?? "other",
     isUnlisted: event.is_unlisted ?? false,
-    absorbServiceFee: event.absorb_service_fee ?? false,
     membersIncluded: event.members_included ?? true,
   });
   const [links, setLinks] = useState<EventLink[]>(event.links ?? []);
@@ -81,7 +79,6 @@ export default function EventEditForm({ event, headerActions }: { event: EventRo
         currency: form.currency,
         category: form.category,
         is_unlisted: form.isUnlisted,
-        absorb_service_fee: form.absorbServiceFee,
         members_included: form.membersIncluded,
         links: links.filter((l) => l.label.trim() && /^https?:\/\//i.test(l.url.trim())),
       })
@@ -104,7 +101,9 @@ export default function EventEditForm({ event, headerActions }: { event: EventRo
             {new Date(event.starts_at).toLocaleString()} · {event.venue}, {event.city}
           </p>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
+        {/* Wraps rather than squeezing: three buttons side by side don't fit a
+            narrow phone, and shrinking them to fit made the labels unreadable. */}
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
           <button onClick={() => setEditing(true)} className="zv-btn-secondary">
             Edit details
           </button>
@@ -176,25 +175,6 @@ export default function EventEditForm({ event, headerActions }: { event: EventRo
           <span className="block text-xs text-neutral-400 mt-0.5">
             Hidden from the homepage, the events page and Google. Anyone with the link can still get
             a ticket.
-          </span>
-        </span>
-      </label>
-
-      <label className="flex items-start gap-3 cursor-pointer">
-        <input
-          type="checkbox"
-          checked={form.absorbServiceFee}
-          onChange={(e) => setForm((f) => ({ ...f, absorbServiceFee: e.target.checked }))}
-          className="mt-0.5 h-4 w-4 shrink-0 accent-yellow-500"
-        />
-        <span>
-          <span className="text-sm font-medium text-neutral-700">
-            I&apos;ll cover the {serviceFeeLabel(form.currency)}
-          </span>
-          <span className="block text-xs text-neutral-400 mt-0.5">
-            By default buyers pay the fee on top and you receive your full ticket price. Tick this
-            and the buyer pays exactly what you listed, with the fee coming out of your share
-            instead. Useful when the price is already on a flyer.
           </span>
         </span>
       </label>
