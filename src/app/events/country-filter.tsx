@@ -26,7 +26,12 @@ export default function CountryFilter({ countries }: { countries: string[] }) {
   if (countries.length < 2) return null;
 
   return (
-    <label className="relative inline-flex items-center shrink-0">
+    // w-fit + self-start is load-bearing on mobile. The parent switches to
+    // flex-col there, and a flex child stretches by default — so the label ran
+    // the full width of the screen while the select inside it stayed
+    // content-width. The chevron, positioned against the label's right edge,
+    // ended up marooned on the far side of the screen away from its dropdown.
+    <label className="relative inline-flex items-center shrink-0 w-fit self-start sm:self-auto">
       <span className="sr-only">Filter by country</span>
       <select
         value={current}

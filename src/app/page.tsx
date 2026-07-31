@@ -4,11 +4,10 @@ import { createClient, createServiceClient } from "@/lib/supabase/server";
 import type { EventRow, OrganizerPost, ReactionType } from "@/lib/types";
 import ScrollReveal from "@/components/scroll-reveal";
 import VerifiedBadge from "@/components/verified-badge";
-import { formatMoney } from "@/lib/currencies";
 import BuiltFor from "@/components/built-for";
 import FeeComparison from "@/components/fee-comparison";
-import Tilt3D from "@/components/tilt-3d";
 import Ticket3D from "@/components/ticket-3d";
+import EventMarquee from "@/components/event-marquee";
 
 export const revalidate = 60;
 
@@ -186,77 +185,18 @@ export default async function HomePage() {
             <p className="text-neutral-500">No events on sale right now. Check back soon.</p>
           </div>
         ) : (
-          <div className="zv-stagger grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            {events.map((event) => {
-              const allPrices = event.ticket_types ?? [];
-              const paidPrices = allPrices.map((tt) => tt.price).filter((p) => p > 0);
-              const fromPrice = paidPrices.length ? Math.min(...paidPrices) : null;
-              const isFree = allPrices.length > 0 && paidPrices.length === 0;
-              return (
-                // Tilt wraps the card rather than sitting inside it, because
-                // perspective has to be applied by an ancestor of the thing
-                // that rotates.
-                <Tilt3D key={event.id}>
-                <Link
-                  href={`/events/${event.slug}`}
-                  className="zv-card zv-card-hover block overflow-hidden group"
-                >
-                  <div className="aspect-video bg-gradient-to-br from-yellow-500/25 via-yellow-600/10 to-transparent relative overflow-hidden">
-                    {event.cover_image_url ? (
-                      <Image
-                        src={event.cover_image_url}
-                        alt={event.title}
-                        fill
-                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                        className="object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
-                    ) : (
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="text-3xl font-bold zv-gradient-text opacity-40">
-                          {event.title.slice(0, 1)}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                  <div className="p-4 sm:p-5 flex items-start gap-3">
-                    {event.logo_image_url && (
-                      <Image
-                        src={event.logo_image_url}
-                        alt={`${event.title} logo`}
-                        width={40}
-                        height={40}
-                        className="h-10 w-10 rounded-xl object-cover ring-1 ring-white/15 shadow-sm shrink-0"
-                      />
-                    )}
-                    <div className="space-y-1.5 min-w-0 flex-1">
-                      <p className="text-xs font-semibold uppercase tracking-wide zv-gradient-text">
-                        {new Date(event.starts_at).toLocaleDateString(undefined, {
-                          weekday: "short",
-                          month: "short",
-                          day: "numeric",
-                        })}{" "}
-                        · {event.city}
-                      </p>
-                      <h2 className="font-semibold text-base sm:text-lg leading-snug text-neutral-50 line-clamp-2">{event.title}</h2>
-                      <div className="flex items-center justify-between gap-3">
-                        <p className="text-sm text-neutral-400 truncate">{event.venue}</p>
-                        {isFree ? (
-                          <p className="text-sm font-semibold text-emerald-400 whitespace-nowrap">Free</p>
-                        ) : (
-                          fromPrice !== null && (
-                            <p className="text-sm font-semibold text-neutral-50 whitespace-nowrap">
-                              From {formatMoney(fromPrice, event.currency)}
-                            </p>
-                          )
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-                </Tilt3D>
-              );
-            })}
-          </div>
+          <>
+            {/* A moving line rather than a grid. A grid says "here is our
+                catalogue"; a line drifting past says "this is happening now",
+                which is the more honest thing for a ticketing homepage to
+                claim — and it costs a third of the vertical space. */}
+            <EventMarquee events={events} />
+            <div className="mt-6">
+              <Link href="/events" className="zv-btn-secondary text-sm">
+                See all events
+              </Link>
+            </div>
+          </>
         )}
       </ScrollReveal>
 

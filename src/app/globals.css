@@ -362,6 +362,25 @@ body::after {
   animation: zv-slide-up 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+/* Marquee. overflow-hidden rather than auto: the track is being transformed,
+   and a scrollable box fighting a transform gives you a scrollbar that jumps
+   every loop. The edge mask is what stops cards appearing to be sliced off at
+   the viewport edge — they fade out instead of being cut. */
+.zv-marquee {
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
+}
+.zv-marquee-track {
+  animation: zv-marquee var(--zv-marquee-duration, 48s) linear infinite;
+  will-change: transform;
+}
+/* Stop it when someone is trying to read or click a card. */
+.zv-marquee:hover .zv-marquee-track,
+.zv-marquee:focus-within .zv-marquee-track {
+  animation-play-state: paused;
+}
+
 /* ---------- 3D ----------
    Perspective lives on the wrapper and rotation on the child, which is what
    makes the lean look like a camera angle instead of a skew. All values come
@@ -425,6 +444,18 @@ body::after {
 }
 
 } /* end @layer components */
+
+@keyframes zv-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    /* Exactly half: the track holds two identical copies, so -50% lands the
+       second copy precisely where the first started. Any other value shows a
+       seam once per loop. */
+    transform: translateX(-50%);
+  }
+}
 
 @keyframes zv-ticket-spin {
   from {
@@ -519,6 +550,12 @@ body::after {
   .zv-ticket3d-body,
   .zv-float {
     animation: none;
+  }
+  .zv-marquee-track {
+    animation: none;
+  }
+  .zv-marquee {
+    overflow-x: auto;
   }
   .zv-tilt-inner {
     transform: none;
