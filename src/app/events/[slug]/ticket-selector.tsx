@@ -167,12 +167,19 @@ export default function TicketSelector({
               return (
                 <div
                   key={tt.id}
-                  className="flex items-center justify-between gap-4 rounded-2xl border border-neutral-100 bg-neutral-50/60 px-4 py-3.5"
+                  // items-start, not items-center: with a few lines of
+                  // description the quantity box would otherwise float to the
+                  // middle of the card, away from the ticket it belongs to.
+                  className="flex items-start justify-between gap-4 rounded-2xl border border-neutral-100 bg-neutral-50/60 px-4 py-3.5"
                 >
                   <div className="min-w-0">
                     <p className="font-medium text-sm text-neutral-900">{tt.name}</p>
+                    {/* whitespace-pre-wrap keeps the organizer's own line
+                        breaks, and the leading gives multi-line copy room to
+                        read as separate points rather than one block of text
+                        running into the price underneath it. */}
                     {tt.description && (
-                      <p className="text-xs text-neutral-500 mt-0.5 whitespace-pre-wrap">
+                      <p className="text-xs text-neutral-500 mt-1 mb-1.5 leading-relaxed whitespace-pre-wrap">
                         {tt.description}
                       </p>
                     )}

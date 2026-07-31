@@ -262,9 +262,9 @@ export default function TicketTypesEditor({
                 value={row.category}
                 onChange={(e) => updateRow(row.id, "category", e.target.value)}
               />
-              <input
-                className="zv-input text-sm"
-                placeholder="What's included (optional)"
+              <textarea
+                className="zv-input text-sm min-h-[64px] resize-y leading-relaxed"
+                placeholder={"What's included (optional)\nPress Enter for a new line"}
                 value={row.description}
                 onChange={(e) => updateRow(row.id, "description", e.target.value)}
               />
@@ -346,9 +346,9 @@ export default function TicketTypesEditor({
               value={newRow.category}
               onChange={(e) => setNewRow((r) => ({ ...r, category: e.target.value }))}
             />
-            <input
-              placeholder="What's included (e.g. Seats 6, bottle of spirits)"
-              className="zv-input text-sm"
+            <textarea
+              className="zv-input text-sm min-h-[64px] resize-y leading-relaxed"
+              placeholder={"What's included\nPress Enter for a new line"}
               value={newRow.description}
               onChange={(e) => setNewRow((r) => ({ ...r, description: e.target.value }))}
             />
