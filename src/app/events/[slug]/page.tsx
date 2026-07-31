@@ -116,6 +116,12 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
 
   const paidPrices = (ticketTypes ?? []).map((tt) => tt.price).filter((p) => p > 0);
 
+  // The frame hugs the flyer rather than the flyer being cropped to the frame.
+  // Clamped at both ends so a freak upload — a 1px-tall strip, a 4000px-tall
+  // menu photo — can't produce a hero that fills three screens or vanishes.
+  // 4:5 when unknown, which is the shape most event flyers actually are.
+  const coverAspect = Math.min(1.91, Math.max(0.7, event.cover_aspect ?? 0.8));
+
   const mapsUrl = googleMapsUrl(event.venue, event.city, event.country);
   const mapsEmbedUrl = googleMapsEmbedUrl(event.venue, event.city, event.country);
 
@@ -188,7 +194,10 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
           watching the site throw two thirds of it away.
           Now the image is contained and never cropped, with a blurred copy of
           itself filling whatever space its aspect ratio leaves over. */}
-      <div className="relative aspect-[4/5] sm:aspect-[3/2] rounded-3xl bg-gradient-to-br from-yellow-100 via-yellow-50 to-white overflow-hidden shadow-[0_20px_60px_-20px_rgba(0,0,0,0.15)]">
+      <div
+        className="relative rounded-3xl bg-gradient-to-br from-yellow-100 via-yellow-50 to-white overflow-hidden shadow-[0_20px_60px_-20px_rgba(0,0,0,0.15)]"
+        style={{ aspectRatio: String(coverAspect) }}
+      >
         {event.cover_image_url && (
           <>
             <Image

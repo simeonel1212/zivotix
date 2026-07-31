@@ -9,6 +9,7 @@ import LinksInput from "@/components/links-input";
 import type { EventLink } from "@/lib/types";
 import { EVENT_CATEGORIES } from "@/lib/categories";
 import { WORLD_CURRENCIES, currencyLabel } from "@/lib/currencies";
+import { measureAspect } from "@/lib/image-aspect";
 
 interface TicketTypeForm {
   name: string;
@@ -30,6 +31,7 @@ export default function NewEventPage() {
     currency: "NGN",
     category: EVENT_CATEGORIES[0].value as string,
     coverImageUrl: "",
+    coverAspect: null as number | null,
     logoImageUrl: "",
     isUnlisted: false,
   });
@@ -99,6 +101,7 @@ export default function NewEventPage() {
           currency: form.currency,
           category: form.category,
           coverImageUrl: form.coverImageUrl,
+          coverAspect: form.coverAspect,
           logoImageUrl: form.logoImageUrl,
           galleryImageUrls,
           links: links.filter((l) => l.label.trim() && l.url.trim()),
@@ -130,7 +133,16 @@ export default function NewEventPage() {
       </div>
 
       <div className="zv-card p-6 sm:p-8 space-y-6">
-        <CoverImageUpload value={form.coverImageUrl} onChange={(url) => setForm((f) => ({ ...f, coverImageUrl: url }))} />
+        <CoverImageUpload
+          value={form.coverImageUrl}
+          onChange={async (url) => {
+            setForm((f) => ({ ...f, coverImageUrl: url }));
+            // Measured after the upload so the event page can frame the flyer
+            // to its own shape rather than cropping it to a fixed banner.
+            const aspect = await measureAspect(url);
+            setForm((f) => (f.coverImageUrl === url ? { ...f, coverAspect: aspect } : f));
+          }}
+        />
 
         <Field label="Title">
           <input className="zv-input" value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} />

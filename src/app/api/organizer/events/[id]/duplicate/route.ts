@@ -68,6 +68,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
       currency: source.currency,
       category: source.category,
       cover_image_url: source.cover_image_url,
+      cover_aspect: source.cover_aspect,
       logo_image_url: source.logo_image_url,
       gallery_image_urls: source.gallery_image_urls ?? [],
       links: source.links ?? [],

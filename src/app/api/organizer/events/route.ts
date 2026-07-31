@@ -22,6 +22,8 @@ interface CreateEventBody {
   currency: string;
   category?: string;
   coverImageUrl?: string;
+  /** Cover width / height, measured client-side at upload. */
+  coverAspect?: number | null;
   logoImageUrl?: string;
   galleryImageUrls?: string[];
   links?: { label: string; url: string }[];
@@ -74,6 +76,7 @@ export async function POST(req: Request) {
       currency: body.currency,
       category: isValidCategory(body.category) ? body.category : "other",
       cover_image_url: body.coverImageUrl || null,
+      cover_aspect: body.coverAspect ?? null,
       logo_image_url: body.logoImageUrl || null,
       gallery_image_urls: body.galleryImageUrls ?? [],
       links: sanitizeLinks(body.links),

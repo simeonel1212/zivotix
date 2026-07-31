@@ -65,6 +65,8 @@ export interface EventRow {
   country: OrgCountry;
   currency: string;
   cover_image_url: string | null;
+  /** Cover's width / height, so the page can hug the image instead of cropping it. Null = unknown. */
+  cover_aspect: number | null;
   logo_image_url: string | null;
   gallery_image_urls: string[];
   links: EventLink[];
