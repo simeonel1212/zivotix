@@ -247,7 +247,8 @@ interface MembershipEmailArgs {
   to: string;
   memberName: string;
   qrToken: string;
-  credits: number;
+  /** Null on a period pass, which admits unlimited entry inside its dates. */
+  credits: number | null;
   expiresAt: string;
   passId: string;
 }
@@ -271,7 +272,11 @@ export async function sendMembershipEmail(args: MembershipEmailArgs) {
               <p style="margin:0;color:#ffffff;font-weight:700;font-size:13px;letter-spacing:0.04em;">ZIVOTIX</p>
               <h1 style="margin:10px 0 0;color:#ffffff;font-size:24px;line-height:1.25;">Your membership pass</h1>
               <p style="margin:12px 0 0;color:rgba(255,255,255,0.92);font-size:14px;">
-                ${args.credits} ${args.credits === 1 ? "entry" : "entries"} · valid until ${esc(
+                ${
+                  args.credits === null
+                    ? "Unlimited entry"
+                    : `${args.credits} ${args.credits === 1 ? "entry" : "entries"}`
+                } · valid until ${esc(
                   new Date(args.expiresAt).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })
                 )}
               </p>

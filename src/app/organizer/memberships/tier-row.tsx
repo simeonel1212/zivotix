@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { membershipShapeLabel } from "@/lib/memberships";
 import type { MembershipTier } from "@/lib/types";
 import TierForm from "./tier-form";
 
@@ -61,8 +62,8 @@ export default function TierRow({
             <p className="text-sm text-neutral-400 mt-1 line-clamp-2">{tier.description}</p>
           )}
           <p className="text-xs text-neutral-500 mt-2">
-            {tier.event_credits} {tier.event_credits === 1 ? "entry" : "entries"} · valid{" "}
-            {Math.round(tier.validity_days / 30)} months
+            {membershipShapeLabel(tier)}
+            {tier.kind === "credits" && ` · valid ${Math.round(tier.validity_days / 30)} months`}
             {memberCount > 0 &&
               ` · ${memberCount} ${memberCount === 1 ? "member" : "members"}`}
             {!tier.is_active && " · not on sale"}

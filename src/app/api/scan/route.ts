@@ -179,6 +179,11 @@ async function scanMembership(
 
   // Counter kept on the row so the pass page and the door can show credits
   // without counting rows. The check-ins table remains the source of truth.
+  //
+  // Still incremented on a period pass, even though nothing counts down from
+  // it: it's the organizer's attendance figure, and the unique constraint on
+  // (membership_id, event_id) is what actually stops a second entry to the
+  // same event. Unlimited means unlimited events, not unlimited entries to one.
   await supabase
     .from("memberships")
     .update({ credits_used: membership.credits_used + 1 })
@@ -188,7 +193,10 @@ async function scanMembership(
     result: "valid",
     isMembership: true,
     memberName: membership.member_name,
-    creditsLeft: state.creditsLeft - 1,
+    // Null on a period pass: the door needs "valid until March", not a
+    // counter that would read 0 and look like a refusal.
+    creditsLeft: state.creditsLeft === null ? null : state.creditsLeft - 1,
     creditsTotal: membership.credits_total,
+    expiresAt: membership.expires_at,
   });
 }

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { computeFees } from "@/lib/fees";
 import ApproxPrice from "@/components/approx-price";
 import { formatMoney } from "@/lib/currencies";
+import { membershipShapeLabel } from "@/lib/memberships";
 import type { MembershipTier } from "@/lib/types";
 
 // Passes for sale on an organizer's public page.
@@ -56,14 +57,18 @@ export default function MembershipTiers({
       <div>
         <h2 className="text-xl font-bold tracking-tight text-neutral-50">Become a member</h2>
         <p className="text-sm text-neutral-400 mt-1">
-          Buy your nights up front and use them whenever.
+          Pay once. Walk in whenever they're on.
         </p>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
         {tiers.map((tier) => {
           const fees = computeFees(tier.price, tier.currency, "pass");
-          const perEntry = Math.round((tier.price / tier.event_credits) * 100) / 100;
+          // Only meaningful on a punch card; a period pass has no per-entry price.
+          const perEntry =
+            tier.event_credits && tier.event_credits > 0
+              ? Math.round((tier.price / tier.event_credits) * 100) / 100
+              : null;
           const open = openId === tier.id;
 
           return (
@@ -84,11 +89,13 @@ export default function MembershipTiers({
                   className="text-xs"
                 />
                 <p className="mt-1 text-sm text-neutral-400">
-                  {tier.event_credits} {tier.event_credits === 1 ? "entry" : "entries"} ·{" "}
-                  {formatMoney(perEntry, tier.currency)} a night
+                  {membershipShapeLabel(tier)}
+                  {perEntry !== null && ` · ${formatMoney(perEntry, tier.currency)} a night`}
                 </p>
                 <p className="text-xs text-neutral-500 mt-0.5">
-                  Use them any time in the next {Math.round(tier.validity_days / 30)} months
+                  {tier.kind === "period"
+                    ? "Come to everything while it's running"
+                    : `Use them any time in the next ${Math.round(tier.validity_days / 30)} months`}
                 </p>
               </div>
 

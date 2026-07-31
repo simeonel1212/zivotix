@@ -36,7 +36,8 @@ export default async function OrganizerMembershipsPage() {
   const revenue = paid.reduce((sum, m) => sum + m.base_amount, 0);
   const active = paid.filter((m) => assessMembership(m).usable).length;
   const entriesUsed = paid.reduce((sum, m) => sum + m.credits_used, 0);
-  const entriesSold = paid.reduce((sum, m) => sum + m.credits_total, 0);
+  // Period passes contribute no entries — there's no number to add.
+  const entriesSold = paid.reduce((sum, m) => sum + (m.credits_total ?? 0), 0);
 
   return (
     <div className="max-w-3xl mx-auto space-y-10">
@@ -55,7 +56,7 @@ export default async function OrganizerMembershipsPage() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <Stat label="Members" value={String(paid.length)} />
           <Stat label="Still active" value={String(active)} />
-          <Stat label="Entries used" value={`${entriesUsed} / ${entriesSold}`} />
+          <Stat label="Entries used" value={entriesSold > 0 ? `${entriesUsed} / ${entriesSold}` : String(entriesUsed)} />
           <Stat
             label="Revenue"
             value={`${revenue.toLocaleString()} ${paid[0]?.base_currency ?? ""}`}
@@ -104,7 +105,9 @@ export default async function OrganizerMembershipsPage() {
                   <div className="flex items-center gap-4 shrink-0">
                     <div className="text-right">
                       <p className="text-sm font-semibold text-neutral-50 tabular-nums">
-                        {state.creditsLeft} / {m.credits_total}
+                        {state.creditsLeft === null
+                          ? "Unlimited"
+                          : `${state.creditsLeft} / ${m.credits_total}`}
                       </p>
                       <p className="text-xs text-neutral-500">
                         {state.usable

@@ -25,13 +25,44 @@ export default function MembershipUpsell({
   /** Lowest paid ticket on this event, for the per-night comparison. */
   cheapestTicket: number | null;
 }) {
-  if (!tiers.length) return null;
+  // The per-night comparison this whole block is built on only makes sense for
+  // a punch card. A period pass has no per-entry price to beat the ticket with,
+  // so it gets its own line rather than a misleading division.
+  const counted = tiers.filter((t) => t.kind === "credits" && (t.event_credits ?? 0) > 0);
+  const period = tiers.find((t) => t.kind === "period");
 
-  // Best value per entry, which is the tier worth leading with.
-  const best = tiers.reduce((a, b) =>
-    a.price / a.event_credits <= b.price / b.event_credits ? a : b
+  if (!counted.length) {
+    if (!period) return null;
+    const months = period.validity_months ?? Math.max(1, Math.round(period.validity_days / 30));
+    const periodTotal = computeFees(period.price, period.currency, "pass").total;
+    return (
+      <section className="zv-card p-6 sm:p-7">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-5">
+          <div className="flex-1">
+            <p className="text-xs font-semibold uppercase tracking-wider zv-gradient-text">
+              Coming regularly?
+            </p>
+            <h2 className="mt-1.5 text-lg font-bold text-neutral-50">
+              {formatMoney(periodTotal, period.currency)} for {months}{" "}
+              {months === 1 ? "month" : "months"}
+            </h2>
+            <p className="mt-1.5 text-sm text-neutral-400 leading-relaxed">
+              Unlimited entry to everything {organizerName ?? "this organizer"} runs while it&apos;s
+              valid. One code at the door, every time.
+            </p>
+          </div>
+          <Link href={`${organizerHref}#passes`} className="zv-btn-secondary text-sm shrink-0">
+            See passes
+          </Link>
+        </div>
+      </section>
+    );
+  }
+
+  const best = counted.reduce((a, b) =>
+    a.price / a.event_credits! <= b.price / b.event_credits! ? a : b
   );
-  const perEntry = Math.round((best.price / best.event_credits) * 100) / 100;
+  const perEntry = Math.round((best.price / best.event_credits!) * 100) / 100;
   const total = computeFees(best.price, best.currency, "pass").total;
   const saves = cheapestTicket !== null && perEntry < cheapestTicket;
 

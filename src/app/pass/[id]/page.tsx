@@ -46,7 +46,7 @@ export default async function PassPage({ params }: { params: Promise<{ id: strin
           to: membership.member_email,
           memberName: membership.member_name,
           qrToken: membership.qr_token,
-          credits: membership.credits_total,
+          credits: membership.credits_total ?? null,
           expiresAt: membership.expires_at,
           passId: membership.id,
         }).catch(() => {

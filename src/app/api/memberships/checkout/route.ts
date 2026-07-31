@@ -6,7 +6,7 @@ import { computeFees } from "@/lib/fees";
 import { initTransaction } from "@/lib/paystack";
 import { generateTicketToken } from "@/lib/qrcode";
 import { appUrl } from "@/lib/app-url";
-import { MEMBERSHIP_REFERENCE_PREFIX, expiryFromPurchase } from "@/lib/memberships";
+import { MEMBERSHIP_REFERENCE_PREFIX, expiryFromPurchase, expiryFromMonths } from "@/lib/memberships";
 import type { MembershipTier } from "@/lib/types";
 
 // Buying a membership pass.
@@ -83,9 +83,16 @@ export async function POST(req: Request) {
       // Issued now rather than on payment so the row is complete and the QR is
       // stable; the pass is unusable until status flips to active on payment.
       qr_token: generateTicketToken(),
-      credits_total: tier.event_credits,
+      // Null on a period pass — there is no counter, only a window.
+      credits_total: tier.kind === "period" ? null : tier.event_credits,
       credits_used: 0,
-      expires_at: expiryFromPurchase(tier.validity_days).toISOString(),
+      // Calendar months where the organizer sold months, so "3 months" bought
+      // on the 31st ends on the 30th or 28th rather than sliding into the
+      // month after.
+      expires_at: (tier.validity_months
+        ? expiryFromMonths(tier.validity_months)
+        : expiryFromPurchase(tier.validity_days)
+      ).toISOString(),
       // Not usable until paid. The door checks status, so an abandoned checkout
       // can never be scanned in.
       status: "cancelled",

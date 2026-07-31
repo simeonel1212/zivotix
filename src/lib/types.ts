@@ -191,6 +191,12 @@ export interface Payout {
 // A pass sells N event credits up front. The holder spends one credit per
 // event, at any event that organizer runs while the pass is valid.
 
+/**
+ * "credits" is a punch card — N entries, spend one per event.
+ * "period" is a gym membership — everything inside a window of months.
+ */
+export type MembershipKind = "credits" | "period";
+
 export interface MembershipTier {
   id: string;
   organizer_id: string;
@@ -198,9 +204,12 @@ export interface MembershipTier {
   description: string | null;
   price: number;
   currency: string;
-  /** How many events the pass admits. 1–12. */
-  event_credits: number;
-  /** How long the credits stay usable, from purchase. */
+  kind: MembershipKind;
+  /** How many events the pass admits. 1–12 on a credits pass, null on a period one. */
+  event_credits: number | null;
+  /** Whole months, on a period pass. Null on a credits pass. */
+  validity_months: number | null;
+  /** How long the pass stays usable, from purchase. */
   validity_days: number;
   is_active: boolean;
   created_at: string;
@@ -215,7 +224,8 @@ export interface Membership {
   member_name: string;
   member_email: string;
   qr_token: string;
-  credits_total: number;
+  /** Entries bought. Null on a period pass, which has no counter to run down. */
+  credits_total: number | null;
   credits_used: number;
   starts_at: string;
   expires_at: string;
