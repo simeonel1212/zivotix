@@ -115,7 +115,7 @@ export default async function EventsPage({
         </div>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+      <div className="zv-stagger grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {events?.map((event) => {
           const allPrices = event.ticket_types ?? [];
           const paidPrices = allPrices.map((tt) => tt.price).filter((p) => p > 0);

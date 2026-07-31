@@ -35,6 +35,12 @@
 
 html {
   color-scheme: light;
+  /* Anchor jumps and the sticky bar's "Get tickets" glide instead of teleport,
+     which is the difference between the page reacting and the page reloading.
+     Overridden back to auto under prefers-reduced-motion further down. */
+  scroll-behavior: smooth;
+  /* Stops the address bar collapse on iOS from tearing the fixed bottom bar. */
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
@@ -202,10 +208,6 @@ body::after {
   color: transparent;
 }
 
-.zv-glass {
-  background: #ffffff;
-}
-
 .zv-glow-orb {
   position: absolute;
   border-radius: 999px;
@@ -237,7 +239,87 @@ body::after {
   transform: translateY(0);
 }
 
+/* Children cascade in one after another instead of the whole grid snapping
+   into place at once. The eye reads a stagger as "this is arriving"; a
+   simultaneous fade reads as "the page was slow". Capped at the 12th child so
+   a long list never leaves the last card waiting seconds to appear. */
+.zv-stagger > * {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1), transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.zv-reveal-visible.zv-stagger > * {
+  opacity: 1;
+  transform: translateY(0);
+}
+.zv-stagger > *:nth-child(1)  { transition-delay: 0.00s }
+.zv-stagger > *:nth-child(2)  { transition-delay: 0.05s }
+.zv-stagger > *:nth-child(3)  { transition-delay: 0.10s }
+.zv-stagger > *:nth-child(4)  { transition-delay: 0.15s }
+.zv-stagger > *:nth-child(5)  { transition-delay: 0.20s }
+.zv-stagger > *:nth-child(6)  { transition-delay: 0.25s }
+.zv-stagger > *:nth-child(7)  { transition-delay: 0.30s }
+.zv-stagger > *:nth-child(8)  { transition-delay: 0.35s }
+.zv-stagger > *:nth-child(n + 9) { transition-delay: 0.4s }
+
+/* Touch devices never fire :hover, so every card and button on a phone felt
+   inert — nothing acknowledged the tap. These give the press itself a physical
+   response, which is most of what makes a web page feel like an app. */
+@media (hover: none) {
+  .zv-card-hover:active {
+    transform: scale(0.985);
+    transition-duration: 0.1s;
+  }
+  .zv-btn-primary:active,
+  .zv-btn-secondary:active {
+    transform: scale(0.96);
+  }
+}
+
+/* Frosted surface that picks up the page behind it instead of sitting on top
+   of it as an opaque slab. Deliberately only background + blur — the site
+   header wants a single bottom border and the floating buy bar wants a
+   rounded edge and a drop shadow, so each adds its own rather than sharing a
+   compromise neither of them looks right in.
+   The solid fallback matters: without backdrop-filter support this is still an
+   opaque bar, not unreadable text over a photo. */
+.zv-glass {
+  background: rgba(255, 255, 255, 0.98);
+}
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .zv-glass {
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+  }
+}
+
+/* The floating buy bar's own lift, kept off .zv-glass so the header doesn't
+   inherit a shadow it has no business having. */
+.zv-floating {
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 10px 36px -10px rgba(0, 0, 0, 0.28),
+    0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.zv-slide-up {
+  animation: zv-slide-up 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
 } /* end @layer components */
+
+@keyframes zv-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(120%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
 @keyframes zv-orb-float {
   0%, 100% {
@@ -292,9 +374,19 @@ body::after {
   .zv-pop-in {
     animation: none;
   }
-  .zv-reveal {
+  .zv-reveal,
+  .zv-stagger > * {
     transition: none;
+    transition-delay: 0s;
     opacity: 1;
     transform: none;
+  }
+  .zv-slide-up {
+    animation: none;
+  }
+  /* Jumping instantly is the point of asking for reduced motion; a smooth
+     scroll is still motion. */
+  html {
+    scroll-behavior: auto;
   }
 }

@@ -54,29 +54,33 @@ export default function StickyBuyBar({
 
   return (
     <div
-      className={`fixed inset-x-0 bottom-0 z-40 px-4 pb-4 pt-3 transition-all duration-300 sm:px-6 ${
-        visible ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-full opacity-0"
+      className={`fixed inset-x-0 bottom-0 z-40 px-4 pb-4 pt-3 sm:px-6 transition-[transform,opacity] duration-[450ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${
+        visible ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-[130%] opacity-0"
       }`}
       // Sits above the iOS home indicator rather than under it.
       style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}
     >
-      <div className="mx-auto flex max-w-3xl items-center justify-between gap-4 rounded-2xl bg-neutral-900/95 px-5 py-3.5 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.5)] backdrop-blur">
+      {/* Frosted rather than a black slab: a solid dark bar reads as a browser
+          chrome element bolted onto the page, while glass keeps the flyer
+          visible through it and belongs to the same design as the cards. */}
+      <div className="zv-glass zv-floating mx-auto flex max-w-3xl items-center justify-between gap-4 rounded-[1.5rem] px-5 py-3">
         <div className="min-w-0">
           {isFree ? (
-            <p className="text-sm font-bold text-emerald-400">Free entry</p>
+            <p className="text-base font-bold text-emerald-600">Free entry</p>
           ) : fromPrice !== null ? (
             <>
-              <p className="text-[11px] uppercase tracking-wider text-neutral-400">From</p>
-              <p className="text-base font-bold text-white">{formatMoney(fromPrice, currency)}</p>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">
+                From
+              </p>
+              <p className="text-lg font-bold zv-gradient-text leading-tight">
+                {formatMoney(fromPrice, currency)}
+              </p>
             </>
           ) : (
-            <p className="text-sm font-semibold text-white">Tickets</p>
+            <p className="text-base font-bold text-neutral-900">Tickets</p>
           )}
         </div>
-        <button
-          onClick={jump}
-          className="shrink-0 rounded-full bg-white px-6 py-2.5 text-sm font-bold text-neutral-900 transition-colors hover:bg-neutral-200"
-        >
+        <button onClick={jump} className="zv-btn-primary shrink-0 text-sm">
           Get tickets
         </button>
       </div>
