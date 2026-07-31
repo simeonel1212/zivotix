@@ -201,6 +201,50 @@ body::after {
   font-weight: 600;
 }
 
+/* ---------- Type scale ----------
+   Headings were set ad-hoc at each call site and had drifted small — section
+   titles at text-2xl on a marketing page read as a subheading, not a section.
+   Defining the scale once means every page gets the same rhythm and a change
+   here changes the whole site instead of eleven files.
+
+   Poppins is geometric, so it wants negative tracking as it gets bigger — at
+   display sizes the default letter spacing looks slack. 800 rather than 700:
+   the extra weight is already being loaded and it's what gives the big-bold
+   look its density. */
+.zv-display {
+  font-size: clamp(2.75rem, 8vw, 5rem);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 1.02;
+}
+
+.zv-h1 {
+  font-size: clamp(2rem, 5.5vw, 3.25rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.06;
+}
+
+.zv-h2 {
+  font-size: clamp(1.65rem, 4vw, 2.5rem);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+}
+
+.zv-lead {
+  font-size: clamp(1rem, 1.6vw, 1.175rem);
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.zv-eyebrow {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
 .zv-gradient-text {
   background: linear-gradient(135deg, var(--accent-from), var(--accent-to));
   -webkit-background-clip: text;

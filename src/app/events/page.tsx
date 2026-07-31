@@ -62,8 +62,8 @@ export default async function EventsPage({
       </div>
       <div className="mb-8 relative z-10 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
         <div>
-          <h1 className="text-4xl font-bold tracking-tight text-neutral-900">Upcoming events</h1>
-          <p className="mt-2 text-neutral-500">
+          <h1 className="zv-h1 text-neutral-900">Upcoming events</h1>
+          <p className="zv-lead mt-3">
             {activeCountry
               ? `What's on in ${countryLabel(activeCountry)}.`
               : "Find something happening near you, or anywhere else."}

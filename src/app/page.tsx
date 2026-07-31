@@ -110,10 +110,10 @@ export default async function HomePage() {
           <div className="absolute inset-0 bg-gradient-to-b from-black/75 via-black/60 to-black/75" />
 
           <div className="relative z-10 mx-auto max-w-2xl">
-            <h1 className="text-4xl sm:text-6xl font-bold tracking-tight leading-[1.08]">
+            <h1 className="zv-display">
               Where <span className="zv-gradient-text">unforgettable events</span> come to life.
             </h1>
-            <p className="mt-5 mx-auto max-w-lg text-neutral-200">
+            <p className="mt-6 mx-auto max-w-lg text-lg text-neutral-200 leading-relaxed">
               Zivotix helps organizers create, promote, and sell tickets, while giving you a seamless
               way to discover experiences worth showing up for.
             </p>
@@ -158,84 +158,11 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ---------- Community: the sell, up front ---------- */}
-      {recentPosts && recentPosts.length > 0 && (
-        <ScrollReveal className="mx-auto max-w-6xl px-6 pt-16 block">
-          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 sm:gap-4 mb-5">
-            <div>
-              <h2 className="text-xl sm:text-2xl font-bold text-neutral-900">
-                Don&apos;t just buy tickets, be part of the community
-              </h2>
-              <p className="text-sm text-neutral-500 mt-1">
-                Relive the memories, react to what&apos;s next, and connect with people who were there.
-              </p>
-            </div>
-            <Link href="/community" className="text-sm font-medium zv-gradient-text shrink-0">
-              Join the community →
-            </Link>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-            {recentPosts.map((post) => {
-              const likes = post.post_reactions.filter((r) => r.reaction === "like").length;
-              const commentCount = post.post_comments.length;
-              const businessName = post.organizers?.business_name ?? "An organizer";
-              return (
-                <div key={post.id} className="zv-card zv-card-hover p-5 flex flex-col">
-                  <Link
-                    href={`/community/${post.organizer_id}`}
-                    className="text-xs font-semibold uppercase tracking-wide zv-gradient-text hover:underline w-fit flex items-center gap-1"
-                  >
-                    {businessName}
-                    {post.organizers?.is_verified && <VerifiedBadge />}
-                  </Link>
-                  <p className="text-sm text-neutral-800 whitespace-pre-wrap mt-1.5 line-clamp-3">{post.body}</p>
-                  {post.image_urls.length > 0 && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={post.image_urls[0]} alt="" className="mt-3 w-full rounded-2xl object-cover aspect-[16/9]" />
-                  )}
-                  <div className="flex items-center justify-between mt-4 pt-3 border-t border-neutral-100">
-                    <span className="text-xs text-neutral-400">
-                      👍 {likes} · 💬 {commentCount}
-                    </span>
-                    <Link href={`/community/${post.organizer_id}`} className="text-xs font-semibold zv-gradient-text">
-                      Get tickets →
-                    </Link>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </ScrollReveal>
-      )}
-
-      {/* ---------- Why Zivotix ---------- */}
-      <ScrollReveal className="mx-auto max-w-6xl px-6 pt-16 block">
-        <h2 className="text-2xl font-bold text-neutral-900 mb-5">Why Zivotix</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {FEATURES.map((f) => (
-            <div key={f.title} className="zv-card p-5">
-              <svg
-                width="22"
-                height="22"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                className="text-yellow-600 mb-3"
-                aria-hidden="true"
-              >
-                {f.icon}
-              </svg>
-              <h3 className="font-semibold text-sm text-neutral-900">{f.title}</h3>
-              <p className="text-xs text-neutral-500 mt-1.5 leading-relaxed">{f.body}</p>
-            </div>
-          ))}
-        </div>
-      </ScrollReveal>
-
-      {/* ---------- Events grid ---------- */}
-      <ScrollReveal className="mx-auto max-w-6xl px-6 pt-16 pb-24 block">
-        <h2 className="text-2xl font-bold text-neutral-900 mb-5">Tickets on sale now</h2>
+            {/* ---------- Tickets, straight after the hero ----------
+          A marketplace that makes you scroll past three pitch sections to
+          reach its inventory is asking a visitor to take its word for it. */}
+      <ScrollReveal className="mx-auto max-w-6xl px-6 pt-14 block">
+        <h2 className="zv-h2 text-neutral-900 mb-6">Tickets on sale now</h2>
         {(!events || events.length === 0) ? (
           <div className="zv-card p-16 text-center">
             <p className="text-neutral-400">No events on sale right now. Check back soon.</p>
@@ -311,13 +238,99 @@ export default async function HomePage() {
         )}
       </ScrollReveal>
 
-      {/* Below the events, not above them: the homepage's first job is to show
-          a visitor something worth buying. The pitch to organizers works
-          harder once they've seen the platform actually has events on it. */}
-      <ScrollReveal className="mx-auto max-w-6xl px-6 pt-20 space-y-6">
+      {/* ---------- Community ----------
+          After the tickets, not before. Someone who has just seen eight real
+          events is ready to hear that there's a room behind them; someone who
+          landed thirty seconds ago is not. */}
+      {recentPosts && recentPosts.length > 0 && (
+        <ScrollReveal className="mx-auto max-w-6xl px-6 pt-16 block">
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 sm:gap-4 mb-5">
+            <div>
+              <h2 className="zv-h2 text-neutral-900">
+                Don&apos;t just buy tickets, be part of the community
+              </h2>
+              <p className="text-sm text-neutral-500 mt-1">
+                Relive the memories, react to what&apos;s next, and connect with people who were there.
+              </p>
+            </div>
+            {/* A full button, not the text link this used to be. It's the one
+                place on the homepage asking for something other than a
+                purchase, and a 14px gradient link next to a section heading
+                loses that argument every time. */}
+            <Link
+              href="/community"
+              className="zv-btn-primary shrink-0 w-full sm:w-auto justify-center text-base px-8 py-4"
+            >
+              Join the community
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+            {recentPosts.map((post) => {
+              const likes = post.post_reactions.filter((r) => r.reaction === "like").length;
+              const commentCount = post.post_comments.length;
+              const businessName = post.organizers?.business_name ?? "An organizer";
+              return (
+                <div key={post.id} className="zv-card zv-card-hover p-5 flex flex-col">
+                  <Link
+                    href={`/community/${post.organizer_id}`}
+                    className="text-xs font-semibold uppercase tracking-wide zv-gradient-text hover:underline w-fit flex items-center gap-1"
+                  >
+                    {businessName}
+                    {post.organizers?.is_verified && <VerifiedBadge />}
+                  </Link>
+                  <p className="text-sm text-neutral-800 whitespace-pre-wrap mt-1.5 line-clamp-3">{post.body}</p>
+                  {post.image_urls.length > 0 && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={post.image_urls[0]} alt="" className="mt-3 w-full rounded-2xl object-cover aspect-[16/9]" />
+                  )}
+                  <div className="flex items-center justify-between mt-4 pt-3 border-t border-neutral-100">
+                    <span className="text-xs text-neutral-400">
+                      👍 {likes} · 💬 {commentCount}
+                    </span>
+                    <Link href={`/community/${post.organizer_id}`} className="text-xs font-semibold zv-gradient-text">
+                      Get tickets →
+                    </Link>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </ScrollReveal>
+      )}
+
+<ScrollReveal className="mx-auto max-w-6xl px-6 pt-16 block">
+        <h2 className="zv-h2 text-neutral-900 mb-6">Why Zivotix</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {FEATURES.map((f) => (
+            <div key={f.title} className="zv-card p-5">
+              <svg
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                className="text-yellow-600 mb-3"
+                aria-hidden="true"
+              >
+                {f.icon}
+              </svg>
+              <h3 className="font-semibold text-sm text-neutral-900">{f.title}</h3>
+              <p className="text-xs text-neutral-500 mt-1.5 leading-relaxed">{f.body}</p>
+            </div>
+          ))}
+        </div>
+      </ScrollReveal>
+
+      {/* ---------- The pitch to organizers ----------
+          Last. Everything above it is evidence: real events on sale, a real
+          community reacting to them. The argument for hosting lands harder
+          after the proof than before it. */}
+      <ScrollReveal className="mx-auto max-w-6xl px-6 pt-16 space-y-6">
         <BuiltFor />
         <FeeComparison />
       </ScrollReveal>
+
     </main>
   );
 }

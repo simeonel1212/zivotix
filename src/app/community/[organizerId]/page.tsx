@@ -125,7 +125,7 @@ export default async function OrganizerProfilePage({
             {organizer.business_name.slice(0, 1).toUpperCase()}
           </div>
           <div className="min-w-0">
-            <h1 className="text-2xl font-bold text-neutral-900 flex items-center gap-2">
+            <h1 className="zv-h1 text-neutral-900 flex items-center gap-2">
               {organizer.business_name}
               {organizer.is_verified && <VerifiedBadge />}
             </h1>

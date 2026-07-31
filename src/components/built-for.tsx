@@ -50,7 +50,7 @@ export default function BuiltFor() {
 
   return (
     <section className="zv-card p-7 sm:p-10">
-      <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-900">Built for</h2>
+      <h2 className="zv-h2 text-neutral-900">Built for</h2>
 
       {/* Scrolls sideways rather than wrapping: four labels this long stack
           into three ragged rows on a phone and stop reading as a control. */}
@@ -75,7 +75,7 @@ export default function BuiltFor() {
 
       <div className="mt-7 grid gap-6 sm:grid-cols-[1.3fr_1fr] sm:items-start">
         <div>
-          <h3 className="text-xl sm:text-2xl font-bold text-neutral-900">{seg.headline}</h3>
+          <h3 className="zv-h2 text-neutral-900" style={{ fontSize: "clamp(1.35rem, 3vw, 1.9rem)" }}>{seg.headline}</h3>
           <p className="mt-2.5 text-neutral-500 leading-relaxed">{seg.body}</p>
           <Link href="/organizer/events/new" className="zv-btn-primary text-sm mt-6 inline-flex">
             Create your event

@@ -50,10 +50,10 @@ export default function FeeComparison() {
   return (
     <section className="zv-card p-7 sm:p-10">
       <div className="max-w-xl">
-        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-900">
+        <h2 className="zv-h2 text-neutral-900">
           {Math.round(ngnRate * 100)}% in Nigeria. {Math.round(usdRate * 100)}% everywhere else.
         </h2>
-        <p className="mt-2 text-neutral-500">
+        <p className="zv-lead mt-3">
           No monthly fee, no listing fee, and no fixed charge stapled onto every ticket. Buyers see
           the fee before they pay, and you keep your full ticket price.
         </p>
