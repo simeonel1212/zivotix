@@ -19,6 +19,7 @@ export default async function OrganizerLayout({ children }: { children: React.Re
   const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
 
   const links = [
+    { href: "/organizer/account", label: "Account", icon: "account" },
     { href: "/organizer/dashboard", label: "Dashboard", icon: "home" },
     { href: "/organizer/analytics", label: "Analytics", icon: "chart" },
     { href: "/organizer/events", label: "My events", icon: "ticket" },
@@ -30,7 +31,6 @@ export default async function OrganizerLayout({ children }: { children: React.Re
     { href: "/organizer/memberships", label: "Memberships", icon: "star" },
     { href: "/organizer/merch", label: "Merch", icon: "bag" },
     { href: "/organizer/settings", label: "Payout details", icon: "card" },
-    { href: "/organizer/account", label: "Account", icon: "account" },
     ...(profile?.role === "admin" ? [{ href: "/admin/payouts", label: "Platform admin", icon: "shield" }] : []),
   ];
 
