@@ -3,13 +3,14 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
-import type { EventRow, TicketType, MembershipTier } from "@/lib/types";
+import type { EventRow, TicketType, MembershipTier, MerchProduct } from "@/lib/types";
 import { googleMapsUrl, googleMapsEmbedUrl } from "@/lib/maps";
 import { appUrl } from "@/lib/app-url";
 import { buyerDisplayCurrency } from "@/lib/geo";
 import VerifiedBadge from "@/components/verified-badge";
 import ShareButton from "@/components/share-button";
 import MembershipUpsell from "@/components/membership-upsell";
+import MerchStrip from "@/components/merch-strip";
 import ExpandableText from "@/components/expandable-text";
 import StickyBuyBar from "./sticky-buy-bar";
 import TicketSelector from "./ticket-selector";
@@ -110,6 +111,17 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
     .eq("is_active", true)
     .order("price", { ascending: true })
     .returns<MembershipTier[]>();
+
+  // Merch this organizer sells, shown under the ticket selector for the same
+  // reason the pass upsell is there: buyers arrive from a shared event link and
+  // never see the profile.
+  const { data: merch } = await createServiceClient()
+    .from("merch_products")
+    .select("*")
+    .eq("organizer_id", event.organizer_id)
+    .eq("is_active", true)
+    .order("price", { ascending: true })
+    .returns<MerchProduct[]>();
 
   // Resolved from the request's IP country, not the browser's language.
   const detectedCurrency = await buyerDisplayCurrency();
@@ -368,6 +380,12 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
           almost everyone. Placed below the ticket selector deliberately: the
           person came for this night, and the pass is the upsell after they've
           seen the price, not a distraction before it. */}
+      <MerchStrip
+        products={merch ?? []}
+        organizerHref={organizerHref}
+        organizerName={organizer?.business_name ?? null}
+      />
+
       {event.members_included && (membershipTiers ?? []).length > 0 && (
         <MembershipUpsell
           tiers={membershipTiers ?? []}

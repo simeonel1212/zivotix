@@ -18,46 +18,6 @@ type PostWithOrganizer = OrganizerPost & {
   post_comments: { id: string }[];
 };
 
-const FEATURES = [
-  {
-    icon: (
-      <path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" strokeLinecap="round" strokeLinejoin="round" />
-    ),
-    title: "Instant QR tickets",
-    body: "Buy in seconds. Your ticket lands in your inbox immediately, no waiting on a confirmation email.",
-  },
-  {
-    icon: (
-      <path d="M12 2l8 3v6c0 5-3.4 8.4-8 11-4.6-2.6-8-6-8-11V5l8-3z" strokeLinecap="round" strokeLinejoin="round" />
-    ),
-    title: "Payments you can trust",
-    body: "Checkout runs through Paystack. Your card details never touch our servers.",
-  },
-  {
-    icon: (
-      <>
-        <circle cx="9" cy="8" r="3" />
-        <path d="M2.5 19c0-3 3-5.5 6.5-5.5s6.5 2.5 6.5 5.5" strokeLinecap="round" />
-        <circle cx="17.5" cy="8.5" r="2.2" />
-        <path d="M15.5 13.3c2.7.3 5 2.4 5 5.7" strokeLinecap="round" />
-      </>
-    ),
-    title: "See it before you buy it",
-    body: "Real posts and reactions from ticket holders, public for anyone to browse before they commit.",
-  },
-  {
-    icon: (
-      <path
-        d="M12 3l1.8 4.2L18 9l-4.2 1.8L12 15l-1.8-4.2L6 9l4.2-1.8L12 3z M19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9L19 15z"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    ),
-    title: "Built for organizers too",
-    body: "AI-assisted event write-ups, fast payouts, and door-staff scanning tools, so organizers spend less time on admin.",
-  },
-];
-
 // Landing page: a slim hero with the value prop spelled out, a trust strip,
 // the community feed as social proof (the pitch — see real reactions from
 // real ticket holders before you commit), a quick "why Zivotix" rundown,
@@ -259,30 +219,6 @@ export default async function HomePage() {
           </div>
         </ScrollReveal>
       )}
-
-<ScrollReveal className="mx-auto max-w-6xl px-6 pt-16 block">
-        <h2 className="zv-h2 text-neutral-50 mb-6">Why Zivotix</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {FEATURES.map((f) => (
-            <div key={f.title} className="zv-card p-5">
-              <svg
-                width="22"
-                height="22"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                className="text-yellow-600 mb-3"
-                aria-hidden="true"
-              >
-                {f.icon}
-              </svg>
-              <h3 className="font-semibold text-sm text-neutral-50">{f.title}</h3>
-              <p className="text-xs text-neutral-400 mt-1.5 leading-relaxed">{f.body}</p>
-            </div>
-          ))}
-        </div>
-      </ScrollReveal>
 
       {/* ---------- The pitch to organizers ----------
           Last. Everything above it is evidence: real events on sale, a real
