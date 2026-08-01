@@ -296,25 +296,43 @@ body::after {
 /* Children cascade in one after another instead of the whole grid snapping
    into place at once. The eye reads a stagger as "this is arriving"; a
    simultaneous fade reads as "the page was slow". Capped at the 12th child so
-   a long list never leaves the last card waiting seconds to appear. */
+   a long list never leaves the last card waiting seconds to appear.
+
+   Driven by an animation rather than a transition, and deliberately so. The
+   transition version set opacity:0 in the base rule and waited for a
+   .zv-reveal-visible class that only <ScrollReveal> adds — so the events grid,
+   which was never wrapped in one, rendered eight cards at full size and zero
+   opacity. Invisible, unclickable, and taking up the space where the events
+   should be. Anyone with prefers-reduced-motion switched on saw them fine,
+   because that block forces opacity back to 1, which is what made it look like
+   a device-specific bug.
+   The fix is that the hidden state now lives *inside* the animation, using
+   fill-mode `both`. If the animation never runs — no JS, an old engine, a
+   stylesheet that half-loaded — the base style applies and the cards are
+   simply visible. Fails open, not closed. */
 .zv-stagger > * {
-  opacity: 0;
-  transform: translateY(18px);
-  transition: opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1), transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  animation: zv-stagger-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
-.zv-reveal-visible.zv-stagger > * {
-  opacity: 1;
-  transform: translateY(0);
+.zv-stagger > *:nth-child(1)  { animation-delay: 0.00s }
+.zv-stagger > *:nth-child(2)  { animation-delay: 0.05s }
+.zv-stagger > *:nth-child(3)  { animation-delay: 0.10s }
+.zv-stagger > *:nth-child(4)  { animation-delay: 0.15s }
+.zv-stagger > *:nth-child(5)  { animation-delay: 0.20s }
+.zv-stagger > *:nth-child(6)  { animation-delay: 0.25s }
+.zv-stagger > *:nth-child(7)  { animation-delay: 0.30s }
+.zv-stagger > *:nth-child(8)  { animation-delay: 0.35s }
+.zv-stagger > *:nth-child(n + 9) { animation-delay: 0.4s }
+
+@keyframes zv-stagger-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
-.zv-stagger > *:nth-child(1)  { transition-delay: 0.00s }
-.zv-stagger > *:nth-child(2)  { transition-delay: 0.05s }
-.zv-stagger > *:nth-child(3)  { transition-delay: 0.10s }
-.zv-stagger > *:nth-child(4)  { transition-delay: 0.15s }
-.zv-stagger > *:nth-child(5)  { transition-delay: 0.20s }
-.zv-stagger > *:nth-child(6)  { transition-delay: 0.25s }
-.zv-stagger > *:nth-child(7)  { transition-delay: 0.30s }
-.zv-stagger > *:nth-child(8)  { transition-delay: 0.35s }
-.zv-stagger > *:nth-child(n + 9) { transition-delay: 0.4s }
 
 /* Touch devices never fire :hover, so every card and button on a phone felt
    inert — nothing acknowledged the tap. These give the press itself a physical
@@ -539,10 +557,18 @@ body::after {
   .zv-pop-in {
     animation: none;
   }
-  .zv-reveal,
-  .zv-stagger > * {
+  .zv-reveal {
     transition: none;
     transition-delay: 0s;
+    opacity: 1;
+    transform: none;
+  }
+  /* Cancels the animation, not a transition — the stagger stopped being a
+     transition when it was made fail-open. Leaving the old rule here would
+     have silently stopped resetting anything. */
+  .zv-stagger > * {
+    animation: none;
+    animation-delay: 0s;
     opacity: 1;
     transform: none;
   }
