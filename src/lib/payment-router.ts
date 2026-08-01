@@ -39,39 +39,60 @@ export type PaymentRoute = {
   | { provider: "flutterwave"; chargeCurrency: string }
 );
 
-export function resolvePaymentRoute(eventCurrency: string): PaymentRoute {
+// Every route worth trying for this currency, best first.
+//
+// A chain rather than a single answer, because the failure modes are ordered.
+// Charging a Thai buyer in baht is ideal; dollars is a fair second; naira is a
+// last resort that still takes the money. Collapsing that into one guess is
+// what made the allowlist dangerous to edit — get it wrong and buyers fell all
+// the way to naira. With a chain, an optimistic entry costs one wasted API
+// call, so the list can be widened without betting the checkout on it.
+export function routeChain(eventCurrency: string): PaymentRoute[] {
   const currency = (eventCurrency || "NGN").toUpperCase();
+  const naira: PaymentRoute = {
+    provider: "paystack",
+    chargeCurrency: "NGN",
+    reason: "naira settles on Paystack",
+  };
 
-  if (currency === "NGN") {
-    return { provider: "paystack", chargeCurrency: "NGN", reason: "naira settles on Paystack" };
-  }
+  if (currency === "NGN") return [naira];
 
-  // Not configured yet — FLUTTERWAVE_SECRET_KEY absent. Everything keeps
-  // working the way it does today rather than erroring, which is the point:
-  // turning Flutterwave on is a deliberate act, not a side effect of a deploy.
+  // Not configured — FLUTTERWAVE_SECRET_KEY absent. Everything keeps working
+  // the way it does today rather than erroring: turning Flutterwave on is a
+  // deliberate act, not a side effect of a deploy.
   if (!flutterwaveV3Configured()) {
-    return {
-      provider: "paystack",
-      chargeCurrency: "NGN",
-      reason: "Flutterwave not configured; converting to naira",
-    };
+    return [{ ...naira, reason: "Flutterwave not configured; converting to naira" }];
   }
+
+  const chain: PaymentRoute[] = [];
 
   if (flutterwaveCollects(currency)) {
-    return {
+    chain.push({
       provider: "flutterwave",
       chargeCurrency: currency,
       reason: "Flutterwave collects this currency directly",
-    };
+    });
   }
 
-  // THB, INR, AED and friends: priced locally, charged in dollars. Still an
-  // improvement on naira, where the buyer's bank converts a second time.
-  return {
-    provider: "flutterwave",
-    chargeCurrency: "USD",
-    reason: `Flutterwave does not collect ${currency}; charging in USD`,
-  };
+  // Dollars: the buyer's bank converts once, at its own rate, from a currency
+  // it understands. Applies to THB, INR, AED and anything else Flutterwave
+  // won't take natively.
+  if (currency !== "USD") {
+    chain.push({
+      provider: "flutterwave",
+      chargeCurrency: "USD",
+      reason: `charging in USD; Flutterwave did not take ${currency}`,
+    });
+  }
+
+  chain.push({ ...naira, reason: "fell back to naira after Flutterwave refused" });
+  return chain;
+}
+
+// The single best route. Kept for callers that only need to display a decision
+// rather than execute one.
+export function resolvePaymentRoute(eventCurrency: string): PaymentRoute {
+  return routeChain(eventCurrency)[0];
 }
 
 // Currency → what a card will actually be billed in, for a set of prices.
@@ -88,12 +109,9 @@ export function chargeCurrencyMap(currencies: string[]): Record<string, string> 
   return map;
 }
 
-// The route to use when the preferred one fails at init.
-//
-// Every non-NGN charge has exactly one proven fallback: naira on Paystack.
-// It is not the nicest experience — the buyer's bank converts back at its own
-// rate — but it is the only path with a completed payment behind it, and a
-// worse rate beats a checkout that cannot take money at all.
+// The last resort, and the only route with completed payments behind it.
+// Not the nicest experience — the buyer's bank converts back at its own rate —
+// but a worse rate beats a checkout that cannot take money at all.
 export function fallbackRoute(): PaymentRoute {
   return {
     provider: "paystack",

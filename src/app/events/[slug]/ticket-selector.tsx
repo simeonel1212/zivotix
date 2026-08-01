@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { EventRow, TicketType } from "@/lib/types";
 import { computeFees, type FeeMode } from "@/lib/fees";
 import { formatMoney } from "@/lib/currencies";
+import ChargePreview from "@/components/charge-preview";
 
 // Checkout is a single button. Paystack's hosted page presents card and
 // Apple Pay itself (both approved on this account), so there's no separate
@@ -14,11 +15,18 @@ export default function TicketSelector({
   event,
   ticketTypes,
   feeMode = "pass",
+  chargeCurrency,
 }: {
   event: EventRow;
   ticketTypes: TicketType[];
   /** "absorb" means the organizer covers the fee and the buyer pays the listed price flat. */
   feeMode?: FeeMode;
+  /**
+   * What the card is actually billed in, decided server-side by the payment
+   * router. Passed in rather than derived here: the answer depends on which
+   * processor is configured, which a client component cannot know.
+   */
+  chargeCurrency: string;
 }) {
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [buyer, setBuyer] = useState({ name: "", email: "" });
@@ -268,13 +276,20 @@ export default function TicketSelector({
                 ? "Free"
                 : "—"}
           </span>
-          {/* No conversion line here any more. It existed to explain a jump
-              from ฿535 on this page to ₦21,773 on Paystack's — a jump that
-              only happened because naira was the only currency the account
-              could take. Flutterwave charges foreign cards in the event's own
-              currency or in dollars, so the alarming version of that jump is
-              gone, and the exact amount is stated on the payment page before
-              any card is entered. */}
+          {/* The amount the card is billed, when that isn't the currency the
+              organizer priced in. Renders nothing when they match, so a
+              Nigerian event stays a single clean figure. */}
+          {total > 0 && chargeCurrency !== event.currency && (
+            <>
+              {" "}
+              <ChargePreview
+                amount={total}
+                from={event.currency}
+                to={chargeCurrency}
+                className="text-sm font-medium text-neutral-400"
+              />
+            </>
+          )}
         </p>
         <div className="flex flex-col gap-2 w-full sm:w-auto">
           <button onClick={() => handleCheckout()} disabled={loading || ticketCount === 0} className="zv-btn-primary shrink-0 w-full sm:w-auto">

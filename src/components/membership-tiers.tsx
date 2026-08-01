@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { computeFees } from "@/lib/fees";
 import { formatMoney } from "@/lib/currencies";
+import ChargePreview from "@/components/charge-preview";
 import { membershipShapeLabel } from "@/lib/memberships";
 import type { MembershipTier } from "@/lib/types";
 
@@ -13,8 +14,11 @@ import type { MembershipTier } from "@/lib/types";
 // single night should see the season option before they decide.
 export default function MembershipTiers({
   tiers,
+  chargeCurrencies = {},
 }: {
   tiers: MembershipTier[];
+  /** Tier currency → what the card is billed in, decided server-side. */
+  chargeCurrencies?: Record<string, string>;
 }) {
   const [openId, setOpenId] = useState<string | null>(null);
   const [buyer, setBuyer] = useState({ name: "", email: "" });
@@ -78,6 +82,12 @@ export default function MembershipTiers({
                 <p className="text-2xl font-bold text-neutral-50">
                   {formatMoney(fees.total, tier.currency)}
                 </p>
+                <ChargePreview
+                  amount={fees.total}
+                  from={tier.currency}
+                  to={chargeCurrencies[tier.currency] ?? tier.currency}
+                  className="block text-xs text-neutral-500"
+                />
                 <p className="mt-1 text-sm text-neutral-400">
                   {membershipShapeLabel(tier)}
                   {perEntry !== null && ` · ${formatMoney(perEntry, tier.currency)} a night`}

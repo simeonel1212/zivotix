@@ -22,17 +22,24 @@
 
 const FLW_V3_BASE = "https://api.flutterwave.com/v3";
 
-// Currencies Flutterwave can actually collect in.
+// Currencies worth *attempting* to collect in.
 //
-// Deliberately a conservative allowlist rather than "whatever the event is
-// priced in". Flutterwave's API accepts a 163-currency enum, but the enum
-// describes the API, not this merchant account — and mistaking the first for
-// the second is precisely what caused the outage. Anything not on this list
-// converts to USD, and if USD itself isn't enabled the router falls back to
-// Paystack in naira.
+// Note "attempting". Flutterwave's API accepts a 163-currency enum, but the
+// enum describes the API, not this merchant account — mistaking the first for
+// the second is precisely what caused the 1 August outage. So this list is not
+// a claim about what the account can do; it's a list of first guesses.
 //
-// THB is absent on purpose: Flutterwave does not collect Thai baht, so a
-// Bangkok event settles in USD either way.
+// What makes an optimistic guess safe is the route chain in payment-router.ts:
+// if Flutterwave refuses the currency, the charge is retried in USD, and only
+// if that also fails does it fall to naira on Paystack. A wrong entry here
+// costs one wasted API call, not a broken checkout.
+//
+// THB is deliberately absent. Baht was briefly on this list to find out
+// whether the account could take it, but dollars is the better buyer
+// experience regardless: it's a currency every card issuer understands and
+// converts cleanly, and the amount is shown in USD at checkout before anyone
+// commits. A Thai event is therefore charged in USD by design, not by
+// omission.
 const FLW_COLLECTABLE = new Set([
   "NGN",
   "USD",

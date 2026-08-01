@@ -1,6 +1,6 @@
 import { test, describe, beforeEach, afterEach } from "node:test";
 import assert from "node:assert/strict";
-import { resolvePaymentRoute, fallbackRoute } from "../payment-router.ts";
+import { resolvePaymentRoute, routeChain, fallbackRoute } from "../payment-router.ts";
 import { flutterwaveCollects, flutterwaveV3Configured } from "../flutterwave-v3.ts";
 import { WORLD_CURRENCIES } from "../currencies.ts";
 
@@ -59,13 +59,43 @@ describe("with Flutterwave switched on", () => {
     assert.equal(route.chargeCurrency, "GBP");
   });
 
-  test("baht is charged in dollars, not baht", () => {
-    // Flutterwave does not collect THB. Pricing an event in baht and assuming
-    // the processor can take baht is the same class of error as the outage.
+  test("baht is charged in dollars, and naira is only ever the last resort", () => {
+    // THB is deliberately not on the collectable list: dollars is a currency
+    // every issuer converts cleanly, and the USD figure is shown at checkout
+    // before the buyer commits. Naira stays in the chain but underneath.
     assert.equal(flutterwaveCollects("THB"), false);
-    const route = resolvePaymentRoute("THB");
-    assert.equal(route.provider, "flutterwave");
-    assert.equal(route.chargeCurrency, "USD");
+    const chain = routeChain("THB");
+    assert.deepEqual(
+      chain.map((r) => `${r.provider}:${r.chargeCurrency}`),
+      ["flutterwave:USD", "paystack:NGN"]
+    );
+  });
+
+  test("a currency Flutterwave takes natively still has dollars beneath it", () => {
+    const chain = routeChain("GBP");
+    assert.equal(chain[0].chargeCurrency, "GBP");
+    assert.equal(chain[1].chargeCurrency, "USD");
+    assert.equal(chain[chain.length - 1].provider, "paystack");
+  });
+
+  test("dollars are never attempted twice", () => {
+    // USD is both the preferred route and the intermediate fallback, so a
+    // naive chain would retry the identical request after it just failed.
+    const chain = routeChain("USD");
+    const usd = chain.filter((r) => r.chargeCurrency === "USD");
+    assert.equal(usd.length, 1);
+  });
+
+  test("naira is always the last resort and never the first", () => {
+    for (const currency of WORLD_CURRENCIES) {
+      const chain = routeChain(currency);
+      const last = chain[chain.length - 1];
+      assert.equal(last.provider, "paystack");
+      assert.equal(last.chargeCurrency, "NGN");
+      if (currency !== "NGN") {
+        assert.equal(chain[0].provider, "flutterwave", `${currency} should try Flutterwave first`);
+      }
+    }
   });
 
   test("no currency is ever routed to a processor in a currency it can't take", () => {

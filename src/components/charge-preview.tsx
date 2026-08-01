@@ -1,16 +1,51 @@
-// Intentionally empty.
+"use client";
+
+import { useEffect, useState } from "react";
+import { fetchRate } from "@/lib/buyer-currency";
+import { formatMoney } from "@/lib/currencies";
+
+// The amount the card will actually be billed, shown next to the total.
 //
-// This held ChargePreview, which showed "≈ ₦21,773 charged" under the total.
-// It existed for one reason: the Paystack account could only collect naira, so
-// a ฿535 ticket became a naira figure on the payment screen, and that
-// unexplained jump was where buyers stopped and wondered if they were being
-// overcharged.
+// One number, and it is not an approximation of a convenience — it is the
+// figure the processor charges. That distinction is why this takes `to` as a
+// required prop resolved server-side by the payment router, rather than
+// guessing from the buyer's location. An earlier version of this component
+// defaulted to NGN and a sibling guessed from the viewer's IP; between them a
+// Thai event could show a naira figure to a Nigerian viewer while billing
+// dollars. Both are gone.
 //
-// Flutterwave now charges foreign cards in the event's own currency, or in USD
-// where it can't collect that currency. The alarming version of the jump is
-// gone, and the exact amount is shown on the hosted payment page before any
-// card details are entered — so the line was noise on every listing.
-//
-// Kept as a marker so the reasoning is discoverable. Safe to delete:
-//   rm src/components/charge-preview.tsx
-export {};
+// Renders nothing if the rate can't be fetched. Silence beats a wrong number
+// on a page where the next click spends money.
+export default function ChargePreview({
+  amount,
+  from,
+  to,
+  className = "",
+}: {
+  /** Total in the event's own currency, fee included. */
+  amount: number;
+  /** The currency the organizer priced in. */
+  from: string;
+  /** What the processor bills — from resolvePaymentRoute(), server-side. */
+  to: string;
+  className?: string;
+}) {
+  const [charged, setCharged] = useState<number | null>(null);
+
+  const same = from.toUpperCase() === to.toUpperCase();
+
+  useEffect(() => {
+    if (amount <= 0 || same) return;
+    let live = true;
+    fetchRate(from.toUpperCase(), to.toUpperCase()).then((rate) => {
+      if (live && rate) setCharged(Math.round(amount * rate * 100) / 100);
+    });
+    return () => {
+      live = false;
+    };
+  }, [amount, from, to, same]);
+
+  if (same || charged === null) return null;
+
+  return <span className={className}>≈ {formatMoney(charged, to)}</span>;
+}

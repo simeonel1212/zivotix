@@ -1,7 +1,7 @@
 import { convert, toSubunit } from "@/lib/fx";
 import { initTransaction } from "@/lib/paystack";
 import { initFlutterwaveCheckout } from "@/lib/flutterwave-v3";
-import { resolvePaymentRoute, fallbackRoute, type PaymentRoute } from "@/lib/payment-router";
+import { routeChain, type PaymentRoute } from "@/lib/payment-router";
 
 // Turns "charge this person this much" into a hosted payment page, whichever
 // processor that turns out to mean.
@@ -86,28 +86,30 @@ async function attempt(route: PaymentRoute, args: StartPaymentArgs): Promise<Sta
 }
 
 export async function startPayment(args: StartPaymentArgs): Promise<StartedPayment> {
-  const preferred = resolvePaymentRoute(args.currency);
+  const chain = routeChain(args.currency);
+  const trail: string[] = [];
 
-  try {
-    return await attempt(preferred, args);
-  } catch (primaryError) {
-    const fallback = fallbackRoute();
+  for (let i = 0; i < chain.length; i++) {
+    const route = chain[i];
+    try {
+      const started = await attempt(route, args);
+      return { ...started, trail: [...trail, route.reason] };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      trail.push(`${route.reason} — refused: ${message}`);
 
-    // Nothing to fall back to — the preferred route already was the fallback.
-    if (
-      preferred.provider === fallback.provider &&
-      preferred.chargeCurrency === fallback.chargeCurrency
-    ) {
-      throw primaryError;
+      // Out of routes. Surface the real reason rather than a generic failure,
+      // because by this point every rail has said no and someone needs to know
+      // which one said what.
+      if (i === chain.length - 1) {
+        console.error(`[start-payment] every route refused ${args.reference}: ${trail.join(" | ")}`);
+        throw error;
+      }
+
+      console.error(`[start-payment] ${route.provider} refused ${args.reference}: ${message}`);
     }
-
-    const message = primaryError instanceof Error ? primaryError.message : String(primaryError);
-    console.error(`[start-payment] ${preferred.provider} refused ${args.reference}: ${message}`);
-
-    const recovered = await attempt(fallback, args);
-    return {
-      ...recovered,
-      trail: [`${preferred.reason} — refused: ${message}`, fallback.reason],
-    };
   }
+
+  // Unreachable: routeChain never returns an empty array.
+  throw new Error("No payment route available");
 }
