@@ -58,31 +58,39 @@ export function routeChain(
     reason: "naira settles on Paystack",
   };
 
-  if (currency === "NGN") return [naira];
-
-  // A buyer standing in Nigeria pays in naira whatever the event is priced in.
-  //
-  // Not a preference — a hard constraint on their side. Nigerian banks have
-  // blocked or throttled international transactions on naira cards since 2022,
-  // so a dollar charge comes back "Restricted card: we cannot charge your card
-  // due to bank restrictions". The chain below can't rescue that, because it
-  // catches a *processor* refusing at checkout, not an *issuer* declining
-  // after the buyer has already typed their card number.
-  //
-  // The double conversion is worse value than dollars. It is much better than
-  // a card that cannot pay at all.
-  if (buyerCountry?.toUpperCase() === "NG") {
-    return [{ ...naira, reason: "buyer is in Nigeria; naira cards cannot pay in USD" }];
-  }
-
-  // Not configured — FLUTTERWAVE_SECRET_KEY absent. Everything keeps working
-  // the way it does today rather than erroring: turning Flutterwave on is a
+  // Not configured — FLUTTERWAVE_SECRET_KEY absent. Falls back to the old
+  // world entirely rather than erroring: turning Flutterwave on is a
   // deliberate act, not a side effect of a deploy.
   if (!flutterwaveV3Configured()) {
-    return [{ ...naira, reason: "Flutterwave not configured; converting to naira" }];
+    return [{ ...naira, reason: "Flutterwave not configured; charging naira on Paystack" }];
   }
 
   const chain: PaymentRoute[] = [];
+
+  // Naira, on Flutterwave — their home market, and the only currency a
+  // Nigerian card can reliably spend. Two cases land here:
+  //
+  //   - the event is priced in naira
+  //   - the buyer is standing in Nigeria, whatever the event is priced in
+  //
+  // The second is a hard constraint on the buyer's side, not a preference.
+  // Nigerian banks have blocked or throttled international transactions on
+  // naira cards since 2022, so a dollar charge comes back "Restricted card:
+  // we cannot charge your card due to bank restrictions". Nothing below can
+  // rescue that: the chain catches a *processor* refusing at checkout, not an
+  // *issuer* declining after the buyer has already typed their card number.
+  if (currency === "NGN" || buyerCountry?.toUpperCase() === "NG") {
+    chain.push({
+      provider: "flutterwave",
+      chargeCurrency: "NGN",
+      reason:
+        currency === "NGN"
+          ? "naira event, charged in naira"
+          : "buyer is in Nigeria; naira cards cannot pay in USD",
+    });
+    chain.push({ ...naira, reason: "last resort: Flutterwave refused naira" });
+    return chain;
+  }
 
   if (flutterwaveCollects(currency)) {
     chain.push({
@@ -103,7 +111,13 @@ export function routeChain(
     });
   }
 
-  chain.push({ ...naira, reason: "fell back to naira after Flutterwave refused" });
+  // Paystack sits underneath everything and should never run. It is kept
+  // because every completed payment in this platform's history went through
+  // it and not one has yet gone through Flutterwave. Retiring the only proven
+  // rail on the day the new one goes live would leave the checkout with
+  // nothing behind it. Remove this once Flutterwave has settled payments of
+  // its own — it is a safety net, not a second processor.
+  chain.push({ ...naira, reason: "last resort: Flutterwave refused" });
   return chain;
 }
 

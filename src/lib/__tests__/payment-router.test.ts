@@ -45,12 +45,24 @@ describe("with Flutterwave switched on", () => {
     process.env[KEY] = "FLWSECK-test-not-a-real-key";
   });
 
-  test("naira stays on Paystack", () => {
-    // Not inertia: Paystack's local rate caps at ₦2,000 and Flutterwave's
-    // doesn't, so moving naira across would cost money to fix nothing.
+  test("naira events go to Flutterwave too", () => {
+    // One processor for everything. Flutterwave collects naira natively —
+    // it's their home market — so a naira event has no reason to leave.
     const route = resolvePaymentRoute("NGN");
-    assert.equal(route.provider, "paystack");
+    assert.equal(route.provider, "flutterwave");
     assert.equal(route.chargeCurrency, "NGN");
+  });
+
+  test("Paystack is never the first choice for anything", () => {
+    for (const currency of WORLD_CURRENCIES) {
+      for (const country of ["NG", "US", "TH", null]) {
+        assert.equal(
+          routeChain(currency, country)[0].provider,
+          "flutterwave",
+          `${currency}/${country} should start on Flutterwave`
+        );
+      }
+    }
   });
 
   test("a currency Flutterwave collects is charged in that currency", () => {
@@ -127,7 +139,7 @@ describe("routing by where the buyer is", () => {
     process.env[KEY] = "FLWSECK-test-not-a-real-key";
   });
 
-  test("a Nigerian buyer pays in naira even for a foreign event", () => {
+  test("a Nigerian buyer pays naira on Flutterwave, even for a foreign event", () => {
     // Nigerian banks block international transactions on naira cards, so a
     // dollar charge is declined by the issuer with "Restricted card". The
     // route chain cannot rescue that — it catches a processor refusing at
@@ -135,8 +147,18 @@ describe("routing by where the buyer is", () => {
     const chain = routeChain("THB", "NG");
     assert.deepEqual(
       chain.map((r) => `${r.provider}:${r.chargeCurrency}`),
-      ["paystack:NGN"]
+      ["flutterwave:NGN", "paystack:NGN"]
     );
+  });
+
+  test("a Nigerian buyer is never offered dollars", () => {
+    // The whole point of the carve-out. If USD ever appears in this chain,
+    // a Nigerian card meets a charge its bank will refuse.
+    for (const currency of WORLD_CURRENCIES) {
+      for (const route of routeChain(currency, "NG")) {
+        assert.equal(route.chargeCurrency, "NGN", `${currency} offered ${route.chargeCurrency}`);
+      }
+    }
   });
 
   test("an American buying a Thai event is charged in dollars", () => {
@@ -160,9 +182,11 @@ describe("routing by where the buyer is", () => {
     assert.equal(resolvePaymentRoute("THB", "ng").chargeCurrency, "NGN");
   });
 
-  test("a Nigerian event is unaffected wherever the buyer is", () => {
+  test("a Nigerian event is charged in naira wherever the buyer is", () => {
     for (const country of ["NG", "US", "TH", null]) {
-      assert.equal(resolvePaymentRoute("NGN", country).chargeCurrency, "NGN");
+      const route = resolvePaymentRoute("NGN", country);
+      assert.equal(route.chargeCurrency, "NGN");
+      assert.equal(route.provider, "flutterwave");
     }
   });
 });
