@@ -30,6 +30,7 @@ export default async function OrganizerLayout({ children }: { children: React.Re
     { href: "/organizer/memberships", label: "Memberships", icon: "star" },
     { href: "/organizer/merch", label: "Merch", icon: "bag" },
     { href: "/organizer/settings", label: "Payout details", icon: "card" },
+    { href: "/organizer/account", label: "Account", icon: "account" },
     ...(profile?.role === "admin" ? [{ href: "/admin/payouts", label: "Platform admin", icon: "shield" }] : []),
   ];
 

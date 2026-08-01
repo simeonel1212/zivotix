@@ -32,6 +32,12 @@ const ICONS: Record<string, React.ReactNode> = {
       <path d="M12 8v8M8 12h8" strokeLinecap="round" />
     </>
   ),
+  account: (
+    <>
+      <circle cx="12" cy="8" r="3.6" />
+      <path d="M4.5 20c.9-3.6 3.9-5.6 7.5-5.6s6.6 2 7.5 5.6" strokeLinecap="round" />
+    </>
+  ),
   users: (
     <>
       <circle cx="9" cy="8" r="3.2" />
