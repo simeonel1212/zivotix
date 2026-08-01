@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { EventRow, TicketType } from "@/lib/types";
 import { computeFees, type FeeMode } from "@/lib/fees";
 import { formatMoney } from "@/lib/currencies";
+import ApplePayButton from "@/components/apple-pay-button";
 
 // Checkout is a single button. Paystack's hosted page presents card and
 // Apple Pay itself (both approved on this account), so there's no separate
@@ -84,7 +85,7 @@ export default function TicketSelector({
     setQuantities((q) => ({ ...q, [id]: Math.max(0, qty) }));
   }
 
-  async function handleCheckout() {
+  async function handleCheckout(wallet?: "applepay") {
     setError(null);
     if (!buyer.name || !buyer.email) {
       setError("Enter your name and email.");
@@ -103,6 +104,7 @@ export default function TicketSelector({
           eventId: event.id,
           buyerName: buyer.name,
           buyerEmail: buyer.email,
+          wallet,
           items: Object.entries(quantities)
             .filter(([, qty]) => qty > 0)
             .map(([ticketTypeId, quantity]) => ({ ticketTypeId, quantity })),
@@ -290,6 +292,18 @@ export default function TicketSelector({
               "Get free tickets"
             )}
           </button>
+
+          {/* Renders nothing off an Apple device, so Android and desktop see
+              the card button alone rather than a control they can't use. Free
+              events skip it — there is nothing to charge. */}
+          {total > 0 && (
+            <ApplePayButton
+              onPay={() => handleCheckout("applepay")}
+              disabled={ticketCount === 0}
+              loading={loading}
+              label={formatMoney(total, event.currency)}
+            />
+          )}
         </div>
       </div>
 

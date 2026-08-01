@@ -13,6 +13,8 @@ interface CheckoutBody {
   buyerName: string;
   buyerEmail: string;
   items: { ticketTypeId: string; quantity: number }[];
+  /** Set when the buyer tapped Apple Pay rather than the card button. */
+  wallet?: "applepay";
 }
 
 export async function POST(req: Request) {
@@ -201,6 +203,7 @@ export async function POST(req: Request) {
       buyer: { email: buyerEmail, name: buyerName },
       redirectUrl: `${appUrl()}/checkout/${order.id}`,
       buyerCountry: await buyerCountry(),
+      wallet: body.wallet === "applepay" ? "applepay" : undefined,
       title: event.title,
       logo: event.logo_image_url,
       meta: { order_id: order.id, event_id: event.id },
@@ -213,6 +216,9 @@ export async function POST(req: Request) {
         charge_currency: started.chargeCurrency,
         charge_amount: started.chargeAmount,
         fx_rate_used: started.fxRate,
+        // Only the wallet path produces one. The return page checks it first
+        // and verifies that charge directly instead of looking up by reference.
+        ...(started.providerChargeId ? { provider_charge_id: started.providerChargeId } : {}),
       })
       .eq("id", order.id);
 

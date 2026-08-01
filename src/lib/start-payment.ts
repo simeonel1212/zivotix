@@ -1,6 +1,11 @@
 import { convert, toSubunit } from "@/lib/fx";
 import { initTransaction } from "@/lib/paystack";
 import { initFlutterwaveCheckout } from "@/lib/flutterwave-v3";
+import {
+  createFlutterwaveCustomer,
+  createApplePayPaymentMethod,
+  createCharge,
+} from "@/lib/flutterwave";
 import { routeChain, type PaymentRoute } from "@/lib/payment-router";
 
 // Turns "charge this person this much" into a hosted payment page, whichever
@@ -36,6 +41,12 @@ export interface StartPaymentArgs {
    * on the event's currency alone.
    */
   buyerCountry?: string | null;
+  /**
+   * Set when the buyer tapped Apple Pay rather than Pay by card. Tried first
+   * and falls through to the ordinary card chain if it fails, so a wallet that
+   * isn't enabled costs a redirect rather than a sale.
+   */
+  wallet?: "applepay";
 }
 
 export interface StartedPayment {
@@ -45,6 +56,11 @@ export interface StartedPayment {
   fxRate: number;
   /** Send the buyer here. */
   paymentUrl: string;
+  /**
+   * Flutterwave's v4 charge id, set only on the wallet path. The return page
+   * verifies against this instead of by reference, and refunds key on it.
+   */
+  providerChargeId?: string;
   /** Every route attempted, in order. Worth persisting when one fails. */
   trail: string[];
 }
@@ -92,9 +108,80 @@ async function attempt(route: PaymentRoute, args: StartPaymentArgs): Promise<Sta
   };
 }
 
+// Apple Pay, on Flutterwave's v4 API.
+//
+// A separate rail from everything else in this file because v3 — the hosted
+// checkout the card path uses — has no wallet support at all. Its documented
+// payment_options list contains no wallets, and a real checkout page confirms
+// it: card, USSD, bank, bank transfer, eNaira. That is the whole reason this
+// repo carries two Flutterwave clients.
+//
+// No Apple Pay JS here, and none is needed. v4 takes a payment-method object,
+// returns a redirect URL, and presents the Apple Pay sheet on its own page —
+// so there is no merchant validation endpoint to run and no Apple developer
+// certificate to keep alive on our side.
+async function attemptApplePay(
+  route: PaymentRoute,
+  args: StartPaymentArgs
+): Promise<StartedPayment> {
+  const { amount: chargeAmount, rate } = await convert(
+    args.amount,
+    args.currency,
+    route.chargeCurrency
+  );
+
+  const customer = await createFlutterwaveCustomer({
+    email: args.buyer.email,
+    name: args.buyer.name,
+  });
+  const method = await createApplePayPaymentMethod(args.buyer.name);
+
+  const charge = await createCharge({
+    customerId: customer.id,
+    paymentMethodId: method.id,
+    // v4 amounts are in major units — 12.50, not 1250. The opposite of
+    // Paystack, and an easy way to charge a buyer a hundred times over.
+    amount: chargeAmount,
+    currency: route.chargeCurrency,
+    reference: args.reference,
+    redirectUrl: args.redirectUrl,
+    meta: args.meta,
+  });
+
+  const url = charge.next_action?.redirect_url?.url;
+  if (!url) {
+    throw new Error("Flutterwave returned no Apple Pay redirect");
+  }
+
+  return {
+    provider: "flutterwave",
+    chargeCurrency: route.chargeCurrency,
+    chargeAmount,
+    fxRate: rate,
+    paymentUrl: url,
+    providerChargeId: charge.id,
+    trail: [`Apple Pay in ${route.chargeCurrency}`],
+  };
+}
+
 export async function startPayment(args: StartPaymentArgs): Promise<StartedPayment> {
   const chain = routeChain(args.currency, args.buyerCountry ?? null);
   const trail: string[] = [];
+
+  // Wallet first when asked for, but never as the only option. If Apple Pay
+  // isn't enabled on the account, or the charge is refused, the buyer lands on
+  // the ordinary card checkout instead of an error — they tapped a button
+  // expecting to pay, and the worst outcome is that they type a card number.
+  if (args.wallet === "applepay") {
+    const walletRoute = chain.find((r) => r.provider === "flutterwave") ?? chain[0];
+    try {
+      return await attemptApplePay(walletRoute, args);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      trail.push(`Apple Pay refused: ${message}`);
+      console.error(`[start-payment] Apple Pay refused ${args.reference}: ${message}`);
+    }
+  }
 
   for (let i = 0; i < chain.length; i++) {
     const route = chain[i];

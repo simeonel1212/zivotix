@@ -115,23 +115,25 @@ export async function initFlutterwaveCheckout(args: InitCheckoutArgs): Promise<{
         title: args.title ?? "Zivotix",
         ...(args.logo ? { logo: args.logo } : {}),
       },
-      // Card and Apple Pay only.
+      // Card only.
       //
-      // Google Pay is left out because it isn't approved on this Flutterwave
-      // account. Listing a method the account can't serve is how you end up
-      // with a button that either doesn't render or fails after the buyer has
-      // already chosen it — and a payment method that breaks at the last step
-      // costs more trust than one that was never offered.
+      // "applepay" was briefly listed here and was a mistake: it is not a valid
+      // v3 payment_options value. Flutterwave's documented set is card,
+      // account, banktransfer, mpesa, the mobile-money variants, barter, nqr,
+      // ussd, credit, opay and fawrypay — no wallets. v3 Standard checkout
+      // cannot present Apple Pay at all, which is why this repo once carried a
+      // separate v4 rail purely for it.
       //
-      // Bank transfer, USSD and OPay are excluded for a different reason: all
-      // three are naira-domestic and settle asynchronously, so a buyer who
-      // picks one leaves the page owing money and holding no ticket, and the
-      // reservation expires under them 20 minutes later.
+      // Everything else is excluded deliberately. USSD, bank transfer, account
+      // debit and eNaira are naira-domestic and settle asynchronously, so a
+      // buyer who picks one leaves the page owing money and holding no ticket,
+      // and the reservation expires under them 20 minutes later.
       //
-      // Apple Pay earns its place here more than on the Paystack rail. This
-      // path only ever serves foreign buyers, who skew mobile, and it skips
-      // typing a 16-digit number and passing a 3DS challenge on a phone.
-      payment_options: "card,applepay",
+      // Comma + space is the documented separator. And note this field only
+      // takes effect if "Enable Dashboard Payment Options" is UNCHECKED in the
+      // Flutterwave account settings — while it is checked, the dashboard's
+      // list wins and this is silently ignored.
+      payment_options: "card",
       meta: args.meta,
     }),
   });
