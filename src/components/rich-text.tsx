@@ -11,8 +11,12 @@ function InlineRun({ content }: { content: Inline[] }) {
     <>
       {content.map((node, i) => {
         if (node.type === "bold") {
+          // Zivotix yellow rather than plain white. A solid colour, not the
+          // gradient used on prices: a gradient is measured across its own
+          // box, so a bold phrase that wraps mid-sentence restarts the ramp on
+          // the second line and reads as two mismatched colours.
           return (
-            <strong key={i} className="font-semibold text-neutral-50">
+            <strong key={i} className="font-semibold text-yellow-400">
               {node.value}
             </strong>
           );
