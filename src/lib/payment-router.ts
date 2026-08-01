@@ -74,6 +74,20 @@ export function resolvePaymentRoute(eventCurrency: string): PaymentRoute {
   };
 }
 
+// Currency → what a card will actually be billed in, for a set of prices.
+//
+// Client components can't call resolvePaymentRoute — the answer depends on
+// which processor is configured, which is server-only. A plain object crosses
+// the server/client boundary; a function would not.
+export function chargeCurrencyMap(currencies: string[]): Record<string, string> {
+  const map: Record<string, string> = {};
+  for (const c of currencies) {
+    if (!c || map[c]) continue;
+    map[c] = resolvePaymentRoute(c).chargeCurrency;
+  }
+  return map;
+}
+
 // The route to use when the preferred one fails at init.
 //
 // Every non-NGN charge has exactly one proven fallback: naira on Paystack.

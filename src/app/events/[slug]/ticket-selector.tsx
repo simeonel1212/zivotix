@@ -17,6 +17,7 @@ export default function TicketSelector({
   ticketTypes,
   feeMode = "pass",
   detectedCurrency = null,
+  chargeCurrency,
 }: {
   event: EventRow;
   ticketTypes: TicketType[];
@@ -24,6 +25,13 @@ export default function TicketSelector({
   feeMode?: FeeMode;
   /** Buyer's currency from the edge network, for the one approximation on the total. */
   detectedCurrency?: string | null;
+  /**
+   * What the card will actually be billed in, decided server-side by the
+   * payment router. Passed in rather than guessed here, because the answer
+   * depends on which processor is configured and this component has no way
+   * to know that.
+   */
+  chargeCurrency: string;
 }) {
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [buyer, setBuyer] = useState({ name: "", email: "" });
@@ -292,16 +300,17 @@ export default function TicketSelector({
                   says ₦21,773, and that unexplained jump is where people stop
                   and wonder if they're being overcharged. */}
               <span className="text-xs text-neutral-500">
-                {event.currency === "NGN" ? (
-                  "Card or Apple Pay, charged in NGN"
+                {chargeCurrency === event.currency ? (
+                  `Card or Apple Pay, charged in ${chargeCurrency}`
                 ) : (
                   <>
                     <ChargePreview
                       amount={total}
                       from={event.currency}
+                      to={chargeCurrency}
                       className="font-semibold text-neutral-300"
                     />{" "}
-                    · charged in naira, your bank converts back at its own rate
+                    · charged in {chargeCurrency}, your bank converts back at its own rate
                   </>
                 )}
               </span>

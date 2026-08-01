@@ -16,10 +16,13 @@ import type { MembershipTier } from "@/lib/types";
 export default function MembershipTiers({
   tiers,
   detectedCurrency = null,
+  chargeCurrencies = {},
 }: {
   tiers: MembershipTier[];
   /** Buyer's currency from the edge network, not from browser language. */
   detectedCurrency?: string | null;
+  /** Tier currency → what the card is actually billed in, decided server-side. */
+  chargeCurrencies?: Record<string, string>;
 }) {
   const [openId, setOpenId] = useState<string | null>(null);
   const [buyer, setBuyer] = useState({ name: "", email: "" });
@@ -95,6 +98,7 @@ export default function MembershipTiers({
                 <ChargePreview
                   amount={fees.total}
                   from={tier.currency}
+                  to={chargeCurrencies[tier.currency] ?? tier.currency}
                   className="block text-xs text-neutral-500"
                 />
                 <p className="mt-1 text-sm text-neutral-400">

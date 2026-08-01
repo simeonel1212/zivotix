@@ -18,14 +18,20 @@ import { formatMoney } from "@/lib/currencies";
 export default function ChargePreview({
   amount,
   from,
-  to = "NGN",
+  to,
   className = "",
 }: {
   amount: number;
   /** The event's own pricing currency. */
   from: string;
-  /** What Paystack will actually bill. */
-  to?: string;
+  /**
+   * What the processor will actually bill. Required, and deliberately has no
+   * default: it used to default to NGN, which was correct only while every
+   * charge went to Paystack. The moment Flutterwave started taking foreign
+   * currency, a default would have quietly told Thai buyers they were being
+   * charged naira while their card was billed dollars.
+   */
+  to: string;
   className?: string;
 }) {
   const [charged, setCharged] = useState<number | null>(null);

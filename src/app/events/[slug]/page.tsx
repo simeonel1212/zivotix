@@ -7,6 +7,7 @@ import type { EventRow, TicketType, MembershipTier, MerchProduct } from "@/lib/t
 import { googleMapsUrl, googleMapsEmbedUrl } from "@/lib/maps";
 import { appUrl } from "@/lib/app-url";
 import { buyerDisplayCurrency } from "@/lib/geo";
+import { resolvePaymentRoute } from "@/lib/payment-router";
 import VerifiedBadge from "@/components/verified-badge";
 import ShareButton from "@/components/share-button";
 import MembershipUpsell from "@/components/membership-upsell";
@@ -361,6 +362,9 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
           event={event}
           ticketTypes={ticketTypes ?? []}
           detectedCurrency={detectedCurrency}
+          // Resolved here rather than in the component: it depends on which
+          // processor is configured, which is server-only knowledge.
+          chargeCurrency={resolvePaymentRoute(event.currency).chargeCurrency}
         />
       </div>
 
