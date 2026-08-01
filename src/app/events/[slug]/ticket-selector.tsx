@@ -4,7 +4,6 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import type { EventRow, TicketType } from "@/lib/types";
 import { computeFees, type FeeMode } from "@/lib/fees";
-import ApproxPrice from "@/components/approx-price";
 import { formatMoney } from "@/lib/currencies";
 
 // Checkout is a single button. Paystack's hosted page presents card and
@@ -15,14 +14,11 @@ export default function TicketSelector({
   event,
   ticketTypes,
   feeMode = "pass",
-  detectedCurrency = null,
 }: {
   event: EventRow;
   ticketTypes: TicketType[];
   /** "absorb" means the organizer covers the fee and the buyer pays the listed price flat. */
   feeMode?: FeeMode;
-  /** Buyer's currency from the edge network, for the one approximation on the total. */
-  detectedCurrency?: string | null;
 }) {
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [buyer, setBuyer] = useState({ name: "", email: "" });
@@ -272,17 +268,6 @@ export default function TicketSelector({
                 ? "Free"
                 : "—"}
           </span>
-          {total > 0 && (
-            <>
-              {" "}
-              <ApproxPrice
-                amount={total}
-                currency={event.currency}
-                detectedCurrency={detectedCurrency}
-                className="text-sm font-medium"
-              />
-            </>
-          )}
           {/* No conversion line here any more. It existed to explain a jump
               from ฿535 on this page to ₦21,773 on Paystack's — a jump that
               only happened because naira was the only currency the account

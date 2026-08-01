@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { computeFees } from "@/lib/fees";
-import ApproxPrice from "@/components/approx-price";
 import { formatMoney } from "@/lib/currencies";
 import { membershipShapeLabel } from "@/lib/memberships";
 import type { MembershipTier } from "@/lib/types";
@@ -14,11 +13,8 @@ import type { MembershipTier } from "@/lib/types";
 // single night should see the season option before they decide.
 export default function MembershipTiers({
   tiers,
-  detectedCurrency = null,
 }: {
   tiers: MembershipTier[];
-  /** Buyer's currency from the edge network, not from browser language. */
-  detectedCurrency?: string | null;
 }) {
   const [openId, setOpenId] = useState<string | null>(null);
   const [buyer, setBuyer] = useState({ name: "", email: "" });
@@ -82,12 +78,6 @@ export default function MembershipTiers({
                 <p className="text-2xl font-bold text-neutral-50">
                   {formatMoney(fees.total, tier.currency)}
                 </p>
-                <ApproxPrice
-                  amount={fees.total}
-                  currency={tier.currency}
-                  detectedCurrency={detectedCurrency}
-                  className="text-xs"
-                />
                 <p className="mt-1 text-sm text-neutral-400">
                   {membershipShapeLabel(tier)}
                   {perEntry !== null && ` · ${formatMoney(perEntry, tier.currency)} a night`}

@@ -6,7 +6,6 @@ import { createClient, createServiceClient } from "@/lib/supabase/server";
 import type { EventRow, TicketType, MembershipTier, MerchProduct } from "@/lib/types";
 import { googleMapsUrl, googleMapsEmbedUrl } from "@/lib/maps";
 import { appUrl } from "@/lib/app-url";
-import { buyerDisplayCurrency } from "@/lib/geo";
 import VerifiedBadge from "@/components/verified-badge";
 import ShareButton from "@/components/share-button";
 import MembershipUpsell from "@/components/membership-upsell";
@@ -122,9 +121,6 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
     .eq("is_active", true)
     .order("price", { ascending: true })
     .returns<MerchProduct[]>();
-
-  // Resolved from the request's IP country, not the browser's language.
-  const detectedCurrency = await buyerDisplayCurrency();
 
   const paidPrices = (ticketTypes ?? []).map((tt) => tt.price).filter((p) => p > 0);
 
@@ -360,7 +356,6 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
         <TicketSelector
           event={event}
           ticketTypes={ticketTypes ?? []}
-          detectedCurrency={detectedCurrency}
         />
       </div>
 

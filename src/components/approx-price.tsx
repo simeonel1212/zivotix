@@ -1,58 +1,20 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import { fetchRate, resolveDisplayCurrency, roundApprox } from "@/lib/buyer-currency";
-import { formatMoney } from "@/lib/currencies";
-
-// Shows a price in the buyer's own currency, alongside the price the organizer
-// actually set.
+// Intentionally empty.
 //
-// Deliberately additive: the event's own currency stays the headline and this
-// appears next to it as "≈ £12". Replacing the organizer's price would be worse
-// — they set it, they advertise it, and a buyer comparing the flyer to the site
-// should see the same number.
+// This held ApproxPrice, which showed "≈ ₦21,773" next to a price, converted
+// into the currency of wherever the viewer happened to be (from the edge geo
+// header, not the browser locale).
 //
-// Renders nothing at all when the currency matches, the rate is unavailable, or
-// the locale gives no useful hint. Silence is the correct failure mode for a
-// convenience.
-export default function ApproxPrice({
-  amount,
-  currency,
-  detectedCurrency = null,
-  className = "",
-}: {
-  amount: number;
-  currency: string;
-  /**
-   * Resolved server-side from the request's IP country (lib/geo.ts). Passed in
-   * rather than detected here because the browser only knows the user's
-   * language, and language is not location.
-   */
-  detectedCurrency?: string | null;
-  className?: string;
-}) {
-  const [display, setDisplay] = useState<{ code: string; value: number } | null>(null);
-
-  useEffect(() => {
-    if (amount <= 0) return;
-    const target = resolveDisplayCurrency(detectedCurrency);
-    if (!target || target === currency.toUpperCase()) return;
-
-    let live = true;
-    fetchRate(currency.toUpperCase(), target).then((rate) => {
-      if (!live || !rate) return;
-      setDisplay({ code: target, value: roundApprox(amount * rate) });
-    });
-    return () => {
-      live = false;
-    };
-  }, [amount, currency, detectedCurrency]);
-
-  if (!display) return null;
-
-  return (
-    <span className={`text-neutral-500 ${className}`}>
-      ≈ {formatMoney(display.value, display.code)}
-    </span>
-  );
-}
+// It made sense while every charge settled in naira: the approximation was the
+// amount the card would be billed. Once Flutterwave started charging foreign
+// cards in the event's own currency — or in USD where it can't collect that
+// currency — the approximation became a third number that appears nowhere in
+// the transaction. Not the price the organizer set, not the amount billed.
+// A Nigerian looking at a Thai event saw ฿500 ≈ ₦21,773 and was then charged
+// about $16.
+//
+// Listings now show only the currency the organizer priced in, and the exact
+// amount is stated on the payment page before any card details are entered.
+//
+// Kept as a marker so the reasoning is discoverable. Safe to delete:
+//   rm src/components/approx-price.tsx
+export {};
