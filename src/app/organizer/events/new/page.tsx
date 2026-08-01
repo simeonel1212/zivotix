@@ -6,6 +6,7 @@ import CoverImageUpload from "@/components/cover-image-upload";
 import LogoImageUpload from "@/components/logo-image-upload";
 import GalleryUpload from "@/components/gallery-upload";
 import LinksInput from "@/components/links-input";
+import DescriptionEditor from "@/components/description-editor";
 import type { EventLink } from "@/lib/types";
 import { EVENT_CATEGORIES } from "@/lib/categories";
 import { WORLD_CURRENCIES, currencyLabel } from "@/lib/currencies";
@@ -149,10 +150,10 @@ export default function NewEventPage() {
         </Field>
         <Field label="Description">
           <div className="space-y-2">
-            <textarea
-              className="zv-input min-h-24"
+            <DescriptionEditor
               value={form.description}
-              onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+              onChange={(description) => setForm((f) => ({ ...f, description }))}
+              placeholder={"What's the night about?\n\nUse ## for a section heading and - for a list."}
             />
             <div className="flex flex-wrap items-center gap-2">
               <button

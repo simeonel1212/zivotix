@@ -10,7 +10,9 @@ import VerifiedBadge from "@/components/verified-badge";
 import ShareButton from "@/components/share-button";
 import MembershipUpsell from "@/components/membership-upsell";
 import MerchStrip from "@/components/merch-strip";
-import ExpandableText from "@/components/expandable-text";
+import ExpandableBlock from "@/components/expandable-block";
+import RichText from "@/components/rich-text";
+import { richTextToPlain } from "@/lib/rich-text";
 import StickyBuyBar from "./sticky-buy-bar";
 import TicketSelector from "./ticket-selector";
 
@@ -42,8 +44,10 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     year: "numeric",
   });
   const place = [event.venue, event.city].filter(Boolean).join(", ");
+  // Stripped of formatting: "**Free flow prosecco**" would otherwise appear
+  // with its asterisks in a Google result and a shared link preview.
   const description =
-    event.description?.slice(0, 155) ??
+    (event.description ? richTextToPlain(event.description).slice(0, 155) : null) ??
     `${event.title} at ${place} on ${dateLabel}. Get your tickets on Zivotix.`;
 
   return {
@@ -157,7 +161,7 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
     ...(event.ends_at ? { endDate: event.ends_at } : {}),
     eventStatus: "https://schema.org/EventScheduled",
     eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
-    ...(event.description ? { description: event.description } : {}),
+    ...(event.description ? { description: richTextToPlain(event.description) } : {}),
     ...(event.cover_image_url ? { image: [event.cover_image_url] } : {}),
     location: {
       "@type": "Place",
@@ -280,11 +284,9 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
       {(event.description || (event.links ?? []).some((l) => /^https?:\/\//i.test(l.url))) && (
         <div className="zv-card p-6 sm:p-8 space-y-5">
           {event.description && (
-            <ExpandableText
-              text={event.description}
-              lines={7}
-              className="text-neutral-200 leading-relaxed"
-            />
+            <ExpandableBlock maxHeight={360}>
+              <RichText text={event.description} className="text-neutral-200 leading-relaxed" />
+            </ExpandableBlock>
           )}
 
           {(event.links ?? []).filter((l) => /^https?:\/\//i.test(l.url)).length > 0 && (

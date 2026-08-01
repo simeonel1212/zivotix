@@ -186,6 +186,36 @@ export async function verifyFlutterwaveByReference(
   };
 }
 
+// Refunds a v3 transaction, in full unless an amount is given.
+//
+// Keyed on Flutterwave's own numeric transaction id, not our reference — which
+// is why verifyFlutterwaveByReference returns it and the return page stores it.
+// Without that id there is no way to refund a hosted-checkout payment through
+// the API at all, only by hand in the dashboard.
+export async function refundFlutterwaveTransaction(
+  transactionId: number | string,
+  amount?: number
+): Promise<{ id: number | string; status: string }> {
+  const res = await fetch(
+    `${FLW_V3_BASE}/transactions/${encodeURIComponent(String(transactionId))}/refund`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${secretKey()}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(amount != null ? { amount } : {}),
+    }
+  );
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || data?.status !== "success") {
+    throw new Error(
+      data?.message ?? `Flutterwave refund failed (HTTP ${res.status}): ${JSON.stringify(data)}`
+    );
+  }
+  return data.data as { id: number | string; status: string };
+}
+
 // Guards against a class of bug that silently underdelivers value: a verified
 // "successful" transaction whose amount or currency doesn't match what we
 // asked for. Flutterwave returns what was actually paid, so comparing it to

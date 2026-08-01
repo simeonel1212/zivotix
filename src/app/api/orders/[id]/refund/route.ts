@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { refundTransaction } from "@/lib/paystack";
 import { refundCharge } from "@/lib/flutterwave";
+import { refundFlutterwaveTransaction } from "@/lib/flutterwave-v3";
 import type { Order, OrderItem } from "@/lib/types";
 
 // Refunds a paid order via Paystack, voids its tickets so they can't be
@@ -46,7 +47,16 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         return NextResponse.json({ error: "Order has no Flutterwave charge to refund" }, { status: 400 });
       }
       try {
-        await refundCharge(order.provider_charge_id, order.charge_amount, "Order cancelled");
+        // Two Flutterwave rails, two id formats. v4 charge ids are prefixed
+        // ("chg_…"); v3 hosted-checkout transaction ids are plain numbers. The
+        // prefix is the only thing that distinguishes them, and calling the
+        // wrong endpoint fails with a confusing "transaction not found" rather
+        // than anything that points at the real problem.
+        if (order.provider_charge_id.startsWith("chg_")) {
+          await refundCharge(order.provider_charge_id, order.charge_amount, "Order cancelled");
+        } else {
+          await refundFlutterwaveTransaction(order.provider_charge_id, order.charge_amount);
+        }
       } catch (err) {
         return NextResponse.json({ error: err instanceof Error ? err.message : "Refund failed" }, { status: 502 });
       }

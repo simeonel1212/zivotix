@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type { EventRow, EventLink } from "@/lib/types";
 import LinksInput from "@/components/links-input";
+import DescriptionEditor from "@/components/description-editor";
 import { EVENT_CATEGORIES } from "@/lib/categories";
 import { WORLD_CURRENCIES, currencyLabel } from "@/lib/currencies";
 
@@ -123,10 +124,9 @@ export default function EventEditForm({ event, headerActions }: { event: EventRo
 
       <Field label="Description">
         <div className="space-y-2">
-          <textarea
-            className="zv-input min-h-24"
+          <DescriptionEditor
             value={form.description}
-            onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+            onChange={(description) => setForm((f) => ({ ...f, description }))}
           />
           <div className="flex flex-wrap items-center gap-2">
             <button
