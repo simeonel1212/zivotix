@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import { createServiceClient } from "@/lib/supabase/server";
 import { computeFees } from "@/lib/fees";
 import { startPayment } from "@/lib/start-payment";
+import { buyerCountry } from "@/lib/geo";
 import { generateTicketToken } from "@/lib/qrcode";
 import { appUrl } from "@/lib/app-url";
 import { MEMBERSHIP_REFERENCE_PREFIX, expiryFromPurchase, expiryFromMonths } from "@/lib/memberships";
@@ -106,6 +107,7 @@ export async function POST(req: Request) {
       reference,
       buyer: { email: memberEmail, name: memberName },
       redirectUrl: `${appUrl()}/pass/${membership.id}`,
+      buyerCountry: await buyerCountry(),
       title: tier.name,
       meta: { membership_id: membership.id, tier_id: tier.id },
     });

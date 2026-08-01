@@ -47,7 +47,10 @@ export type PaymentRoute = {
 // what made the allowlist dangerous to edit — get it wrong and buyers fell all
 // the way to naira. With a chain, an optimistic entry costs one wasted API
 // call, so the list can be widened without betting the checkout on it.
-export function routeChain(eventCurrency: string): PaymentRoute[] {
+export function routeChain(
+  eventCurrency: string,
+  buyerCountry: string | null = null
+): PaymentRoute[] {
   const currency = (eventCurrency || "NGN").toUpperCase();
   const naira: PaymentRoute = {
     provider: "paystack",
@@ -56,6 +59,21 @@ export function routeChain(eventCurrency: string): PaymentRoute[] {
   };
 
   if (currency === "NGN") return [naira];
+
+  // A buyer standing in Nigeria pays in naira whatever the event is priced in.
+  //
+  // Not a preference — a hard constraint on their side. Nigerian banks have
+  // blocked or throttled international transactions on naira cards since 2022,
+  // so a dollar charge comes back "Restricted card: we cannot charge your card
+  // due to bank restrictions". The chain below can't rescue that, because it
+  // catches a *processor* refusing at checkout, not an *issuer* declining
+  // after the buyer has already typed their card number.
+  //
+  // The double conversion is worse value than dollars. It is much better than
+  // a card that cannot pay at all.
+  if (buyerCountry?.toUpperCase() === "NG") {
+    return [{ ...naira, reason: "buyer is in Nigeria; naira cards cannot pay in USD" }];
+  }
 
   // Not configured — FLUTTERWAVE_SECRET_KEY absent. Everything keeps working
   // the way it does today rather than erroring: turning Flutterwave on is a
@@ -91,8 +109,11 @@ export function routeChain(eventCurrency: string): PaymentRoute[] {
 
 // The single best route. Kept for callers that only need to display a decision
 // rather than execute one.
-export function resolvePaymentRoute(eventCurrency: string): PaymentRoute {
-  return routeChain(eventCurrency)[0];
+export function resolvePaymentRoute(
+  eventCurrency: string,
+  buyerCountry: string | null = null
+): PaymentRoute {
+  return routeChain(eventCurrency, buyerCountry)[0];
 }
 
 // Currency → what a card will actually be billed in, for a set of prices.
@@ -100,11 +121,14 @@ export function resolvePaymentRoute(eventCurrency: string): PaymentRoute {
 // Client components can't call resolvePaymentRoute — the answer depends on
 // which processor is configured, which is server-only. A plain object crosses
 // the server/client boundary; a function would not.
-export function chargeCurrencyMap(currencies: string[]): Record<string, string> {
+export function chargeCurrencyMap(
+  currencies: string[],
+  buyerCountry: string | null = null
+): Record<string, string> {
   const map: Record<string, string> = {};
   for (const c of currencies) {
     if (!c || map[c]) continue;
-    map[c] = resolvePaymentRoute(c).chargeCurrency;
+    map[c] = resolvePaymentRoute(c, buyerCountry).chargeCurrency;
   }
   return map;
 }

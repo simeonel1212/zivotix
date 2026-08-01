@@ -29,6 +29,13 @@ export interface StartPaymentArgs {
   title?: string;
   logo?: string | null;
   meta?: Record<string, unknown>;
+  /**
+   * ISO country of the buyer, from the edge network. Decides whether they can
+   * physically be charged in a foreign currency — a Nigerian naira card
+   * cannot. Null just means "unknown", and the routing falls back to deciding
+   * on the event's currency alone.
+   */
+  buyerCountry?: string | null;
 }
 
 export interface StartedPayment {
@@ -86,7 +93,7 @@ async function attempt(route: PaymentRoute, args: StartPaymentArgs): Promise<Sta
 }
 
 export async function startPayment(args: StartPaymentArgs): Promise<StartedPayment> {
-  const chain = routeChain(args.currency);
+  const chain = routeChain(args.currency, args.buyerCountry ?? null);
   const trail: string[] = [];
 
   for (let i = 0; i < chain.length; i++) {

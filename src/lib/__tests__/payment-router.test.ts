@@ -122,6 +122,51 @@ describe("with Flutterwave switched on", () => {
   });
 });
 
+describe("routing by where the buyer is", () => {
+  beforeEach(() => {
+    process.env[KEY] = "FLWSECK-test-not-a-real-key";
+  });
+
+  test("a Nigerian buyer pays in naira even for a foreign event", () => {
+    // Nigerian banks block international transactions on naira cards, so a
+    // dollar charge is declined by the issuer with "Restricted card". The
+    // route chain cannot rescue that — it catches a processor refusing at
+    // checkout, not a bank declining after the card is entered.
+    const chain = routeChain("THB", "NG");
+    assert.deepEqual(
+      chain.map((r) => `${r.provider}:${r.chargeCurrency}`),
+      ["paystack:NGN"]
+    );
+  });
+
+  test("an American buying a Thai event is charged in dollars", () => {
+    // Their own currency, no conversion on their side at all.
+    const route = resolvePaymentRoute("THB", "US");
+    assert.equal(route.provider, "flutterwave");
+    assert.equal(route.chargeCurrency, "USD");
+  });
+
+  test("a Thai buyer is unaffected by the Nigerian carve-out", () => {
+    assert.equal(resolvePaymentRoute("THB", "TH").chargeCurrency, "USD");
+  });
+
+  test("an unknown country falls back to deciding on the event alone", () => {
+    // VPNs, crawlers and local development strip the geo header. Null must
+    // behave exactly as it did before buyer country was considered.
+    assert.deepEqual(routeChain("THB", null), routeChain("THB"));
+  });
+
+  test("the carve-out is case-insensitive", () => {
+    assert.equal(resolvePaymentRoute("THB", "ng").chargeCurrency, "NGN");
+  });
+
+  test("a Nigerian event is unaffected wherever the buyer is", () => {
+    for (const country of ["NG", "US", "TH", null]) {
+      assert.equal(resolvePaymentRoute("NGN", country).chargeCurrency, "NGN");
+    }
+  });
+});
+
 describe("the fallback", () => {
   test("is the one route with completed payments behind it", () => {
     const fb = fallbackRoute();

@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import { createServiceClient } from "@/lib/supabase/server";
 import { computeFees } from "@/lib/fees";
 import { startPayment } from "@/lib/start-payment";
+import { buyerCountry } from "@/lib/geo";
 import { fulfillOrder } from "@/lib/fulfillment";
 import { appUrl } from "@/lib/app-url";
 import type { EventRow, TicketType } from "@/lib/types";
@@ -199,6 +200,7 @@ export async function POST(req: Request) {
       reference,
       buyer: { email: buyerEmail, name: buyerName },
       redirectUrl: `${appUrl()}/checkout/${order.id}`,
+      buyerCountry: await buyerCountry(),
       title: event.title,
       logo: event.logo_image_url,
       meta: { order_id: order.id, event_id: event.id },

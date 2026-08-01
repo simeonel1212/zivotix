@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import { createServiceClient } from "@/lib/supabase/server";
 import { computeFees } from "@/lib/fees";
 import { startPayment } from "@/lib/start-payment";
+import { buyerCountry } from "@/lib/geo";
 import { generateTicketToken } from "@/lib/qrcode";
 import { appUrl } from "@/lib/app-url";
 import { MERCH_REFERENCE_PREFIX, assessMerch, merchRefusalMessage, merchSubtotal } from "@/lib/merch";
@@ -118,6 +119,7 @@ export async function POST(req: Request) {
         phone: fulfilment === "ship" ? (body.shippingPhone ?? "").trim() || null : null,
       },
       redirectUrl: `${appUrl()}/merch/${order.id}`,
+      buyerCountry: await buyerCountry(),
       title: product.name,
       logo: product.image_urls?.[0] ?? null,
       meta: { merch_order_id: order.id, product_id: product.id },
