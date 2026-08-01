@@ -5,7 +5,6 @@ import Link from "next/link";
 import type { EventRow, TicketType } from "@/lib/types";
 import { computeFees, type FeeMode } from "@/lib/fees";
 import ApproxPrice from "@/components/approx-price";
-import ChargePreview from "@/components/charge-preview";
 import { formatMoney } from "@/lib/currencies";
 
 // Checkout is a single button. Paystack's hosted page presents card and
@@ -17,7 +16,6 @@ export default function TicketSelector({
   ticketTypes,
   feeMode = "pass",
   detectedCurrency = null,
-  chargeCurrency,
 }: {
   event: EventRow;
   ticketTypes: TicketType[];
@@ -25,13 +23,6 @@ export default function TicketSelector({
   feeMode?: FeeMode;
   /** Buyer's currency from the edge network, for the one approximation on the total. */
   detectedCurrency?: string | null;
-  /**
-   * What the card will actually be billed in, decided server-side by the
-   * payment router. Passed in rather than guessed here, because the answer
-   * depends on which processor is configured and this component has no way
-   * to know that.
-   */
-  chargeCurrency: string;
 }) {
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [buyer, setBuyer] = useState({ name: "", email: "" });
@@ -292,30 +283,13 @@ export default function TicketSelector({
               />
             </>
           )}
-          {total > 0 && (
-            <>
-              <br />
-              {/* The exact figure Paystack will bill, stated before the buyer
-                  commits. Without it the page says ฿535 and the payment screen
-                  says ₦21,773, and that unexplained jump is where people stop
-                  and wonder if they're being overcharged. */}
-              <span className="text-xs text-neutral-500">
-                {chargeCurrency === event.currency ? (
-                  `Card or Apple Pay, charged in ${chargeCurrency}`
-                ) : (
-                  <>
-                    <ChargePreview
-                      amount={total}
-                      from={event.currency}
-                      to={chargeCurrency}
-                      className="font-semibold text-neutral-300"
-                    />{" "}
-                    · charged in {chargeCurrency}, your bank converts back at its own rate
-                  </>
-                )}
-              </span>
-            </>
-          )}
+          {/* No conversion line here any more. It existed to explain a jump
+              from ฿535 on this page to ₦21,773 on Paystack's — a jump that
+              only happened because naira was the only currency the account
+              could take. Flutterwave charges foreign cards in the event's own
+              currency or in dollars, so the alarming version of that jump is
+              gone, and the exact amount is stated on the payment page before
+              any card is entered. */}
         </p>
         <div className="flex flex-col gap-2 w-full sm:w-auto">
           <button onClick={() => handleCheckout()} disabled={loading || ticketCount === 0} className="zv-btn-primary shrink-0 w-full sm:w-auto">

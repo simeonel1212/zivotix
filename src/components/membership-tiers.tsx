@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { computeFees } from "@/lib/fees";
 import ApproxPrice from "@/components/approx-price";
-import ChargePreview from "@/components/charge-preview";
 import { formatMoney } from "@/lib/currencies";
 import { membershipShapeLabel } from "@/lib/memberships";
 import type { MembershipTier } from "@/lib/types";
@@ -16,13 +15,10 @@ import type { MembershipTier } from "@/lib/types";
 export default function MembershipTiers({
   tiers,
   detectedCurrency = null,
-  chargeCurrencies = {},
 }: {
   tiers: MembershipTier[];
   /** Buyer's currency from the edge network, not from browser language. */
   detectedCurrency?: string | null;
-  /** Tier currency → what the card is actually billed in, decided server-side. */
-  chargeCurrencies?: Record<string, string>;
 }) {
   const [openId, setOpenId] = useState<string | null>(null);
   const [buyer, setBuyer] = useState({ name: "", email: "" });
@@ -91,15 +87,6 @@ export default function MembershipTiers({
                   currency={tier.currency}
                   detectedCurrency={detectedCurrency}
                   className="text-xs"
-                />
-                {/* The figure Paystack will actually bill. Same reasoning as
-                    the ticket selector: the buyer shouldn't meet a number for
-                    the first time on the payment screen. */}
-                <ChargePreview
-                  amount={fees.total}
-                  from={tier.currency}
-                  to={chargeCurrencies[tier.currency] ?? tier.currency}
-                  className="block text-xs text-neutral-500"
                 />
                 <p className="mt-1 text-sm text-neutral-400">
                   {membershipShapeLabel(tier)}

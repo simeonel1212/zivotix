@@ -5,7 +5,6 @@ import type { Metadata } from "next";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { hasCommunityAccess } from "@/lib/community";
 import { buyerDisplayCurrency } from "@/lib/geo";
-import { chargeCurrencyMap } from "@/lib/payment-router";
 import type {
   EventRow,
   MembershipTier,
@@ -161,11 +160,7 @@ export default async function OrganizerProfilePage({
           counts as a child of space-y-8 and leaves a dead gap. */}
       {(tiers ?? []).length > 0 && (
         <div id="passes" className="scroll-mt-24">
-          <MembershipTiers
-            tiers={tiers ?? []}
-            detectedCurrency={await buyerDisplayCurrency()}
-            chargeCurrencies={chargeCurrencyMap((tiers ?? []).map((t) => t.currency))}
-          />
+          <MembershipTiers tiers={tiers ?? []} detectedCurrency={await buyerDisplayCurrency()} />
         </div>
       )}
 
@@ -180,10 +175,7 @@ export default async function OrganizerProfilePage({
       </div>
 
       {showMerch ? (
-        <MerchGrid
-          products={merch ?? []}
-          chargeCurrencies={chargeCurrencyMap((merch ?? []).map((p) => p.currency))}
-        />
+        <MerchGrid products={merch ?? []} />
       ) : showPosts ? (
         !posts?.length ? (
           <div className="zv-card p-10 text-center">
