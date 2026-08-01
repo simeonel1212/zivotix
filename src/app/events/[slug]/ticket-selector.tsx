@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { EventRow, TicketType } from "@/lib/types";
 import { computeFees, type FeeMode } from "@/lib/fees";
 import ApproxPrice from "@/components/approx-price";
+import ChargePreview from "@/components/charge-preview";
 import { formatMoney } from "@/lib/currencies";
 
 // Checkout is a single button. Paystack's hosted page presents card and
@@ -286,10 +287,23 @@ export default function TicketSelector({
           {total > 0 && (
             <>
               <br />
+              {/* The exact figure Paystack will bill, stated before the buyer
+                  commits. Without it the page says ฿535 and the payment screen
+                  says ₦21,773, and that unexplained jump is where people stop
+                  and wonder if they're being overcharged. */}
               <span className="text-xs text-neutral-500">
-                {event.currency === "NGN"
-                  ? "Card or Apple Pay, charged in NGN"
-                  : `Card or Apple Pay. Charged in Nigerian naira at today's rate — your bank converts back at its own.`}
+                {event.currency === "NGN" ? (
+                  "Card or Apple Pay, charged in NGN"
+                ) : (
+                  <>
+                    <ChargePreview
+                      amount={total}
+                      from={event.currency}
+                      className="font-semibold text-neutral-300"
+                    />{" "}
+                    · charged in naira, your bank converts back at its own rate
+                  </>
+                )}
               </span>
             </>
           )}
