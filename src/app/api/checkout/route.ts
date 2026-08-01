@@ -219,6 +219,11 @@ export async function POST(req: Request) {
         // Only the wallet path produces one. The return page checks it first
         // and verifies that charge directly instead of looking up by reference.
         ...(started.providerChargeId ? { provider_charge_id: started.providerChargeId } : {}),
+        // Every route attempted and why each was refused. Fallbacks are silent
+        // to the buyer on purpose, which means without this an order that fell
+        // from Apple Pay to card to naira is indistinguishable from one that
+        // went straight there.
+        payment_trail: started.trail.join(" | "),
       })
       .eq("id", order.id);
 

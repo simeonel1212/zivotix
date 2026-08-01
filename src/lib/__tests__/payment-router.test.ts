@@ -1,6 +1,11 @@
 import { test, describe, beforeEach, afterEach } from "node:test";
 import assert from "node:assert/strict";
-import { resolvePaymentRoute, routeChain, fallbackRoute } from "../payment-router.ts";
+import {
+  resolvePaymentRoute,
+  routeChain,
+  fallbackRoute,
+  walletAvailable,
+} from "../payment-router.ts";
 import { flutterwaveCollects, flutterwaveV3Configured } from "../flutterwave-v3.ts";
 import { WORLD_CURRENCIES } from "../currencies.ts";
 
@@ -187,6 +192,44 @@ describe("routing by where the buyer is", () => {
       const route = resolvePaymentRoute("NGN", country);
       assert.equal(route.chargeCurrency, "NGN");
       assert.equal(route.provider, "flutterwave");
+    }
+  });
+});
+
+describe("when Apple Pay is worth offering", () => {
+  beforeEach(() => {
+    process.env[KEY] = "FLWSECK-test-not-a-real-key";
+  });
+
+  test("never for a buyer in Nigeria", () => {
+    // Their route is always naira, and Flutterwave's wallet doesn't support
+    // naira. Showing the button would guarantee a tap that falls back to a
+    // card form — which reads as a broken button, not a graceful fallback.
+    for (const currency of ["NGN", "THB", "GBP", "USD"]) {
+      assert.equal(walletAvailable(currency, "NG"), false, `${currency} from NG`);
+    }
+  });
+
+  test("never for a naira event, wherever the buyer is", () => {
+    for (const country of ["US", "TH", "GB", null]) {
+      assert.equal(walletAvailable("NGN", country), false, `NGN from ${country}`);
+    }
+  });
+
+  test("yes for a foreign buyer on a foreign event", () => {
+    assert.equal(walletAvailable("THB", "US"), true);
+    assert.equal(walletAvailable("THB", "TH"), true);
+    assert.equal(walletAvailable("GBP", "GB"), true);
+  });
+
+  test("the button is never offered where the charge would be naira", () => {
+    // The invariant, stated once: wallet availability and a naira charge are
+    // mutually exclusive, for every currency and country combination.
+    for (const currency of WORLD_CURRENCIES) {
+      for (const country of ["NG", "US", "TH", null]) {
+        const naira = resolvePaymentRoute(currency, country).chargeCurrency === "NGN";
+        assert.equal(walletAvailable(currency, country), !naira, `${currency}/${country}`);
+      }
     }
   });
 });

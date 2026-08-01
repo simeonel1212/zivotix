@@ -5,6 +5,8 @@ import type { Metadata } from "next";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 import type { EventRow, TicketType, MembershipTier, MerchProduct } from "@/lib/types";
 import { googleMapsUrl, googleMapsEmbedUrl } from "@/lib/maps";
+import { walletAvailable } from "@/lib/payment-router";
+import { buyerCountry } from "@/lib/geo";
 import { appUrl } from "@/lib/app-url";
 import VerifiedBadge from "@/components/verified-badge";
 import ShareButton from "@/components/share-button";
@@ -358,6 +360,7 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
         <TicketSelector
           event={event}
           ticketTypes={ticketTypes ?? []}
+          walletAvailable={walletAvailable(event.currency, await buyerCountry())}
         />
       </div>
 

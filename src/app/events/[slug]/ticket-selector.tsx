@@ -15,11 +15,18 @@ export default function TicketSelector({
   event,
   ticketTypes,
   feeMode = "pass",
+  walletAvailable = false,
 }: {
   event: EventRow;
   ticketTypes: TicketType[];
   /** "absorb" means the organizer covers the fee and the buyer pays the listed price flat. */
   feeMode?: FeeMode;
+  /**
+   * Whether Apple Pay can complete for this buyer. Decided server-side: it
+   * depends on the charge currency, which depends on where the buyer is, and
+   * Flutterwave doesn't support the wallet for naira.
+   */
+  walletAvailable?: boolean;
 }) {
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [buyer, setBuyer] = useState({ name: "", email: "" });
@@ -293,10 +300,12 @@ export default function TicketSelector({
             )}
           </button>
 
-          {/* Renders nothing off an Apple device, so Android and desktop see
-              the card button alone rather than a control they can't use. Free
-              events skip it — there is nothing to charge. */}
-          {total > 0 && (
+          {/* Two gates. walletAvailable is the server's answer to "can this
+              charge go through Apple Pay at all" — false for a naira route,
+              which Flutterwave's wallet doesn't support. The component itself
+              is the second gate: it renders nothing off an Apple device. Free
+              events skip it, there being nothing to charge. */}
+          {total > 0 && walletAvailable && (
             <ApplePayButton
               onPay={() => handleCheckout("applepay")}
               disabled={ticketCount === 0}

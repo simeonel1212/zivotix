@@ -174,12 +174,20 @@ export async function startPayment(args: StartPaymentArgs): Promise<StartedPayme
   // expecting to pay, and the worst outcome is that they type a card number.
   if (args.wallet === "applepay") {
     const walletRoute = chain.find((r) => r.provider === "flutterwave") ?? chain[0];
-    try {
-      return await attemptApplePay(walletRoute, args);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      trail.push(`Apple Pay refused: ${message}`);
-      console.error(`[start-payment] Apple Pay refused ${args.reference}: ${message}`);
+
+    // Apple Pay is enabled on this Flutterwave account but not for naira, so a
+    // naira route is a guaranteed refusal. Skipping it saves the buyer a round
+    // trip to an API call that cannot succeed, and records why.
+    if (walletRoute.chargeCurrency === "NGN") {
+      trail.push("Apple Pay skipped: not supported for NGN");
+    } else {
+      try {
+        return await attemptApplePay(walletRoute, args);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        trail.push(`Apple Pay refused: ${message}`);
+        console.error(`[start-payment] Apple Pay refused ${args.reference}: ${message}`);
+      }
     }
   }
 

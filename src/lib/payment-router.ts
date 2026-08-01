@@ -130,6 +130,22 @@ export function resolvePaymentRoute(
   return routeChain(eventCurrency, buyerCountry)[0];
 }
 
+// Whether Apple Pay can work for this buyer at all.
+//
+// Flutterwave has Apple Pay enabled on this account, but not for NGN — and a
+// naira charge is exactly what a buyer in Nigeria gets, since their card
+// cannot reach dollars. So the one group whose route is always naira is the
+// one group the wallet can never serve.
+//
+// Used to decide whether to render the button, not just whether to try the
+// charge. Rendering it and falling back would technically work — the buyer
+// lands on the card page — but tapping Apple Pay and being handed a card form
+// reads as a broken button, and the second-most expensive thing on a checkout
+// screen is a control that doesn't do what it says.
+export function walletAvailable(eventCurrency: string, buyerCountry: string | null = null): boolean {
+  return resolvePaymentRoute(eventCurrency, buyerCountry).chargeCurrency !== "NGN";
+}
+
 // The last resort, and the only route with completed payments behind it.
 // Not the nicest experience — the buyer's bank converts back at its own rate —
 // but a worse rate beats a checkout that cannot take money at all.

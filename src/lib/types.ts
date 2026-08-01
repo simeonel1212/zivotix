@@ -118,6 +118,8 @@ export interface Order {
   created_at: string;
   payment_provider: "paystack" | "flutterwave";
   provider_charge_id: string | null;
+  /** Routes attempted and why each was refused. Diagnostic only. */
+  payment_trail: string | null;
 }
 
 export interface OrderItem {
