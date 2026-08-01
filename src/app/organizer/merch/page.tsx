@@ -39,6 +39,13 @@ export default async function OrganizerMerchPage() {
 
   const productName = new Map((products ?? []).map((p) => [p.id, p.name]));
 
+  // Payouts go out the next day, so by the time a buyer complains that nothing
+  // arrived, the organizer already has the money. Nothing here can undo that —
+  // but an order visibly sitting unposted for nine days is the difference
+  // between finding out now and finding out from an angry email.
+  const daysWaiting = (iso: string) =>
+    Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000);
+
   return (
     <div className="max-w-3xl mx-auto space-y-10">
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
@@ -102,6 +109,19 @@ export default async function OrganizerMerchPage() {
                     <p className="text-xs text-neutral-500">
                       {o.buyer_name} · {o.buyer_email}
                     </p>
+                    {(() => {
+                      const d = daysWaiting(o.created_at);
+                      if (d < 2) return null;
+                      return (
+                        <p
+                          className={`text-xs mt-1 font-semibold ${
+                            d >= 7 ? "text-red-400" : "text-amber-400"
+                          }`}
+                        >
+                          Waiting {d} days
+                        </p>
+                      );
+                    })()}
                   </div>
                   <FulfilButton orderId={o.id} label="Mark posted" />
                 </div>

@@ -4,6 +4,7 @@ import Image from "next/image";
 import { createServiceClient } from "@/lib/supabase/server";
 import { verifyTransaction } from "@/lib/paystack";
 import { generateQrDataUrl } from "@/lib/qrcode";
+import { sendMerchOrderEmail } from "@/lib/email";
 import { formatMoney } from "@/lib/currencies";
 import ConfettiBurst from "@/components/confetti-burst";
 import type { MerchOrder, MerchProduct } from "@/lib/types";
@@ -52,6 +53,25 @@ export default async function MerchOrderPage({ params }: { params: Promise<{ id:
           .is("paid_at", null)
           .select("id")
           .maybeSingle();
+
+        if (claimed) {
+          // Guarded on `claimed` so a refresh can't email the buyer twice.
+          // Failure is swallowed: the order is paid whether or not the email
+          // lands, and this page is the authoritative copy of it.
+          await sendMerchOrderEmail({
+            to: order.buyer_email,
+            buyerName: order.buyer_name,
+            orderId: order.id,
+            productName: product?.name ?? "Item",
+            quantity: order.quantity,
+            size: order.size,
+            total: order.charge_amount,
+            currency: order.charge_currency,
+            fulfilment: order.fulfilment,
+            pickupToken: order.pickup_token,
+            shippingAddress: order.shipping_address,
+          }).catch(() => {});
+        }
 
         if (claimed && product && product.stock !== null) {
           // Stock comes down on payment, not at checkout: reserving it when

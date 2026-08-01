@@ -2,6 +2,7 @@ import { Resend } from "resend";
 import { generateQrBuffer } from "./qrcode";
 import { appUrl } from "./app-url";
 import { escapeHtml } from "./html";
+import { formatMoney } from "./currencies";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -304,6 +305,85 @@ export async function sendMembershipEmail(args: MembershipEmailArgs) {
 
   if (error) {
     throw new Error(`Resend rejected the membership email: ${error.message ?? JSON.stringify(error)}`);
+  }
+  return data;
+}
+
+interface MerchOrderEmailArgs {
+  to: string;
+  buyerName: string;
+  orderId: string;
+  productName: string;
+  quantity: number;
+  size: string | null;
+  total: number;
+  currency: string;
+  fulfilment: "pickup" | "ship";
+  /** Pickup code, attached as a QR. Null on shipped orders. */
+  pickupToken: string | null;
+  shippingAddress: string | null;
+}
+
+// Sent once a merch order is paid for.
+//
+// The QR is attached only for collection orders — a shipped parcel has no code
+// to show anyone, and attaching one would invite someone to turn up at a door
+// with it. What that buyer needs instead is the address they typed, written
+// back to them, because a wrong address is much cheaper to fix before it ships.
+export async function sendMerchOrderEmail(args: MerchOrderEmailArgs) {
+  const base = appUrl();
+  const isPickup = args.fulfilment === "pickup" && args.pickupToken;
+  const qr = isPickup ? (await generateQrBuffer(args.pickupToken!)).toString("base64") : null;
+
+  const line = `${args.quantity} × ${args.productName}${args.size ? ` · ${args.size}` : ""}`;
+
+  const { data, error } = await resend.emails.send({
+    from: process.env.EMAIL_FROM!,
+    to: args.to,
+    subject: `Your order — ${args.productName}`,
+    html: `
+      <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:520px;margin:0 auto;padding:8px;background:#f5f5f7;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:separate;border-radius:20px;overflow:hidden;margin:16px 0;">
+          <tr>
+            <td style="background:linear-gradient(135deg,#facc15,#ca8a04);background-color:#eab308;padding:28px 24px;">
+              <p style="margin:0;color:#ffffff;font-weight:700;font-size:13px;letter-spacing:0.04em;">ZIVOTIX</p>
+              <h1 style="margin:10px 0 0;color:#ffffff;font-size:24px;line-height:1.25;">Order confirmed</h1>
+              <p style="margin:12px 0 0;color:rgba(255,255,255,0.92);font-size:14px;">
+                ${esc(line)} · ${esc(formatMoney(args.total, args.currency))}
+              </p>
+            </td>
+          </tr>
+        </table>
+
+        <p style="margin:0 0 16px;font-size:14px;color:#1d1d1f;">
+          Hi ${esc(args.buyerName)}, thanks — that's paid for.
+        </p>
+
+        ${
+          isPickup
+            ? `<p style="margin:0 0 16px;font-size:14px;color:#1d1d1f;">
+                 Show the attached code at the next event and the team will hand yours over.
+               </p>`
+            : `<p style="margin:0 0 8px;font-size:14px;color:#1d1d1f;">We'll send it to:</p>
+               <p style="margin:0 0 16px;padding:12px 14px;background:#ffffff;border-radius:14px;font-size:14px;color:#1d1d1f;white-space:pre-line;">${esc(
+                 args.shippingAddress ?? ""
+               )}</p>
+               <p style="margin:0 0 16px;font-size:13px;color:#6e6e73;">
+                 Wrong address? Reply to this email now — it's far easier to fix before it's posted.
+               </p>`
+        }
+
+        <a href="${base}/merch/${esc(args.orderId)}"
+           style="display:inline-block;margin:0 0 20px;background:linear-gradient(135deg,#facc15,#ca8a04);background-color:#eab308;color:#ffffff;text-decoration:none;font-weight:600;font-size:14px;padding:12px 26px;border-radius:999px;">
+          View your order
+        </a>
+      </div>
+    `,
+    attachments: qr ? [{ filename: "pickup-code.png", content: qr }] : undefined,
+  });
+
+  if (error) {
+    throw new Error(`Resend rejected the merch email: ${error.message ?? JSON.stringify(error)}`);
   }
   return data;
 }

@@ -50,15 +50,33 @@ export async function POST() {
       .in("status", ["active", "expired"])
       .returns<{ id: string; base_amount: number }[]>();
 
+    // Merch, on the same terms. Refunded orders are excluded for the same
+    // reason: that money went back to the buyer.
+    //
+    // Unfulfilled orders are deliberately still paid out. The organizer has
+    // the money and owes the buyer an object; withholding their revenue until
+    // a parcel is posted would make Zivotix an escrow service, which is a
+    // different business with different licences.
+    const { data: merchOrders } = await service
+      .from("merch_orders")
+      .select("id, base_amount")
+      .eq("organizer_id", organizer.id)
+      .eq("status", "paid")
+      .not("paid_at", "is", null)
+      .is("payout_id", null)
+      .returns<{ id: string; base_amount: number }[]>();
+
+    const unpaidMerch = merchOrders ?? [];
     const unpaidMemberships = memberships ?? [];
-    if (!unpaid.length && !unpaidMemberships.length) continue;
+    if (!unpaid.length && !unpaidMemberships.length && !unpaidMerch.length) continue;
 
     // Organizers keep 100% of face value — Zivotix is paid by the buyer's
     // service fee, which lives on the order or membership and never enters
     // gross_sales. See supabase/migrations/2026-07-27-buyer-paid-service-fee.sql.
     const ticketGross = unpaid.reduce((s, o) => s + o.base_amount, 0);
     const membershipGross = unpaidMemberships.reduce((s, m) => s + m.base_amount, 0);
-    const grossSales = ticketGross + membershipGross;
+    const merchGross = unpaidMerch.reduce((s, m) => s + m.base_amount, 0);
+    const grossSales = ticketGross + membershipGross + merchGross;
     const platformFee = 0;
     const netPayable = Math.round(grossSales * 100) / 100;
     if (netPayable <= 0) continue;
@@ -95,6 +113,18 @@ export async function POST() {
         .in(
           "id",
           unpaidMemberships.map((m) => m.id)
+        );
+    }
+
+    // Same stamping trick as memberships: payout_items is keyed to orders, so
+    // merch records its payout on its own row.
+    if (unpaidMerch.length) {
+      await service
+        .from("merch_orders")
+        .update({ payout_id: payout.id })
+        .in(
+          "id",
+          unpaidMerch.map((m) => m.id)
         );
     }
 
