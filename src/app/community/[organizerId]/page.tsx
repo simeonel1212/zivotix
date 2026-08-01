@@ -5,11 +5,19 @@ import type { Metadata } from "next";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { hasCommunityAccess } from "@/lib/community";
 import { buyerDisplayCurrency } from "@/lib/geo";
-import type { EventRow, MembershipTier, OrganizerPost, PostComment, ReactionType } from "@/lib/types";
+import type {
+  EventRow,
+  MembershipTier,
+  MerchProduct,
+  OrganizerPost,
+  PostComment,
+  ReactionType,
+} from "@/lib/types";
 import ResendLinkForm from "./resend-link-form";
 import VerifiedBadge from "@/components/verified-badge";
 import MembershipTiers from "@/components/membership-tiers";
 import PostCard from "@/components/post-card";
+import MerchGrid from "@/components/merch-grid";
 import { formatMoney } from "@/lib/currencies";
 
 export async function generateMetadata({
@@ -56,6 +64,7 @@ export default async function OrganizerProfilePage({
   const { organizerId } = await params;
   const { tab } = await searchParams;
   const showPosts = tab === "posts";
+  const showMerch = tab === "merch";
 
   const service = createServiceClient();
   const { data: organizer } = await service
@@ -82,6 +91,14 @@ export default async function OrganizerProfilePage({
     .eq("is_active", true)
     .order("price", { ascending: true })
     .returns<MembershipTier[]>();
+
+  const { data: merch } = await service
+    .from("merch_products")
+    .select("*")
+    .eq("organizer_id", organizerId)
+    .eq("is_active", true)
+    .order("created_at", { ascending: false })
+    .returns<MerchProduct[]>();
 
   const { data: posts } = await service
     .from("organizer_posts")
@@ -113,6 +130,7 @@ export default async function OrganizerProfilePage({
   const base = organizer.handle ? `/${organizer.handle}` : `/community/${organizerId}`;
   const eventCount = events?.length ?? 0;
   const postCount = posts?.length ?? 0;
+  const merchCount = merch?.length ?? 0;
 
   return (
     <main className="flex-1 mx-auto w-full max-w-2xl px-6 py-12 space-y-8">
@@ -147,11 +165,18 @@ export default async function OrganizerProfilePage({
       )}
 
       <div className="flex items-center gap-1 border-b border-white/15">
-        <Tab href={base} label="Tickets" count={eventCount} active={!showPosts} />
+        <Tab href={base} label="Tickets" count={eventCount} active={!showPosts && !showMerch} />
         <Tab href={`${base}?tab=posts`} label="Posts" count={postCount} active={showPosts} />
+        {/* Only when there's something to sell — an empty Merch tab tells a
+            visitor the organizer tried and gave up. */}
+        {merchCount > 0 && (
+          <Tab href={`${base}?tab=merch`} label="Merch" count={merchCount} active={showMerch} />
+        )}
       </div>
 
-      {showPosts ? (
+      {showMerch ? (
+        <MerchGrid products={merch ?? []} />
+      ) : showPosts ? (
         !posts?.length ? (
           <div className="zv-card p-10 text-center">
             <p className="text-sm text-neutral-500">

@@ -243,6 +243,63 @@ export interface Membership {
   created_at: string;
 }
 
+// -------------------------------------------------------------------- merch
+// Physical goods an organizer sells alongside tickets. Unlike a ticket, this
+// belongs to the organizer rather than to one event, and it ends with someone
+// handing an object over.
+
+/** Where a product can end up: collected at an event, posted, or either. */
+export type Fulfilment = "pickup" | "ship" | "both";
+
+export interface MerchProduct {
+  id: string;
+  organizer_id: string;
+  name: string;
+  description: string | null;
+  price: number;
+  currency: string;
+  /** Up to three photos. */
+  image_urls: string[];
+  /** Empty when there's no size to choose. */
+  sizes: string[];
+  /** Null = unlimited. */
+  stock: number | null;
+  fulfilment: Fulfilment;
+  /** Charged once per order on shipped items. Null when pickup-only. */
+  shipping_fee: number | null;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface MerchOrder {
+  id: string;
+  organizer_id: string;
+  product_id: string;
+  buyer_name: string;
+  buyer_email: string;
+  quantity: number;
+  size: string | null;
+  /** The choice made for this order — never "both". */
+  fulfilment: "pickup" | "ship";
+  shipping_address: string | null;
+  shipping_phone: string | null;
+  base_currency: string;
+  base_amount: number;
+  service_fee: number;
+  charge_currency: string;
+  charge_amount: number;
+  fx_rate_used: number | null;
+  reference: string | null;
+  status: OrderStatus;
+  /** Set once handed over or posted. */
+  fulfilled_at: string | null;
+  /** Code shown at pickup. Null on shipped orders. */
+  pickup_token: string | null;
+  paid_at: string | null;
+  payout_id: string | null;
+  created_at: string;
+}
+
 export interface MembershipCheckIn {
   id: string;
   membership_id: string;

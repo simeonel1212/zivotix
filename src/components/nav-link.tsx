@@ -70,6 +70,12 @@ const ICONS: Record<string, React.ReactNode> = {
       <path d="M4 12h16" strokeLinecap="round" />
     </>
   ),
+  bag: (
+    <>
+      <path d="M6 8h12l-1 12H7L6 8z" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M9 8V6a3 3 0 016 0v2" strokeLinecap="round" />
+    </>
+  ),
   megaphone: (
     <>
       <path d="M3 11v2a2 2 0 0 0 2 2h1l1 5h2l-1-5h2l9 4V7l-9 4H6a2 2 0 0 0-2 2Z" strokeLinejoin="round" strokeLinecap="round" />

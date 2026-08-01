@@ -31,6 +31,10 @@ export async function POST(req: Request) {
   // different rules: valid for many events, once each, until its credits run
   // out. The ticket path below is untouched by this.
   if (!ticket) {
+    // A merch pickup code is checked before the membership path because it's
+    // the cheaper lookup and the two token spaces never overlap.
+    const merch = await scanMerchPickup(supabase, token, user.id);
+    if (merch) return merch;
     return scanMembership(supabase, token, eventId, user.id);
   }
 
@@ -198,5 +202,72 @@ async function scanMembership(
     creditsLeft: state.creditsLeft === null ? null : state.creditsLeft - 1,
     creditsTotal: membership.credits_total,
     expiresAt: membership.expires_at,
+  });
+}
+
+// ---------------------------------------------------------------------- merch
+//
+// A merch pickup code is the simplest of the three: it isn't tied to an event
+// and it can only be redeemed once, because it represents one physical object
+// leaving the organizer's hands.
+//
+// Returns null rather than a response when the token isn't a pickup code, so
+// the caller can fall through to the membership check.
+async function scanMerchPickup(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  token: string,
+  userId: string
+) {
+  const { data: order } = await supabase
+    .from("merch_orders")
+    .select("id, organizer_id, buyer_name, quantity, size, status, fulfilled_at, product_id")
+    .eq("pickup_token", token)
+    .maybeSingle<{
+      id: string;
+      organizer_id: string;
+      buyer_name: string;
+      quantity: number;
+      size: string | null;
+      status: string;
+      fulfilled_at: string | null;
+      product_id: string;
+    }>();
+
+  if (!order) return null;
+
+  if (order.status !== "paid") {
+    return NextResponse.json({ result: "invalid", reason: "Not paid" });
+  }
+  if (order.fulfilled_at) {
+    return NextResponse.json({ result: "already_used", isMerch: true, buyerName: order.buyer_name });
+  }
+
+  const { data: product } = await supabase
+    .from("merch_products")
+    .select("name")
+    .eq("id", order.product_id)
+    .maybeSingle<{ name: string }>();
+
+  // Conditional on fulfilled_at still being null, so two staff scanning the
+  // same code at once can't both hand out a shirt.
+  const { data: claimed } = await supabase
+    .from("merch_orders")
+    .update({ fulfilled_at: new Date().toISOString() })
+    .eq("id", order.id)
+    .is("fulfilled_at", null)
+    .select("id");
+
+  if (!claimed?.length) {
+    return NextResponse.json({ result: "already_used", isMerch: true, buyerName: order.buyer_name });
+  }
+
+  void userId;
+  return NextResponse.json({
+    result: "valid",
+    isMerch: true,
+    buyerName: order.buyer_name,
+    item: product?.name ?? "Item",
+    quantity: order.quantity,
+    size: order.size,
   });
 }
