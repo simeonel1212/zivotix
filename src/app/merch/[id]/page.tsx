@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import { createServiceClient } from "@/lib/supabase/server";
-import { verifyTransaction } from "@/lib/paystack";
+import { paymentSucceeded } from "@/lib/verify-payment";
 import { generateQrDataUrl } from "@/lib/qrcode";
 import { sendMerchOrderEmail } from "@/lib/email";
 import { formatMoney } from "@/lib/currencies";
@@ -42,8 +42,13 @@ export default async function MerchOrderPage({ params }: { params: Promise<{ id:
 
   if (status === "pending" && !order.paid_at && order.reference) {
     try {
-      const tx = await verifyTransaction(order.reference);
-      if (tx.status === "success") {
+      const succeeded = await paymentSucceeded({
+        provider: order.payment_provider,
+        reference: order.reference,
+        chargeAmount: order.charge_amount,
+        chargeCurrency: order.charge_currency,
+      });
+      if (succeeded) {
         // Guarded on paid_at being null so a refresh can't mark it paid twice
         // and, more importantly, can't decrement stock twice.
         const { data: claimed } = await supabase

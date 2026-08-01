@@ -1,6 +1,7 @@
 import { createServiceClient } from "@/lib/supabase/server";
 import { verifyTransaction } from "@/lib/paystack";
 import { getCharge } from "@/lib/flutterwave";
+import { verifyFlutterwaveByReference, verificationMatchesOrder } from "@/lib/flutterwave-v3";
 import { generateQrDataUrl } from "@/lib/qrcode";
 import { fulfillOrder } from "@/lib/fulfillment";
 import TicketCard from "@/components/ticket-card";
@@ -40,10 +41,21 @@ export default async function CheckoutStatusPage({
       // slow (or misconfigured), fulfill right here so the buyer isn't stuck
       // on "processing" with no tickets ever generated. fulfillOrder() is
       // idempotent, so it's safe if the webhook also fires around the same time.
-      const succeeded =
-        order.payment_provider === "flutterwave" && order.provider_charge_id
-          ? (await getCharge(order.provider_charge_id)).status === "succeeded"
-          : (await verifyTransaction(order.paystack_reference)).status === "success";
+      let succeeded: boolean;
+      if (order.payment_provider === "flutterwave") {
+        succeeded = order.provider_charge_id
+          ? // Legacy: the v4 Apple/Google Pay rail, which recorded a charge id.
+            (await getCharge(order.provider_charge_id)).status === "succeeded"
+          : // v3 hosted checkout. Verified by our own reference and checked
+            // against the amount we recorded, so neither a tampered query
+            // string nor a partial payment can unlock a ticket.
+            verificationMatchesOrder(
+              await verifyFlutterwaveByReference(order.paystack_reference),
+              { amount: order.charge_amount, currency: order.charge_currency }
+            );
+      } else {
+        succeeded = (await verifyTransaction(order.paystack_reference)).status === "success";
+      }
 
       if (succeeded) {
         await supabase.from("orders").update({ status: "paid" }).eq("id", order.id);

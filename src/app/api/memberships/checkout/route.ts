@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
 import { randomUUID } from "node:crypto";
 import { createServiceClient } from "@/lib/supabase/server";
-import { resolveChargeCurrency, convert, toSubunit } from "@/lib/fx";
 import { computeFees } from "@/lib/fees";
-import { initTransaction } from "@/lib/paystack";
+import { startPayment } from "@/lib/start-payment";
 import { generateTicketToken } from "@/lib/qrcode";
 import { appUrl } from "@/lib/app-url";
 import { MEMBERSHIP_REFERENCE_PREFIX, expiryFromPurchase, expiryFromMonths } from "@/lib/memberships";
@@ -58,19 +57,6 @@ export async function POST(req: Request) {
   }
 
   const fees = computeFees(tier.price, tier.currency, "pass");
-  const chargeCurrency = resolveChargeCurrency(tier.currency);
-
-  let chargeAmount: number;
-  let rate: number;
-  try {
-    ({ amount: chargeAmount, rate } = await convert(fees.total, tier.currency, chargeCurrency));
-  } catch {
-    return NextResponse.json(
-      { error: `Couldn't convert ${tier.currency} to ${chargeCurrency} right now. Please try again shortly.` },
-      { status: 502 }
-    );
-  }
-
   const reference = `${MEMBERSHIP_REFERENCE_PREFIX}${randomUUID().replace(/-/g, "")}`;
 
   const { data: membership, error: insertError } = await supabase
@@ -100,9 +86,11 @@ export async function POST(req: Request) {
       base_currency: tier.currency,
       base_amount: fees.organizerReceives,
       service_fee: fees.serviceFee,
-      charge_currency: chargeCurrency,
-      charge_amount: chargeAmount,
-      fx_rate_used: rate,
+      // Seeded in the tier's own currency and corrected below, once the
+      // processor has actually accepted the charge and told us what it took.
+      charge_currency: tier.currency,
+      charge_amount: fees.total,
+      fx_rate_used: 1,
     })
     .select()
     .single();
@@ -112,16 +100,27 @@ export async function POST(req: Request) {
   }
 
   try {
-    const tx = await initTransaction({
-      email: memberEmail,
-      amount: toSubunit(chargeAmount),
-      currency: chargeCurrency,
+    const started = await startPayment({
+      amount: fees.total,
+      currency: tier.currency,
       reference,
-      callback_url: `${appUrl()}/pass/${membership.id}`,
-      metadata: { membership_id: membership.id, tier_id: tier.id },
-      channels: ["card", "apple_pay"],
+      buyer: { email: memberEmail, name: memberName },
+      redirectUrl: `${appUrl()}/pass/${membership.id}`,
+      title: tier.name,
+      meta: { membership_id: membership.id, tier_id: tier.id },
     });
-    return NextResponse.json({ redirectUrl: tx.authorization_url });
+
+    await supabase
+      .from("memberships")
+      .update({
+        payment_provider: started.provider,
+        charge_currency: started.chargeCurrency,
+        charge_amount: started.chargeAmount,
+        fx_rate_used: started.fxRate,
+      })
+      .eq("id", membership.id);
+
+    return NextResponse.json({ redirectUrl: started.paymentUrl });
   } catch (e) {
     return NextResponse.json(
       { error: e instanceof Error ? e.message : "Payment init failed" },

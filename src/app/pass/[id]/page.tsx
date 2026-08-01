@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { createServiceClient } from "@/lib/supabase/server";
-import { verifyTransaction } from "@/lib/paystack";
+import { paymentSucceeded } from "@/lib/verify-payment";
 import { generateQrDataUrl } from "@/lib/qrcode";
 import { assessMembership } from "@/lib/memberships";
 import { sendMembershipEmail } from "@/lib/email";
@@ -32,11 +32,17 @@ export default async function PassPage({ params }: { params: Promise<{ id: strin
   if (!membership) notFound();
 
   // Unpaid passes are inserted as "cancelled" so they can never be scanned in.
-  // Verify with Paystack and activate once the money is confirmed.
+  // Verify with whichever processor took the money and activate once it's
+  // confirmed.
   if (membership.status === "cancelled" && !membership.paid_at && membership.reference) {
     try {
-      const tx = await verifyTransaction(membership.reference);
-      if (tx.status === "success") {
+      const succeeded = await paymentSucceeded({
+        provider: membership.payment_provider,
+        reference: membership.reference,
+        chargeAmount: membership.charge_amount,
+        chargeCurrency: membership.charge_currency,
+      });
+      if (succeeded) {
         await supabase
           .from("memberships")
           .update({ status: "active", paid_at: new Date().toISOString() })

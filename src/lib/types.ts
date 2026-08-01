@@ -237,6 +237,8 @@ export interface Membership {
   charge_currency: string;
   charge_amount: number;
   fx_rate_used: number | null;
+  /** Which processor took the money — decides how the pass page verifies it. */
+  payment_provider: "paystack" | "flutterwave";
   paid_at: string | null;
   /** Set once this membership's revenue has been included in a payout. */
   payout_id: string | null;
@@ -289,6 +291,8 @@ export interface MerchOrder {
   charge_currency: string;
   charge_amount: number;
   fx_rate_used: number | null;
+  /** Which processor took the money — decides how the order page verifies it. */
+  payment_provider: "paystack" | "flutterwave";
   reference: string | null;
   status: OrderStatus;
   /** Set once handed over or posted. */

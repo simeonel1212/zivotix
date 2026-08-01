@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
 import { randomUUID } from "node:crypto";
 import { createServiceClient } from "@/lib/supabase/server";
-import { resolveChargeCurrency, convert, toSubunit } from "@/lib/fx";
 import { computeFees } from "@/lib/fees";
-import { initTransaction } from "@/lib/paystack";
+import { startPayment } from "@/lib/start-payment";
 import { generateTicketToken } from "@/lib/qrcode";
 import { appUrl } from "@/lib/app-url";
 import { MERCH_REFERENCE_PREFIX, assessMerch, merchRefusalMessage, merchSubtotal } from "@/lib/merch";
@@ -71,15 +70,6 @@ export async function POST(req: Request) {
   const { subtotal } = merchSubtotal(product, quantity, fulfilment);
   const fees = computeFees(subtotal, product.currency, "pass");
 
-  const chargeCurrency = resolveChargeCurrency(product.currency);
-  let chargeAmount = fees.total;
-  let rate: number | null = null;
-  if (chargeCurrency !== product.currency) {
-    const converted = await convert(fees.total, product.currency, chargeCurrency);
-    chargeAmount = converted.amount;
-    rate = converted.rate;
-  }
-
   const reference = `${MERCH_REFERENCE_PREFIX}_${randomUUID()}`;
 
   const { data: order, error: insertError } = await supabase
@@ -97,9 +87,11 @@ export async function POST(req: Request) {
       base_currency: product.currency,
       base_amount: fees.organizerReceives,
       service_fee: fees.serviceFee,
-      charge_currency: chargeCurrency,
-      charge_amount: chargeAmount,
-      fx_rate_used: rate,
+      // Seeded in the product's own currency and corrected below, once the
+      // processor has accepted the charge and told us what it took.
+      charge_currency: product.currency,
+      charge_amount: fees.total,
+      fx_rate_used: 1,
       reference,
       // Pending until the return page verifies payment. Stock is only
       // decremented then — reserving it here would let an abandoned checkout
@@ -116,16 +108,32 @@ export async function POST(req: Request) {
   }
 
   try {
-    const tx = await initTransaction({
-      email: buyerEmail,
-      amount: toSubunit(chargeAmount),
-      currency: chargeCurrency,
+    const started = await startPayment({
+      amount: fees.total,
+      currency: product.currency,
       reference,
-      callback_url: `${appUrl()}/merch/${order.id}`,
-      metadata: { merch_order_id: order.id, product_id: product.id },
-      channels: ["card", "apple_pay"],
+      buyer: {
+        email: buyerEmail,
+        name: buyerName,
+        phone: fulfilment === "ship" ? (body.shippingPhone ?? "").trim() || null : null,
+      },
+      redirectUrl: `${appUrl()}/merch/${order.id}`,
+      title: product.name,
+      logo: product.image_urls?.[0] ?? null,
+      meta: { merch_order_id: order.id, product_id: product.id },
     });
-    return NextResponse.json({ redirectUrl: tx.authorization_url });
+
+    await supabase
+      .from("merch_orders")
+      .update({
+        payment_provider: started.provider,
+        charge_currency: started.chargeCurrency,
+        charge_amount: started.chargeAmount,
+        fx_rate_used: started.fxRate,
+      })
+      .eq("id", order.id);
+
+    return NextResponse.json({ redirectUrl: started.paymentUrl });
   } catch (e) {
     return NextResponse.json(
       { error: e instanceof Error ? e.message : "Payment init failed" },

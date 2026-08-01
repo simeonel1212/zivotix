@@ -5,6 +5,7 @@ import Image from "next/image";
 import { computeFees } from "@/lib/fees";
 import { formatMoney } from "@/lib/currencies";
 import { assessMerch, merchRefusalMessage, merchSubtotal } from "@/lib/merch";
+import ChargePreview from "@/components/charge-preview";
 import type { MerchProduct } from "@/lib/types";
 
 // An organizer's merch, on their profile.
@@ -250,6 +251,12 @@ function MerchCard({
                 <span>Total</span>
                 <span>{formatMoney(fees.total, product.currency)}</span>
               </div>
+              {/* What the card is actually billed, before they commit. */}
+              <ChargePreview
+                amount={fees.total}
+                from={product.currency}
+                className="block text-right text-xs text-neutral-500 mt-1"
+              />
             </div>
 
             {!state.buyable && (

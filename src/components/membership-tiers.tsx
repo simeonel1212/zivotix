@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { computeFees } from "@/lib/fees";
 import ApproxPrice from "@/components/approx-price";
+import ChargePreview from "@/components/charge-preview";
 import { formatMoney } from "@/lib/currencies";
 import { membershipShapeLabel } from "@/lib/memberships";
 import type { MembershipTier } from "@/lib/types";
@@ -57,7 +58,7 @@ export default function MembershipTiers({
       <div>
         <h2 className="text-xl font-bold tracking-tight text-neutral-50">Become a member</h2>
         <p className="text-sm text-neutral-400 mt-1">
-          Pay once. Walk in whenever they're on.
+          Pay once. Walk in whenever they&apos;re on.
         </p>
       </div>
 
@@ -87,6 +88,14 @@ export default function MembershipTiers({
                   currency={tier.currency}
                   detectedCurrency={detectedCurrency}
                   className="text-xs"
+                />
+                {/* The figure Paystack will actually bill. Same reasoning as
+                    the ticket selector: the buyer shouldn't meet a number for
+                    the first time on the payment screen. */}
+                <ChargePreview
+                  amount={fees.total}
+                  from={tier.currency}
+                  className="block text-xs text-neutral-500"
                 />
                 <p className="mt-1 text-sm text-neutral-400">
                   {membershipShapeLabel(tier)}

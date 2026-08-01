@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
 import { randomUUID } from "node:crypto";
 import { createServiceClient } from "@/lib/supabase/server";
-import { resolveChargeCurrency, convert, toSubunit } from "@/lib/fx";
 import { computeFees } from "@/lib/fees";
-import { initTransaction } from "@/lib/paystack";
+import { startPayment } from "@/lib/start-payment";
 import { fulfillOrder } from "@/lib/fulfillment";
 import { appUrl } from "@/lib/app-url";
 import type { EventRow, TicketType } from "@/lib/types";
@@ -137,11 +136,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ redirectUrl: `${appUrl()}/checkout/${order.id}` });
   }
 
-  // Purely alphanumeric reference. Paystack doesn't care either way, but this
-  // form was adopted when Flutterwave (which required it) was still a second
-  // rail, and there's no reason to churn the format now.
+  // Purely alphanumeric reference. Paystack doesn't care either way, but
+  // Flutterwave does, and it is the same reference on both rails.
   const reference = `zvx${randomUUID().replace(/-/g, "")}`;
-  const provider = "paystack";
 
   // Zivotix's revenue is the service fee, and the buyer always pays it on top
   // of the organizer's listed price. It used to be a per-event choice; that
@@ -149,24 +146,12 @@ export async function POST(req: Request) {
   // wrong, so the answer is now the same everywhere and stated at checkout.
   const fees = computeFees(baseAmount, event.currency, "pass");
 
-  // NGN events are charged in NGN: the buyer's own currency, and Paystack's
-  // cheaper local card rate. Everything else converts to USD, since Paystack
-  // can't charge a card in THB.
-  const chargeCurrency = resolveChargeCurrency(event.currency);
-  let chargeAmount: number;
-  let rate: number;
-  try {
-    // Converts the buyer's full total, fee included — the fee is charged in
-    // the same currency as the tickets, not tacked on afterwards in NGN.
-    ({ amount: chargeAmount, rate } = await convert(fees.total, event.currency, chargeCurrency));
-  } catch {
-    await supabase.rpc("release_ticket_types", { p_items: reservationItems });
-    return NextResponse.json(
-      { error: `Couldn't convert ${event.currency} to ${chargeCurrency} right now. Please try again shortly.` },
-      { status: 502 }
-    );
-  }
-
+  // The order is written before the processor is called because the payment
+  // page has to redirect back to /checkout/{order.id}, so the id must exist
+  // first. Charge columns are seeded with the event's own currency and
+  // corrected below once we know which processor took it and at what rate —
+  // the alternative, guessing the currency here, is the shape of the bug that
+  // caused the 1 August outage.
   const { data: order, error: orderError } = await supabase
     .from("orders")
     .insert({
@@ -179,11 +164,10 @@ export async function POST(req: Request) {
       // never include our service fee.
       base_amount: fees.organizerReceives,
       service_fee: fees.serviceFee,
-      charge_currency: chargeCurrency,
-      charge_amount: chargeAmount,
-      fx_rate_used: rate,
+      charge_currency: event.currency,
+      charge_amount: fees.total,
+      fx_rate_used: 1,
       paystack_reference: reference,
-      payment_provider: provider,
       status: "pending",
     })
     .select()
@@ -207,22 +191,32 @@ export async function POST(req: Request) {
   );
 
   try {
-    const tx = await initTransaction({
-      email: buyerEmail,
-      amount: toSubunit(chargeAmount),
-      currency: chargeCurrency,
+    const started = await startPayment({
+      // The buyer's full total, fee included — the fee is charged in the same
+      // currency as the tickets, not tacked on afterwards in naira.
+      amount: fees.total,
+      currency: event.currency,
       reference,
-      callback_url: `${appUrl()}/checkout/${order.id}`,
-      metadata: { order_id: order.id, event_id: event.id },
-      // Apple Pay is now approved on this Paystack account, so it shows on
-      // Paystack's own hosted checkout alongside cards. That replaces the
-      // separate Flutterwave Apple Pay rail: one processor, one webhook, and
-      // Paystack's local card rate (1.5%) instead of Flutterwave's 4.8%.
-      channels: ["card", "apple_pay"],
+      buyer: { email: buyerEmail, name: buyerName },
+      redirectUrl: `${appUrl()}/checkout/${order.id}`,
+      title: event.title,
+      logo: event.logo_image_url,
+      meta: { order_id: order.id, event_id: event.id },
     });
-    return NextResponse.json({ redirectUrl: tx.authorization_url });
+
+    await supabase
+      .from("orders")
+      .update({
+        payment_provider: started.provider,
+        charge_currency: started.chargeCurrency,
+        charge_amount: started.chargeAmount,
+        fx_rate_used: started.fxRate,
+      })
+      .eq("id", order.id);
+
+    return NextResponse.json({ redirectUrl: started.paymentUrl });
   } catch (e) {
-    // Paystack init failed right after we reserved capacity for this order —
+    // Both rails refused right after we reserved capacity for this order —
     // release it immediately rather than making it wait out the 20-minute
     // abandoned-reservation cleanup.
     await supabase.rpc("release_ticket_types", { p_items: reservationItems });
