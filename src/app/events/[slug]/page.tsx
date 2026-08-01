@@ -5,8 +5,6 @@ import type { Metadata } from "next";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 import type { EventRow, TicketType, MembershipTier, MerchProduct } from "@/lib/types";
 import { googleMapsUrl, googleMapsEmbedUrl } from "@/lib/maps";
-import { resolvePaymentRoute } from "@/lib/payment-router";
-import { buyerCountry } from "@/lib/geo";
 import { appUrl } from "@/lib/app-url";
 import VerifiedBadge from "@/components/verified-badge";
 import ShareButton from "@/components/share-button";
@@ -358,11 +356,6 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
         <TicketSelector
           event={event}
           ticketTypes={ticketTypes ?? []}
-          // Same decision the checkout route will make, so the figure shown
-          // here is the figure billed. Both read the buyer's country.
-          chargeCurrency={
-            resolvePaymentRoute(event.currency, await buyerCountry()).chargeCurrency
-          }
         />
       </div>
 

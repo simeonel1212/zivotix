@@ -4,7 +4,6 @@ import { useState } from "react";
 import Image from "next/image";
 import { computeFees } from "@/lib/fees";
 import { formatMoney } from "@/lib/currencies";
-import ChargePreview from "@/components/charge-preview";
 import { assessMerch, merchRefusalMessage, merchSubtotal } from "@/lib/merch";
 import type { MerchProduct } from "@/lib/types";
 
@@ -14,14 +13,7 @@ import type { MerchProduct } from "@/lib/types";
 // cart spanning multiple products, because an organizer with four items is not
 // running a store — they're selling a shirt to people who already came to the
 // party, and a cart would add a step to a two-item purchase.
-export default function MerchGrid({
-  products,
-  chargeCurrencies = {},
-}: {
-  products: MerchProduct[];
-  /** Product currency → what the card is billed in, decided server-side. */
-  chargeCurrencies?: Record<string, string>;
-}) {
+export default function MerchGrid({ products }: { products: MerchProduct[] }) {
   const [openId, setOpenId] = useState<string | null>(null);
 
   if (!products.length) return null;
@@ -32,7 +24,6 @@ export default function MerchGrid({
         <MerchCard
           key={p.id}
           product={p}
-          chargeCurrency={chargeCurrencies[p.currency] ?? p.currency}
           open={openId === p.id}
           onOpen={() => setOpenId(p.id)}
           onClose={() => setOpenId(null)}
@@ -44,13 +35,11 @@ export default function MerchGrid({
 
 function MerchCard({
   product,
-  chargeCurrency,
   open,
   onOpen,
   onClose,
 }: {
   product: MerchProduct;
-  chargeCurrency: string;
   open: boolean;
   onOpen: () => void;
   onClose: () => void;
@@ -261,12 +250,6 @@ function MerchCard({
                 <span>Total</span>
                 <span>{formatMoney(fees.total, product.currency)}</span>
               </div>
-              <ChargePreview
-                amount={fees.total}
-                from={product.currency}
-                to={chargeCurrency}
-                className="block text-right text-xs text-neutral-500 mt-1"
-              />
             </div>
 
             {!state.buyable && (

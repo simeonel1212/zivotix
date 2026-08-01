@@ -130,23 +130,6 @@ export function resolvePaymentRoute(
   return routeChain(eventCurrency, buyerCountry)[0];
 }
 
-// Currency → what a card will actually be billed in, for a set of prices.
-//
-// Client components can't call resolvePaymentRoute — the answer depends on
-// which processor is configured, which is server-only. A plain object crosses
-// the server/client boundary; a function would not.
-export function chargeCurrencyMap(
-  currencies: string[],
-  buyerCountry: string | null = null
-): Record<string, string> {
-  const map: Record<string, string> = {};
-  for (const c of currencies) {
-    if (!c || map[c]) continue;
-    map[c] = resolvePaymentRoute(c, buyerCountry).chargeCurrency;
-  }
-  return map;
-}
-
 // The last resort, and the only route with completed payments behind it.
 // Not the nicest experience — the buyer's bank converts back at its own rate —
 // but a worse rate beats a checkout that cannot take money at all.
