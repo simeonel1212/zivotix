@@ -40,15 +40,22 @@ export function estimateProcessorFee(
   provider: "paystack" | "flutterwave",
   amount: number,
   /**
-   * The currency the buyer was actually charged in — orders.charge_currency,
-   * not the event's pricing currency. NGN means a local card; anything else
-   * (USD in practice) is an international transaction.
+   * The currency the buyer was actually charged in — orders.charge_currency.
    */
-  chargeCurrency: string
+  chargeCurrency: string,
+  /**
+   * The event's own pricing currency. Needed because every charge now settles
+   * in NGN, so charge_currency alone can no longer tell a Lagos buyer from a
+   * Bangkok one — and Paystack bills the international rate on a foreign card
+   * regardless of the currency it was charged in. A non-NGN event is the best
+   * signal available that the card is foreign.
+   */
+  eventCurrency?: string
 ): number {
+  const international = chargeCurrency !== "NGN" || (eventCurrency ?? "NGN") !== "NGN";
   if (provider === "paystack") {
     let fee: number;
-    if (chargeCurrency === "NGN") {
+    if (!international) {
       fee = amount * NGN_RATE;
       if (amount >= NGN_FLAT_THRESHOLD) fee += NGN_FLAT;
       fee = Math.min(fee, NGN_CAP);

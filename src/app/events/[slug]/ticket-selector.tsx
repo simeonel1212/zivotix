@@ -289,7 +289,7 @@ export default function TicketSelector({
               <span className="text-xs text-neutral-500">
                 {event.currency === "NGN"
                   ? "Card or Apple Pay, charged in NGN"
-                  : "Card or Apple Pay, charged in USD at the live rate"}
+                  : `Card or Apple Pay. Charged in Nigerian naira at today's rate — your bank converts back at its own.`}
               </span>
             </>
           )}

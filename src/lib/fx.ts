@@ -40,14 +40,19 @@ export async function getRate(from: string, to: string): Promise<number> {
 // Decide what currency to actually charge the buyer in, given the event's
 // native currency.
 //
-// Everything now goes through Paystack, which handles cards (local and
-// international) and Apple Pay on this account. NGN events are charged in
-// NGN: it's the buyer's own currency, and Paystack's local card rate is 1.5%
-// versus 3.9% international, so converting would cost both sides more.
-// Paystack can't charge a card in THB, so everything else routes via USD.
-export function resolveChargeCurrency(eventCurrency: string): "NGN" | "USD" {
-  if (eventCurrency === "NGN") return "NGN";
-  return "USD"; // THB (and anything else) routes through USD
+// Everything is charged in NGN, because that is the only currency this
+// Paystack account is enabled for. USD looks like the obvious route for a Thai
+// or British event, and it was what this did — but Paystack rejected every one
+// of those transactions with "Currency not supported by merchant" before the
+// buyer's card was ever contacted. Zero USD charges have ever succeeded here;
+// every successful payment in the platform's history has been NGN.
+//
+// Paystack does route international cards on NGN transactions, so a foreign
+// buyer can still pay — their bank converts back at its own rate. That double
+// conversion is a real cost to the buyer and the reason this should revert to
+// USD the day Paystack enables it on the account.
+export function resolveChargeCurrency(_eventCurrency: string): "NGN" | "USD" {
+  return "NGN";
 }
 
 export async function convert(amount: number, from: string, to: string) {

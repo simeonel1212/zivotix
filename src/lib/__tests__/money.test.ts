@@ -34,11 +34,14 @@ describe("resolveChargeCurrency", () => {
     assert.equal(resolveChargeCurrency("NGN"), "NGN");
   });
 
-  test("routes every other currency through USD", () => {
-    // Paystack cannot charge a card in THB, so a Thai organizer's event
-    // must settle in USD. Returning THB here would break checkout outright.
-    assert.equal(resolveChargeCurrency("THB"), "USD");
-    assert.equal(resolveChargeCurrency("GBP"), "USD");
+  test("routes every other currency through NGN, not USD", () => {
+    // Paystack rejected every USD attempt on this account with "Currency not
+    // supported by merchant" — before the buyer's card was ever contacted.
+    // NGN is the only currency this merchant is enabled for, and Paystack
+    // routes international cards on NGN transactions, so it's the only route
+    // that reaches a card at all. Revert this the day USD is enabled.
+    assert.equal(resolveChargeCurrency("THB"), "NGN");
+    assert.equal(resolveChargeCurrency("GBP"), "NGN");
   });
 
   test("never returns a currency Paystack can't charge", () => {

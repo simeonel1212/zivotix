@@ -70,11 +70,13 @@ export async function GET(req: Request) {
         estimateProcessorFee(
           o.payment_provider,
           // What the buyer was actually billed, in the currency it was billed
-          // in — not the event's pricing currency. A THB event settles in USD
-          // at Paystack's international rate, and using base_currency here
-          // costed those sales as if they were local.
+          // in. Both currencies are needed: everything settles in NGN now, so
+          // charge_currency alone can't distinguish a Lagos card from a
+          // Bangkok one, and Paystack bills 3.9% on the foreign card either
+          // way. base_currency is the signal for that.
           o.charge_amount,
-          o.charge_currency
+          o.charge_currency,
+          o.base_currency
         ),
       0
     );
